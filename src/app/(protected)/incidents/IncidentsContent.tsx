@@ -1,0 +1,65 @@
+'use client'
+
+import { useUnassignedTickets, useAuthUser } from '@/features/tickets/api/useTickets'
+import { TicketTable } from '@/features/tickets/components/TicketTable'
+import { useEffect, useState } from 'react'
+import { createClient } from '@/utils/supabase/client'
+import { TicketFilters } from '@/components/TicketFilters'
+import { TicketFilters as Filters } from '@/features/tickets/api/getTickets'
+
+export function IncidentsContent() {
+    const [filters, setFilters] = useState<Filters>({ search: '', status: 'all', priority: 'all' })
+    const { data: tickets, isLoading, error } = useUnassignedTickets(filters)
+    const { data: user } = useAuthUser()
+    const [userRole, setUserRole] = useState<string>('')
+
+    useEffect(() => {
+        const fetchRole = async () => {
+            if (user?.id) {
+                const supabase = createClient()
+                const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+                if (data) setUserRole(data.role)
+            }
+        }
+        fetchRole()
+    }, [user?.id])
+
+    return (
+        <div className="space-y-8 pb-10">
+
+            {/* HEADER */}
+            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+                <div>
+                    <h1 className="text-4xl font-extrabold tracking-tight text-white mb-2">
+                        Incidents (File d'attente)
+                    </h1>
+                    <p className="text-white/60 font-medium">
+                        Tickets récemment créés ou non assignés en attente de prise en charge.
+                    </p>
+                </div>
+            </div>
+
+            {/* STATS RAPIDES (Optionnelles pour la file) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md flex flex-col">
+                    <span className="text-white/50 text-sm font-medium mb-1">Tickets dans la file</span>
+                    <span className="text-3xl font-bold tracking-tight text-white">{tickets?.length || 0}</span>
+                </div>
+                <div className="p-6 rounded-2xl bg-amber-500/5 border border-amber-500/20 backdrop-blur-md flex flex-col">
+                    <span className="text-amber-400/80 text-sm font-medium mb-1">En attente critique</span>
+                    <span className="text-3xl font-bold tracking-tight text-amber-500">
+                        {tickets?.filter(t => t.priority === 'critique').length || 0}
+                    </span>
+                </div>
+            </div>
+
+            <TicketFilters filters={filters} setFilters={setFilters} />
+
+            {/* LISTE DES TICKETS (DATA TABLE) */}
+            <div className="pt-4">
+                <TicketTable tickets={tickets} isLoading={isLoading} error={error} showAssignButton={true} userRole={userRole} />
+            </div>
+
+        </div>
+    )
+}
