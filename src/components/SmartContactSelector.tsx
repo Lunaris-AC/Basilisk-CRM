@@ -18,7 +18,7 @@ import { Contact } from '@/features/clients/api/useClients'
 interface SmartContactSelectorProps {
     value?: string | null
     onChange: (contactId: string | null) => void
-    clientId: string
+    clientId?: string
     storeId?: string | null
     defaultPhone?: string // Useful if we try to prefill
 }
@@ -83,7 +83,7 @@ export function SmartContactSelector({ value, onChange, clientId, storeId, defau
         setIsCreating(true)
         try {
             const res = await quickCreateContact({
-                client_id: clientId,
+                client_id: clientId || '',
                 store_id: storeId || undefined,
                 first_name: firstName,
                 last_name: lastName,

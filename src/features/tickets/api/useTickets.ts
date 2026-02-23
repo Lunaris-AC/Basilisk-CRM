@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getMyTickets, getUnassignedTickets, getMyDailyStats, getTicketById, getCommentsByTicket, getActiveAssignees, TicketFilters } from './getTickets'
+import { getMyTickets, getUnassignedTickets, getMyDailyStats, getMyStatsByDate, getGlobalStats, getTicketById, getCommentsByTicket, getActiveAssignees, getSDs, TicketFilters, SDFilters } from './getTickets'
 import { createClient } from '@/utils/supabase/client'
 
 // Hook utilitaire pour récupérer le UserID
@@ -42,6 +42,26 @@ export const useMyDailyStats = () => {
     })
 }
 
+// ============== SPRINT 18 : HOOKS ANALYTICS ==============
+
+export const useGlobalStats = () => {
+    return useQuery({
+        queryKey: ['globalStats'],
+        queryFn: getGlobalStats,
+        staleTime: 1000 * 60 * 2,
+    })
+}
+
+export const useMyStatsByDate = (dateISO?: string) => {
+    const { data: user } = useAuthUser()
+
+    return useQuery({
+        queryKey: ['myStatsByDate', user?.id, dateISO],
+        queryFn: () => getMyStatsByDate(user!.id, dateISO),
+        enabled: !!user?.id,
+    })
+}
+
 // ============== SPRINT 7 : HOOKS DÉTAIL TICKET ==============
 
 export const useTicket = (id: string) => {
@@ -58,7 +78,7 @@ export const useTicketComments = (ticketId: string) => {
         queryKey: ['ticketComments', ticketId],
         queryFn: () => getCommentsByTicket(ticketId),
         enabled: !!ticketId,
-        staleTime: 1000 * 30, // Rafraîchissement plus fréquent pour le tchat
+        staleTime: 1000 * 30,
     })
 }
 
@@ -67,5 +87,14 @@ export const useActiveAssignees = () => {
         queryKey: ['activeAssignees'],
         queryFn: getActiveAssignees,
         staleTime: 1000 * 60 * 5,
+    })
+}
+
+// ============== SPRINT 17 : HOOKS SD ==============
+
+export const useSDs = (filters?: SDFilters) => {
+    return useQuery({
+        queryKey: ['sds', filters],
+        queryFn: () => getSDs(filters),
     })
 }

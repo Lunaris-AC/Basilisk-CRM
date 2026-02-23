@@ -21,7 +21,7 @@ export interface TicketWithRelations {
     escalation_level: number
     resume_at: string | null
     created_at: string
-    category: 'HL' | 'COMMERCE' | 'SAV' | 'FORMATION'
+    category: 'HL' | 'COMMERCE' | 'SAV' | 'FORMATION' | 'DEV'
     client: { id: string; company: string; first_name?: string; last_name?: string; email?: string; phone?: string } | null
     store: { id: string; name: string; city: string } | null
     assignee: { id: string; first_name: string; last_name: string } | null
@@ -30,6 +30,7 @@ export interface TicketWithRelations {
     commerce_details?: { quote_number: string | null; invoice_number: string | null; service_type: string | null } | null
     sav_details?: { serial_number: string | null; product_reference: string | null; hardware_status: string | null } | null
     formateur_details?: { travel_date: string | null; training_location: string | null; training_type: string | null } | null
+    dev_details?: { type: 'BUG' | 'EVOLUTION'; reproduction_steps: string | null; impact: string | null; need_description: string | null; expected_process: string | null; complexity: string | null } | null
 }
 
 const formatTickets = (data: any[] | null): TicketWithRelations[] => {
@@ -50,6 +51,7 @@ export const getMyTickets = async (userId: string, filters?: TicketFilters): Pro
       profiles!tickets_assignee_id_fkey (first_name, last_name)
       profiles!tickets_assignee_id_fkey (first_name, last_name)
     `)
+        .neq('category', 'DEV') // Exclure les SD du support classique
 
     if (filters?.assignee_id && filters.assignee_id !== 'all') {
         query = query.eq('assignee_id', filters.assignee_id)
@@ -97,6 +99,7 @@ export const getUnassignedTickets = async (filters?: TicketFilters): Promise<Tic
       profiles!tickets_assignee_id_fkey (first_name, last_name)
     `)
         .is('assignee_id', null)
+        .neq('category', 'DEV') // Exclure les SD de la file d'attente
 
     if (filters?.status && filters.status !== 'all') {
         query = query.eq('status', filters.status)
@@ -126,37 +129,162 @@ export const getUnassignedTickets = async (filters?: TicketFilters): Promise<Tic
     return formatTickets(data)
 }
 
-export const getMyDailyStats = async (userId: string): Promise<{ createdToday: number; closedToday: number }> => {
+// ============== SPRINT 17 : SD (BUGS & ÉVOLUTIONS DEV) ==============
+
+export interface SDFilters {
+    search?: string
+    sd_type?: 'BUG' | 'EVOLUTION' | 'all'
+    complexity?: string | 'all'
+    status?: string | 'all'
+}
+
+export const getSDs = async (filters?: SDFilters): Promise<TicketWithRelations[]> => {
+    const supabase = createClient()
+    let query = supabase
+        .from('tickets')
+        .select(`
+      id, title, description, status, priority, escalation_level, created_at, category,
+      clients (company),
+      creator:profiles!tickets_creator_id_fkey (id, first_name, last_name),
+      assignee:profiles!tickets_assignee_id_fkey (id, first_name, last_name),
+      dev_details:ticket_dev_details (
+          type, reproduction_steps, impact, need_description, expected_process, complexity
+      )
+    `)
+        .eq('category', 'DEV')
+
+    if (filters?.status && filters.status !== 'all') {
+        query = query.eq('status', filters.status)
+    } else {
+        query = query.neq('status', 'ferme')
+    }
+
+    if (filters?.search) {
+        query = query.ilike('title', `%${filters.search}%`)
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false })
+
+    if (error) throw new Error(error.message)
+
+    let results = (data || []) as unknown as TicketWithRelations[]
+
+    // Filtrage côté client pour les champs de la table d'extension
+    if (filters?.sd_type && filters.sd_type !== 'all') {
+        results = results.filter(t => t.dev_details?.type === filters.sd_type)
+    }
+    if (filters?.complexity && filters.complexity !== 'all') {
+        results = results.filter(t => t.dev_details?.complexity === filters.complexity)
+    }
+
+    return results
+}
+
+export interface GlobalStats {
+    totalTickets: number
+    totalUnassigned: number
+    slaViolations: number
+    byLevel: { N1: number; N2: number; N3: number; N4: number }
+    byCategory: { DEV: number; COMMERCE: number; SAV: number; FORMATION: number; HL: number }
+}
+
+export const getGlobalStats = async (): Promise<GlobalStats> => {
     const supabase = createClient()
 
-    // Obtenir le début de la journée courante au format ISO
-    const todayStart = new Date()
-    todayStart.setHours(0, 0, 0, 0)
-    const todayISO = todayStart.toISOString()
+    // Total tickets ouverts (non fermés)
+    const { count: totalTickets } = await supabase
+        .from('tickets')
+        .select('*', { count: 'exact', head: true })
+        .neq('status', 'ferme')
 
-    // Requête 1 : Créés aujourd'hui par l'utilisateur (creator_id)
-    const { count: createdToday, error: err1 } = await supabase
+    // Total non affectés
+    const { count: totalUnassigned } = await supabase
+        .from('tickets')
+        .select('*', { count: 'exact', head: true })
+        .is('assignee_id', null)
+        .neq('status', 'ferme')
+
+    // SLA non respectés
+    const { count: slaViolations } = await supabase
+        .from('tickets')
+        .select('*', { count: 'exact', head: true })
+        .neq('status', 'ferme')
+        .neq('status', 'resolu')
+        .not('sla_deadline_at', 'is', null)
+        .lt('sla_deadline_at', new Date().toISOString())
+
+    // Par niveau d'escalade
+    const levelCounts = { N1: 0, N2: 0, N3: 0, N4: 0 }
+    for (const level of [1, 2, 3, 4]) {
+        const { count } = await supabase
+            .from('tickets')
+            .select('*', { count: 'exact', head: true })
+            .eq('escalation_level', level)
+            .neq('status', 'ferme')
+        levelCounts[`N${level}` as keyof typeof levelCounts] = count || 0
+    }
+
+    // Par catégorie/service
+    const categoryCounts = { DEV: 0, COMMERCE: 0, SAV: 0, FORMATION: 0, HL: 0 }
+    for (const cat of ['DEV', 'COMMERCE', 'SAV', 'FORMATION', 'HL'] as const) {
+        const { count } = await supabase
+            .from('tickets')
+            .select('*', { count: 'exact', head: true })
+            .eq('category', cat)
+            .neq('status', 'ferme')
+        categoryCounts[cat] = count || 0
+    }
+
+    return {
+        totalTickets: totalTickets || 0,
+        totalUnassigned: totalUnassigned || 0,
+        slaViolations: slaViolations || 0,
+        byLevel: levelCounts,
+        byCategory: categoryCounts,
+    }
+}
+
+export const getMyStatsByDate = async (userId: string, dateISO?: string): Promise<{ createdCount: number; closedCount: number }> => {
+    const supabase = createClient()
+
+    // Calculer début/fin de la journée demandée
+    const targetDate = dateISO ? new Date(dateISO) : new Date()
+    const dayStart = new Date(targetDate)
+    dayStart.setHours(0, 0, 0, 0)
+    const dayEnd = new Date(targetDate)
+    dayEnd.setHours(23, 59, 59, 999)
+
+    // Requête 1 : Créés à cette date par l'utilisateur (creator_id)
+    const { count: createdCount, error: err1 } = await supabase
         .from('tickets')
         .select('*', { count: 'exact', head: true })
         .eq('creator_id', userId)
-        .gte('created_at', todayISO)
+        .gte('created_at', dayStart.toISOString())
+        .lte('created_at', dayEnd.toISOString())
 
     if (err1) throw new Error(err1.message)
 
-    // Requête 2 : Fermés aujourd'hui par l'utilisateur (assignee_id)
-    const { count: closedToday, error: err2 } = await supabase
+    // Requête 2 : Fermés à cette date par l'utilisateur (assignee_id)
+    const { count: closedCount, error: err2 } = await supabase
         .from('tickets')
         .select('*', { count: 'exact', head: true })
         .eq('assignee_id', userId)
         .eq('status', 'ferme')
-        .gte('updated_at', todayISO)
+        .gte('updated_at', dayStart.toISOString())
+        .lte('updated_at', dayEnd.toISOString())
 
     if (err2) throw new Error(err2.message)
 
     return {
-        createdToday: createdToday || 0,
-        closedToday: closedToday || 0
+        createdCount: createdCount || 0,
+        closedCount: closedCount || 0
     }
+}
+
+// Garder la compatibilité avec getMyDailyStats existant
+export const getMyDailyStats = async (userId: string) => {
+    const result = await getMyStatsByDate(userId)
+    return { createdToday: result.createdCount, closedToday: result.closedCount }
 }
 
 // ============== SPRINT 7 : DÉTAIL TICKET ET COMMENTAIRES ==============
@@ -230,6 +358,14 @@ export async function getTicketById(id: string): Promise<TicketWithRelations | n
                 travel_date,
                 training_location,
                 training_type
+            ),
+            dev_details:ticket_dev_details (
+                type,
+                reproduction_steps,
+                impact,
+                need_description,
+                expected_process,
+                complexity
             )
         `)
         .eq('id', id)

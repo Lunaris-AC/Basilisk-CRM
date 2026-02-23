@@ -32,7 +32,7 @@ export async function pickRandomTicket() {
         .from('tickets')
         .select('*', { count: 'exact', head: true })
         .eq('assignee_id', user.id)
-        .not('status', 'in', '("resolu","ferme")')
+        .not('status', 'in', '("resolu","ferme","suspendu")')
 
     if (countError) {
         return { error: 'Erreur lors de la vérification de vos tickets actifs.' }
@@ -80,8 +80,9 @@ export async function assignTicketManually(ticketId: string) {
         .eq('id', user.id)
         .single()
 
-    if (!profile || !['ADMIN', 'N4'].includes(profile.role)) {
-        return { error: 'Action non autorisée. Réservé aux administrateurs et experts N4.' }
+    const BLOCKED_ROLES = ['N1', 'N2', 'N3']
+    if (!profile || BLOCKED_ROLES.includes(profile.role)) {
+        return { error: 'Action non autorisée. Utilisez le bouton Piocher.' }
     }
 
     const { error: updateError } = await supabase
@@ -274,7 +275,7 @@ export async function reopenTicket(ticketId: string, justification: string) {
 /**
  * Server Action : Créer un nouveau ticket avec pièces jointes.
  */
-export async function createTicket(formData: FormData) {
+export async function createTicket(formData: FormData, assignToMe: boolean = false) {
     const supabase = await createClient()
 
     // 1. Authentification
@@ -306,28 +307,49 @@ export async function createTicket(formData: FormData) {
     const trainingLocation = formData.get('training_location') as string || null
     const trainingType = formData.get('training_type') as string || null
 
+    // Champs spécifiques DEV
+    const sdType = formData.get('sd_type') as string || null
+    const reproductionSteps = formData.get('reproduction_steps') as string || null
+    const sdImpact = formData.get('sd_impact') as string || null
+    const needDescription = formData.get('need_description') as string || null
+    const expectedProcess = formData.get('expected_process') as string || null
+
     const attachments = formData.getAll('attachments') as File[]
 
     // 3. Validation basique
-    if (!title || !description || !clientId || !storeId) {
-        return { error: 'Veuillez remplir tous les champs obligatoires (Titre, Description, Client, Magasin).' }
+    if (!title || !description) {
+        return { error: 'Veuillez remplir le titre et la description.' }
     }
 
-    // 4. Insertion du ticket (statut nouveau, non assigné)
+    // Pour les tickets non-DEV, client et magasin sont obligatoires
+    if (category !== 'DEV' && (!clientId || !storeId)) {
+        return { error: 'Veuillez remplir tous les champs obligatoires (Client, Magasin).' }
+    }
+
+    // Contrôle de rôle pour la catégorie DEV
+    if (category === 'DEV') {
+        const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+        const allowedRoles = ['N4', 'DEV', 'COM', 'ADMIN']
+        if (!profile || !allowedRoles.includes(profile.role)) {
+            return { error: 'Vous n\'avez pas les droits pour créer un SD.' }
+        }
+    }
+
+    // 4. Insertion du ticket (statut nouveau ou en_cours si auto-assignation)
     const { data: ticket, error: ticketError } = await supabase
         .from('tickets')
         .insert({
             title,
             description,
-            client_id: clientId,
-            store_id: storeId,
             problem_location: problemLocation,
             priority,
             contact_id: contactId,
             creator_id: user.id,
-            status: 'nouveau',
+            status: assignToMe ? 'en_cours' : 'nouveau',
+            assignee_id: assignToMe ? user.id : null,
             escalation_level: 1,
             category,
+            ...(category !== 'DEV' ? { client_id: clientId, store_id: storeId } : {}),
         })
         .select('id')
         .single()
@@ -362,6 +384,16 @@ export async function createTicket(formData: FormData) {
             training_type: trainingType,
         })
         if (extError) console.error("Erreur insertion formateur_details:", extError)
+    } else if (category === 'DEV' && sdType) {
+        const { error: extError } = await supabase.from('ticket_dev_details').insert({
+            ticket_id: ticket.id,
+            type: sdType,
+            reproduction_steps: reproductionSteps,
+            impact: sdImpact,
+            need_description: needDescription,
+            expected_process: expectedProcess,
+        })
+        if (extError) console.error("Erreur insertion dev_details:", extError)
     }
 
     // 6. Upload des pièces jointes si présentes et sauvegarde des métadonnées
@@ -398,6 +430,7 @@ export async function createTicket(formData: FormData) {
     // 7. Invalidation du cache pour rafraîchir les listes
     revalidatePath('/dashboard')
     revalidatePath('/incidents')
+    revalidatePath('/sd')
 
     return { success: true, ticketId }
 }
@@ -566,6 +599,77 @@ export async function updateFormateurDetails(ticketId: string, data: { travel_da
     }
 
     await addComment(ticketId, `[MISE À JOUR] Les détails Formateur ont été modifiés.`, true)
+    revalidatePath(`/tickets/${ticketId}`)
+    return { success: true }
+}
+
+// ============== SPRINT 17 : ACTIONS SD (BUGS & ÉVOLUTIONS DEV) ==============
+
+/**
+ * Server Action : Assigner un SD au dev connecté.
+ * Vérifie que l'utilisateur a le rôle 'DEV' ou 'ADMIN'.
+ */
+export async function assignSD(ticketId: string) {
+    const supabase = await createClient()
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Non authentifié.' }
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+    if (!profile || !['DEV', 'ADMIN'].includes(profile.role)) {
+        return { error: 'Seuls les développeurs et administrateurs peuvent s\'assigner un SD.' }
+    }
+
+    const { error: updateError } = await supabase
+        .from('tickets')
+        .update({
+            assignee_id: user.id,
+            status: 'en_cours'
+        })
+        .eq('id', ticketId)
+        .eq('category', 'DEV')
+
+    if (updateError) {
+        console.error('Erreur assignSD:', updateError)
+        return { error: 'Impossible de s\'assigner ce SD.' }
+    }
+
+    revalidatePath('/sd')
+    revalidatePath(`/tickets/${ticketId}`)
+    return { success: true }
+}
+
+/**
+ * Server Action : Mettre à jour les détails métier d'un SD (ex: complexité).
+ */
+export async function updateDevDetails(ticketId: string, data: { complexity?: string, reproduction_steps?: string, impact?: string, need_description?: string, expected_process?: string }) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Non authentifié.' }
+
+    const updateData: Record<string, any> = {}
+    if (data.complexity !== undefined) updateData.complexity = data.complexity || null
+    if (data.reproduction_steps !== undefined) updateData.reproduction_steps = data.reproduction_steps || null
+    if (data.impact !== undefined) updateData.impact = data.impact || null
+    if (data.need_description !== undefined) updateData.need_description = data.need_description || null
+    if (data.expected_process !== undefined) updateData.expected_process = data.expected_process || null
+
+    const { error } = await supabase
+        .from('ticket_dev_details')
+        .update(updateData)
+        .eq('ticket_id', ticketId)
+
+    if (error) {
+        console.error('Erreur updateDevDetails:', error)
+        return { error: 'Erreur lors de la mise à jour des détails SD.' }
+    }
+
+    await addComment(ticketId, `[MISE À JOUR] Les détails SD ont été modifiés.`, true)
     revalidatePath(`/tickets/${ticketId}`)
     return { success: true }
 }

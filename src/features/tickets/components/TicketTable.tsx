@@ -162,7 +162,7 @@ export function TicketTable({ tickets, isLoading, error, showAssignButton = fals
                                 <TableCell className="text-right">
                                     <div className="flex items-center justify-end gap-3">
                                         {showAssignButton && (
-                                            userRole === 'ADMIN' || userRole === 'N4' ? (
+                                            !['N1', 'N2', 'N3'].includes(userRole || '') ? (
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation()

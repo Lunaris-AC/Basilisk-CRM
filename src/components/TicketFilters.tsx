@@ -56,6 +56,19 @@ export function TicketFilters({ filters, setFilters }: TicketFiltersProps) {
                     <option value="critique">Critique</option>
                 </select>
 
+                {/* Filtre Service / Catégorie */}
+                <select
+                    value={filters.category || 'all'}
+                    onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
+                    className="w-full md:w-40 px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 appearance-none cursor-pointer"
+                >
+                    <option value="all">Tous Services</option>
+                    <option value="HL">Support HL</option>
+                    <option value="COMMERCE">Commerce</option>
+                    <option value="SAV">SAV</option>
+                    <option value="FORMATION">Formation</option>
+                </select>
+
                 {/* Filtre Niveau (Escalation) */}
                 <select
                     value={filters.escalation_level || 'all'}

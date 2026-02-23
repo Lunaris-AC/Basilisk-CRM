@@ -1,20 +1,25 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Ticket, Users, Settings, Inbox } from 'lucide-react'
+import { LayoutDashboard, Ticket, Users, Settings, Inbox, Plus, Code2, FileText, FileCode } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
+import { CreateTicketModal } from '@/features/tickets/components/CreateTicketModal'
 
 const navigation = [
     { name: 'Dashboard Personnel', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Incidents (File)', href: '/incidents', icon: Inbox },
-    { name: 'Nouveau Ticket', href: '/tickets/new', icon: Ticket },
+    { name: 'Portail SD', href: '/sd', icon: Code2 },
+    { name: 'Documentation', href: '/documentation', icon: FileText },
+    { name: 'Patch Notes', href: '/patch-notes', icon: FileCode },
     { name: 'Clients', href: '/clients', icon: Users },
     { name: 'Paramètres', href: '/parametres', icon: Settings },
 ]
 
 export function Sidebar() {
     const pathname = usePathname()
+    const [createModalOpen, setCreateModalOpen] = useState(false)
     const { data: profile } = useQuery({
         queryKey: ['my-profile-sidebar'],
         queryFn: async () => {
@@ -42,6 +47,15 @@ export function Sidebar() {
             </div>
 
             <div className="flex-1 py-6 px-4 space-y-2">
+                {/* Bouton Nouveau Ticket → ouvre la modale */}
+                <button
+                    onClick={() => setCreateModalOpen(true)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group w-full bg-gradient-to-r from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 text-white hover:from-indigo-500/30 hover:to-purple-500/30 hover:border-indigo-500/50"
+                >
+                    <Plus className="w-5 h-5 text-indigo-400" />
+                    <span className="font-semibold text-sm">Nouveau Ticket</span>
+                </button>
+
                 {navigation.map((item) => {
                     const isActive = pathname === item.href
 
@@ -60,6 +74,9 @@ export function Sidebar() {
                     )
                 })}
             </div>
+
+            {/* Modale de création globale */}
+            <CreateTicketModal open={createModalOpen} onOpenChange={setCreateModalOpen} />
 
             {/* Profile & Role Badge */}
             <div className="p-4 border-t border-white/5">

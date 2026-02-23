@@ -2,7 +2,7 @@
 
 import { useTicket, useTicketComments } from '@/features/tickets/api/useTickets'
 import { useTicketAttachments } from '@/features/tickets/api/useTicketAttachments'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQueryClient, useQuery } from '@tanstack/react-query'
 import { addComment, updateTicketStatus, escalateTicket, uploadAttachments, linkContactToTicket } from '@/features/tickets/actions'
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
@@ -12,9 +12,11 @@ import { fr } from 'date-fns/locale'
 import { AttachmentViewer } from '@/components/AttachmentViewer'
 import { SlaTimer } from '@/components/SlaTimer'
 import { SmartContactSelector } from '@/components/SmartContactSelector'
+import { DateTimePicker } from '@/components/DateTimePicker'
 import { CommerceDetailsCard, CommerceDetails } from '@/features/tickets/components/details/CommerceDetailsCard'
 import { SAVDetailsCard, SAVDetails } from '@/features/tickets/components/details/SAVDetailsCard'
 import { FormateurDetailsCard, FormateurDetails } from '@/features/tickets/components/details/FormateurDetailsCard'
+import { DevDetailsCard, DevDetails } from '@/features/tickets/components/details/DevDetailsCard'
 
 import {
     Dialog,
@@ -35,6 +37,18 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
     const { data: ticket, isLoading: isLoadingTicket } = useTicket(ticketId)
     const { data: comments, isLoading: isLoadingComments } = useTicketComments(ticketId)
     const { data: attachments, isLoading: isLoadingAttachments } = useTicketAttachments(ticketId)
+    const { data: myProfile } = useQuery({
+        queryKey: ['my-profile-detail'],
+        queryFn: async () => {
+            const { createClient } = await import('@/utils/supabase/client')
+            const supabase = createClient()
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) return null
+            const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+            return data
+        },
+        staleTime: 1000 * 60 * 10,
+    })
 
     // Formulaires
     const [commentContent, setCommentContent] = useState('')
@@ -254,6 +268,9 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                     )}
                     {ticket.category === 'FORMATION' && (
                         <FormateurDetailsCard ticketId={ticket.id} details={ticket.formateur_details as FormateurDetails} isClosed={ticket.status === 'ferme'} />
+                    )}
+                    {ticket.category === 'DEV' && (
+                        <DevDetailsCard ticketId={ticket.id} details={ticket.dev_details as DevDetails} isClosed={ticket.status === 'ferme'} userRole={myProfile?.role} />
                     )}
 
                     {/* Pièces jointes du ticket */}
@@ -535,7 +552,7 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                     <SmartContactSelector
                                         value={selectedNewContactId}
                                         onChange={(val) => setSelectedNewContactId(val)}
-                                        clientId={ticket.client!.id}
+                                        clientId={ticket.client?.id}
                                         storeId={ticket.store?.id}
                                     />
                                 </div>
@@ -653,13 +670,12 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                             </DialogHeader>
                                             <div className="space-y-4 py-4">
                                                 <div className="space-y-2">
-                                                    <Label htmlFor="resumeAt" className="text-sm font-medium text-white/80">Date de reprise (Requis)</Label>
-                                                    <Input
-                                                        id="resumeAt"
-                                                        type="datetime-local"
+                                                    <Label className="text-sm font-medium text-white/80">Date de reprise (Requis)</Label>
+                                                    <DateTimePicker
                                                         value={resumeAtDate}
-                                                        onChange={(e) => setResumeAtDate(e.target.value)}
-                                                        className="bg-black/40 border-white/10 text-white focus:ring-amber-500/50"
+                                                        onChange={(val) => setResumeAtDate(val)}
+                                                        placeholder="Choisir la date de reprise..."
+                                                        minDate={new Date()}
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
@@ -742,103 +758,108 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
 
                                     <div className="h-px bg-white/10 w-full my-4" />
 
-                                    {/* ESCALADER HAUT */}
-                                    <Dialog open={escalateUpModalOpen} onOpenChange={setEscalateUpModalOpen}>
-                                        <DialogTrigger asChild>
-                                            <button
-                                                disabled={isPending || ticket.escalation_level >= 4}
-                                                className="w-full relative group overflow-hidden rounded-xl p-3 border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-sm font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                            >
-                                                <ArrowUpRight className="w-4 h-4" />
-                                                Escalader (Niveau Supérieur)
-                                            </button>
-                                        </DialogTrigger>
-                                        <DialogContent className="bg-zinc-900 border-white/10 text-white sm:max-w-md">
-                                            <DialogHeader>
-                                                <DialogTitle className="text-xl font-bold text-rose-300 flex items-center gap-2"><ArrowUpRight className="w-5 h-5" />Escalader ce ticket</DialogTitle>
-                                                <DialogDescription className="text-white/60">
-                                                    Le ticket sera ré-assigné au niveau {Math.min(4, ticket.escalation_level + 1)}. Expliquez pourquoi le niveau actuel ne peut pas le traiter.
-                                                </DialogDescription>
-                                            </DialogHeader>
-                                            <div className="space-y-4 py-4">
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="escUpJustif" className="text-sm font-medium text-white/80">Motif (Requis)</Label>
-                                                    <Textarea
-                                                        id="escUpJustif"
-                                                        placeholder="Pourquoi escalader ?"
-                                                        value={actionJustification}
-                                                        onChange={(e) => setActionJustification(e.target.value)}
-                                                        className="bg-black/40 border-white/10 text-white focus:ring-rose-500/50 min-h-[100px]"
-                                                    />
-                                                </div>
-                                            </div>
-                                            <DialogFooter>
-                                                <button
-                                                    onClick={() => setEscalateUpModalOpen(false)}
-                                                    className="px-4 py-2 rounded-xl text-white/70 hover:bg-white/10 transition-colors"
-                                                >
-                                                    Annuler
-                                                </button>
-                                                <button
-                                                    onClick={() => handleEscalateSubmit('up')}
-                                                    disabled={!actionJustification.trim() || isPending}
-                                                    className="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-400 text-black font-bold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                                                >
-                                                    {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                                                    Confirmer
-                                                </button>
-                                            </DialogFooter>
-                                        </DialogContent>
-                                    </Dialog>
+                                    {/* ESCALADE - Visible seulement pour N1/N2/N3/N4/ADMIN */}
+                                    {['N1', 'N2', 'N3', 'N4', 'ADMIN'].includes(myProfile?.role) && (
+                                        <>
+                                            {/* ESCALADER HAUT */}
+                                            <Dialog open={escalateUpModalOpen} onOpenChange={setEscalateUpModalOpen}>
+                                                <DialogTrigger asChild>
+                                                    <button
+                                                        disabled={isPending || ticket.escalation_level >= 4}
+                                                        className="w-full relative group overflow-hidden rounded-xl p-3 border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-sm font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
+                                                        <ArrowUpRight className="w-4 h-4" />
+                                                        Escalader (Niveau Supérieur)
+                                                    </button>
+                                                </DialogTrigger>
+                                                <DialogContent className="bg-zinc-900 border-white/10 text-white sm:max-w-md">
+                                                    <DialogHeader>
+                                                        <DialogTitle className="text-xl font-bold text-rose-300 flex items-center gap-2"><ArrowUpRight className="w-5 h-5" />Escalader ce ticket</DialogTitle>
+                                                        <DialogDescription className="text-white/60">
+                                                            Le ticket sera ré-assigné au niveau {Math.min(4, ticket.escalation_level + 1)}. Expliquez pourquoi le niveau actuel ne peut pas le traiter.
+                                                        </DialogDescription>
+                                                    </DialogHeader>
+                                                    <div className="space-y-4 py-4">
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor="escUpJustif" className="text-sm font-medium text-white/80">Motif (Requis)</Label>
+                                                            <Textarea
+                                                                id="escUpJustif"
+                                                                placeholder="Pourquoi escalader ?"
+                                                                value={actionJustification}
+                                                                onChange={(e) => setActionJustification(e.target.value)}
+                                                                className="bg-black/40 border-white/10 text-white focus:ring-rose-500/50 min-h-[100px]"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <DialogFooter>
+                                                        <button
+                                                            onClick={() => setEscalateUpModalOpen(false)}
+                                                            className="px-4 py-2 rounded-xl text-white/70 hover:bg-white/10 transition-colors"
+                                                        >
+                                                            Annuler
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleEscalateSubmit('up')}
+                                                            disabled={!actionJustification.trim() || isPending}
+                                                            className="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-400 text-black font-bold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                                        >
+                                                            {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                                                            Confirmer
+                                                        </button>
+                                                    </DialogFooter>
+                                                </DialogContent>
+                                            </Dialog>
 
-                                    {/* ESCALADER BAS */}
-                                    <Dialog open={escalateDownModalOpen} onOpenChange={setEscalateDownModalOpen}>
-                                        <DialogTrigger asChild>
-                                            <button
-                                                disabled={isPending || ticket.escalation_level <= 1}
-                                                className="w-full rounded-xl p-3 border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                            >
-                                                <ArrowDownRight className="w-4 h-4" />
-                                                Renvoyer (Niveau Inférieur)
-                                            </button>
-                                        </DialogTrigger>
-                                        <DialogContent className="bg-zinc-900 border-white/10 text-white sm:max-w-md">
-                                            <DialogHeader>
-                                                <DialogTitle className="text-xl font-bold flex items-center gap-2"><ArrowDownRight className="w-5 h-5" />Renvoyer ce ticket</DialogTitle>
-                                                <DialogDescription className="text-white/60">
-                                                    Le ticket retournera au niveau {Math.max(1, ticket.escalation_level - 1)}.
-                                                </DialogDescription>
-                                            </DialogHeader>
-                                            <div className="space-y-4 py-4">
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="escDownJustif" className="text-sm font-medium text-white/80">Motif (Requis)</Label>
-                                                    <Textarea
-                                                        id="escDownJustif"
-                                                        placeholder="Pourquoi renvoyer ?"
-                                                        value={actionJustification}
-                                                        onChange={(e) => setActionJustification(e.target.value)}
-                                                        className="bg-black/40 border-white/10 text-white focus:ring-white/50 min-h-[100px]"
-                                                    />
-                                                </div>
-                                            </div>
-                                            <DialogFooter>
-                                                <button
-                                                    onClick={() => setEscalateDownModalOpen(false)}
-                                                    className="px-4 py-2 rounded-xl text-white/70 hover:bg-white/10 transition-colors"
-                                                >
-                                                    Annuler
-                                                </button>
-                                                <button
-                                                    onClick={() => handleEscalateSubmit('down')}
-                                                    disabled={!actionJustification.trim() || isPending}
-                                                    className="px-4 py-2 rounded-xl bg-white hover:bg-white/90 text-black font-bold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                                                >
-                                                    {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                                                    Confirmer
-                                                </button>
-                                            </DialogFooter>
-                                        </DialogContent>
-                                    </Dialog>
+                                            {/* ESCALADER BAS */}
+                                            <Dialog open={escalateDownModalOpen} onOpenChange={setEscalateDownModalOpen}>
+                                                <DialogTrigger asChild>
+                                                    <button
+                                                        disabled={isPending || ticket.escalation_level <= 1}
+                                                        className="w-full rounded-xl p-3 border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
+                                                        <ArrowDownRight className="w-4 h-4" />
+                                                        Renvoyer (Niveau Inférieur)
+                                                    </button>
+                                                </DialogTrigger>
+                                                <DialogContent className="bg-zinc-900 border-white/10 text-white sm:max-w-md">
+                                                    <DialogHeader>
+                                                        <DialogTitle className="text-xl font-bold flex items-center gap-2"><ArrowDownRight className="w-5 h-5" />Renvoyer ce ticket</DialogTitle>
+                                                        <DialogDescription className="text-white/60">
+                                                            Le ticket retournera au niveau {Math.max(1, ticket.escalation_level - 1)}.
+                                                        </DialogDescription>
+                                                    </DialogHeader>
+                                                    <div className="space-y-4 py-4">
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor="escDownJustif" className="text-sm font-medium text-white/80">Motif (Requis)</Label>
+                                                            <Textarea
+                                                                id="escDownJustif"
+                                                                placeholder="Pourquoi renvoyer ?"
+                                                                value={actionJustification}
+                                                                onChange={(e) => setActionJustification(e.target.value)}
+                                                                className="bg-black/40 border-white/10 text-white focus:ring-white/50 min-h-[100px]"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <DialogFooter>
+                                                        <button
+                                                            onClick={() => setEscalateDownModalOpen(false)}
+                                                            className="px-4 py-2 rounded-xl text-white/70 hover:bg-white/10 transition-colors"
+                                                        >
+                                                            Annuler
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleEscalateSubmit('down')}
+                                                            disabled={!actionJustification.trim() || isPending}
+                                                            className="px-4 py-2 rounded-xl bg-white hover:bg-white/90 text-black font-bold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                                        >
+                                                            {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                                                            Confirmer
+                                                        </button>
+                                                    </DialogFooter>
+                                                </DialogContent>
+                                            </Dialog>
+                                        </>
+                                    )}
                                 </>
                             )}
 

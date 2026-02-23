@@ -9,7 +9,7 @@ import {
     Loader2, Users, Plus, ChevronDown, ChevronRight, Mail, Phone, MapPin,
     Store as StoreIcon, UserCircle, Briefcase, X
 } from 'lucide-react'
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { toast } from 'sonner'
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -114,9 +114,8 @@ export default function ClientsPage() {
                             const isExpanded = expandedClients.has(client.id)
 
                             return (
-                                <>
+                                <Fragment key={client.id}>
                                     <TableRow
-                                        key={client.id}
                                         className="cursor-pointer hover:bg-white/5 border-white/5 transition-colors"
                                         onClick={() => toggleExpand(client.id)}
                                     >
@@ -239,7 +238,7 @@ export default function ClientsPage() {
                                             </TableCell>
                                         </TableRow>
                                     )}
-                                </>
+                                </Fragment>
                             )
                         })}
                     </TableBody>
