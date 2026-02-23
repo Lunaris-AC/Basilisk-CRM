@@ -1,12 +1,12 @@
 'use client'
 
-import { useTicket, useTicketComments } from '@/features/tickets/api/useTickets'
+import { useTicket, useTicketComments, useTicketAuditLogs } from '@/features/tickets/api/useTickets'
 import { useTicketAttachments } from '@/features/tickets/api/useTicketAttachments'
 import { useQueryClient, useQuery } from '@tanstack/react-query'
-import { addComment, updateTicketStatus, escalateTicket, uploadAttachments, linkContactToTicket } from '@/features/tickets/actions'
+import { addComment, updateTicketStatus, escalateTicket, uploadAttachments, linkContactToTicket, linkTicketToSD, resolveSD } from '@/features/tickets/actions'
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Send, CheckCircle2, AlertTriangle, ArrowUpRight, ArrowDownRight, Loader2, Lock, Paperclip, X, File, UploadCloud, UserCircle, Phone, Pencil } from 'lucide-react'
+import { ArrowLeft, Send, CheckCircle2, AlertTriangle, ArrowUpRight, ArrowDownRight, Loader2, Lock, Paperclip, X, File, UploadCloud, UserCircle, Phone, Pencil, Link2, Code2, ExternalLink, Unlink, History, MessageSquare, Zap, UserCheck, ArrowRightLeft, Shield } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { AttachmentViewer } from '@/components/AttachmentViewer'
@@ -17,6 +17,7 @@ import { CommerceDetailsCard, CommerceDetails } from '@/features/tickets/compone
 import { SAVDetailsCard, SAVDetails } from '@/features/tickets/components/details/SAVDetailsCard'
 import { FormateurDetailsCard, FormateurDetails } from '@/features/tickets/components/details/FormateurDetailsCard'
 import { DevDetailsCard, DevDetails } from '@/features/tickets/components/details/DevDetailsCard'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 
 import {
     Dialog,
@@ -71,6 +72,72 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
     const [actionJustification, setActionJustification] = useState('')
     const [resumeAtDate, setResumeAtDate] = useState('')
     const [selectedNewContactId, setSelectedNewContactId] = useState<string | null>(null)
+
+    // SD Link modal
+    const [sdLinkModalOpen, setSdLinkModalOpen] = useState(false)
+    const [sdSearchTerm, setSdSearchTerm] = useState('')
+    const [selectedSdId, setSelectedSdId] = useState<string | null>(null)
+
+    // Resolve SD modal (Sprint 22)
+    const [resolveSDModalOpen, setResolveSDModalOpen] = useState(false)
+    const [resolveSDMessage, setResolveSDMessage] = useState('')
+    const [resolveSDCloseLinked, setResolveSDCloseLinked] = useState(true)
+
+    // Audit Logs (Sprint 22)
+    const { data: auditLogs, isLoading: isLoadingAuditLogs } = useTicketAuditLogs(ticketId)
+
+    // Fetch open SD tickets for linking
+    const { data: openSDs } = useQuery({
+        queryKey: ['open-sds-for-link'],
+        queryFn: async () => {
+            const { createClient } = await import('@/utils/supabase/client')
+            const supabase = createClient()
+            const { data } = await supabase
+                .from('tickets')
+                .select('id, title, status, priority')
+                .eq('category', 'DEV')
+                .neq('status', 'ferme')
+                .order('created_at', { ascending: false })
+                .limit(50)
+            return data || []
+        },
+        enabled: sdLinkModalOpen,
+        staleTime: 30_000,
+    })
+
+    // Fetch linked SD ticket details (separate query — PostgREST can't self-join)
+    const { data: linkedSD } = useQuery({
+        queryKey: ['linked-sd', ticket?.linked_sd_id],
+        queryFn: async () => {
+            const { createClient } = await import('@/utils/supabase/client')
+            const supabase = createClient()
+            const { data } = await supabase
+                .from('tickets')
+                .select('id, title, status, priority')
+                .eq('id', ticket!.linked_sd_id!)
+                .single()
+            return data
+        },
+        enabled: !!ticket?.linked_sd_id,
+        staleTime: 30_000,
+    })
+
+    // Fetch HL tickets linked to this SD (if this is a DEV ticket)
+    const { data: linkedHLTickets } = useQuery({
+        queryKey: ['linked-hl-tickets', ticketId],
+        queryFn: async () => {
+            const { createClient } = await import('@/utils/supabase/client')
+            const supabase = createClient()
+            const { data } = await supabase
+                .from('tickets')
+                .select('id, title, status, priority, store:stores(name)')
+                .eq('linked_sd_id', ticketId)
+                .order('created_at', { ascending: false })
+            return data || []
+        },
+        enabled: !!ticket && ticket.category === 'DEV',
+        staleTime: 30_000,
+    })
 
     // Helpers pour reset les champs quand on ferme/ouvre une modale
     const resetModalForms = () => {
@@ -202,6 +269,40 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
         })
     }
 
+    // Sprint 22 : Résolution SD en cascade
+    const handleResolveSD = async () => {
+        if (!resolveSDMessage.trim()) return
+        startTransition(async () => {
+            const res = await resolveSD(ticketId, resolveSDMessage, resolveSDCloseLinked)
+            if (res.error) {
+                alert(res.error)
+            } else {
+                setResolveSDModalOpen(false)
+                setResolveSDMessage('')
+                setResolveSDCloseLinked(true)
+                queryClient.invalidateQueries({ queryKey: ['ticket', ticketId] })
+                queryClient.invalidateQueries({ queryKey: ['ticketComments', ticketId] })
+                queryClient.invalidateQueries({ queryKey: ['linked-hl-tickets', ticketId] })
+                queryClient.invalidateQueries({ queryKey: ['ticketAuditLogs', ticketId] })
+            }
+        })
+    }
+
+    // Helpers pour l'audit log timeline
+    const auditActionConfig: Record<string, { label: string, icon: React.ReactNode, color: string }> = {
+        created: { label: 'Créé', icon: <Zap className="w-3 h-3" />, color: 'bg-sky-500' },
+        status_changed: { label: 'Statut modifié', icon: <ArrowRightLeft className="w-3 h-3" />, color: 'bg-indigo-500' },
+        assigned: { label: 'Assigné', icon: <UserCheck className="w-3 h-3" />, color: 'bg-emerald-500' },
+        escalated: { label: 'Escaladé', icon: <ArrowUpRight className="w-3 h-3" />, color: 'bg-rose-500' },
+        resolved: { label: 'Résolu', icon: <CheckCircle2 className="w-3 h-3" />, color: 'bg-emerald-500' },
+        resolved_cascade: { label: 'Résolu (cascade)', icon: <Shield className="w-3 h-3" />, color: 'bg-purple-500' },
+        comment_added: { label: 'Commentaire', icon: <MessageSquare className="w-3 h-3" />, color: 'bg-white/30' },
+        transferred: { label: 'Transféré', icon: <ArrowRightLeft className="w-3 h-3" />, color: 'bg-amber-500' },
+        priority_changed: { label: 'Priorité modifiée', icon: <AlertTriangle className="w-3 h-3" />, color: 'bg-orange-500' },
+    }
+
+    const hlCount = (linkedHLTickets || []).filter((hl: any) => hl.status !== 'ferme' && hl.status !== 'resolu').length
+
     return (
         <div className="space-y-6 pb-10">
             {/* EN-TÊTE GLOBAL */}
@@ -271,6 +372,134 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                     )}
                     {ticket.category === 'DEV' && (
                         <DevDetailsCard ticketId={ticket.id} details={ticket.dev_details as DevDetails} isClosed={ticket.status === 'ferme'} userRole={myProfile?.role} />
+                    )}
+
+                    {/* ═══ SPRINT 21 : LIAISON HL ↔ SD ═══ */}
+
+                    {/* Section pour tickets HL : afficher le SD lié ou bouton de liaison */}
+                    {ticket.category !== 'DEV' && (
+                        <div className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl">
+                            <h3 className="text-lg font-bold text-white tracking-wide flex items-center gap-2 mb-4">
+                                <Code2 className="w-5 h-5 text-purple-400" />
+                                Bug Logiciel Associé
+                            </h3>
+                            {ticket.linked_sd_id && linkedSD ? (() => {
+                                const sd = linkedSD
+                                const sColor: Record<string, string> = { nouveau: 'text-sky-300', assigne: 'text-indigo-300', en_cours: 'text-amber-300', resolu: 'text-emerald-300', ferme: 'text-white/30' }
+                                return (
+                                    <div className="flex items-center gap-3 p-4 rounded-xl bg-purple-500/5 border border-purple-500/15">
+                                        <Link2 className="w-4 h-4 text-purple-400 shrink-0" />
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-white font-semibold text-sm truncate">{sd.title}</p>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <span className={`text-[10px] font-bold uppercase ${sColor[sd.status] || 'text-white/30'}`}>{sd.status}</span>
+                                                <span className="text-white/20">·</span>
+                                                <span className={`text-[10px] font-bold ${sd.priority === 'critique' ? 'text-rose-400' : sd.priority === 'haute' ? 'text-orange-400' : 'text-white/30'}`}>{sd.priority}</span>
+                                            </div>
+                                        </div>
+                                        <a href={`/tickets/${sd.id}`} className="p-2 rounded-lg hover:bg-white/5 transition-colors" title="Ouvrir le SD">
+                                            <ExternalLink className="w-4 h-4 text-purple-400" />
+                                        </a>
+                                        {myProfile?.role && !['CLIENT', 'COM', 'SAV1', 'SAV2'].includes(myProfile.role) && (
+                                            <button
+                                                onClick={() => startTransition(async () => {
+                                                    await linkTicketToSD(ticket.id, null)
+                                                    queryClient.invalidateQueries({ queryKey: ['ticket', ticketId] })
+                                                })}
+                                                className="p-2 rounded-lg hover:bg-rose-500/10 transition-colors" title="Délier"
+                                            >
+                                                <Unlink className="w-4 h-4 text-rose-400" />
+                                            </button>
+                                        )}
+                                    </div>
+                                )
+                            })() : (
+                                <div>
+                                    {myProfile?.role && !['CLIENT', 'COM', 'SAV1', 'SAV2'].includes(myProfile.role) && (
+                                        <Dialog open={sdLinkModalOpen} onOpenChange={setSdLinkModalOpen}>
+                                            <DialogTrigger asChild>
+                                                <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-300 hover:bg-purple-500/20 transition-colors text-sm font-semibold">
+                                                    <Link2 className="w-4 h-4" />
+                                                    Lier à un SD
+                                                </button>
+                                            </DialogTrigger>
+                                            <DialogContent className="sm:max-w-lg bg-[#0a0a1a] border border-white/10 text-white">
+                                                <DialogHeader>
+                                                    <DialogTitle>Lier à un Ticket SD</DialogTitle>
+                                                    <DialogDescription className="text-white/50">Sélectionnez un SD (Bug/Évolution) ouvert pour le rattacher à cet incident.</DialogDescription>
+                                                </DialogHeader>
+                                                <div className="space-y-3 py-2">
+                                                    <Input
+                                                        placeholder="Rechercher un SD…"
+                                                        value={sdSearchTerm}
+                                                        onChange={(e) => setSdSearchTerm(e.target.value)}
+                                                        className="bg-white/5 border-white/10 text-white"
+                                                    />
+                                                    <div className="max-h-60 overflow-y-auto space-y-1">
+                                                        {(openSDs || []).filter(sd => !sdSearchTerm || sd.title.toLowerCase().includes(sdSearchTerm.toLowerCase())).map((sd: any) => (
+                                                            <button
+                                                                key={sd.id}
+                                                                onClick={() => setSelectedSdId(sd.id)}
+                                                                className={`w-full text-left flex items-center gap-2 p-3 rounded-lg transition-colors ${selectedSdId === sd.id ? 'bg-purple-500/20 border border-purple-500/30' : 'bg-white/[0.02] hover:bg-white/[0.05] border border-transparent'}`}
+                                                            >
+                                                                <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${sd.priority === 'critique' ? 'bg-rose-500/20 text-rose-300' : sd.priority === 'haute' ? 'bg-orange-500/20 text-orange-300' : 'bg-white/5 text-white/40'}`}>{sd.priority}</span>
+                                                                <span className="text-white/70 text-xs truncate flex-1">{sd.title}</span>
+                                                                <span className="text-white/20 text-[9px]">{sd.status}</span>
+                                                            </button>
+                                                        ))}
+                                                        {(openSDs || []).length === 0 && <p className="text-center text-white/20 text-sm py-4">Aucun SD ouvert.</p>}
+                                                    </div>
+                                                </div>
+                                                <DialogFooter>
+                                                    <button
+                                                        disabled={!selectedSdId || isPending}
+                                                        onClick={() => startTransition(async () => {
+                                                            if (selectedSdId) {
+                                                                await linkTicketToSD(ticket.id, selectedSdId)
+                                                                queryClient.invalidateQueries({ queryKey: ['ticket', ticketId] })
+                                                                setSdLinkModalOpen(false)
+                                                                setSelectedSdId(null)
+                                                                setSdSearchTerm('')
+                                                            }
+                                                        })}
+                                                        className="px-4 py-2 rounded-xl bg-purple-500 text-white font-semibold hover:bg-purple-600 disabled:opacity-50 disabled:pointer-events-none transition-colors"
+                                                    >
+                                                        {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Lier'}
+                                                    </button>
+                                                </DialogFooter>
+                                            </DialogContent>
+                                        </Dialog>
+                                    )}
+                                    {(!myProfile?.role || ['CLIENT', 'COM', 'SAV1', 'SAV2'].includes(myProfile.role)) && (
+                                        <p className="text-white/20 text-sm">Aucun bug logiciel associé.</p>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Section pour tickets SD : afficher les incidents HL rattachés */}
+                    {ticket.category === 'DEV' && (linkedHLTickets || []).length > 0 && (
+                        <div className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl">
+                            <h3 className="text-lg font-bold text-white tracking-wide flex items-center gap-2 mb-4">
+                                <Link2 className="w-5 h-5 text-cyan-400" />
+                                Incidents (HL) Rattachés
+                                <span className="ml-auto text-xs font-bold text-white/30 bg-white/5 px-2 py-0.5 rounded-lg">{(linkedHLTickets || []).length}</span>
+                            </h3>
+                            <div className="space-y-2">
+                                {(linkedHLTickets || []).map((hl: any) => {
+                                    const store = Array.isArray(hl.store) ? hl.store[0] : hl.store
+                                    return (
+                                        <a key={hl.id} href={`/tickets/${hl.id}`} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] transition-colors group">
+                                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${hl.status === 'ferme' ? 'bg-white/5 text-white/30 border-white/10' : hl.status === 'resolu' ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' : 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30'}`}>{hl.status}</span>
+                                            <span className="text-white/60 text-xs truncate flex-1">{hl.title}</span>
+                                            {store?.name && <span className="text-white/20 text-[10px] shrink-0">{store.name}</span>}
+                                            <ExternalLink className="w-3 h-3 text-white/20 group-hover:text-cyan-400 transition-colors shrink-0" />
+                                        </a>
+                                    )
+                                })}
+                            </div>
+                        </div>
                     )}
 
                     {/* Pièces jointes du ticket */}
@@ -345,95 +574,177 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                         </div>
                     </div>
 
-                    {/* Fil de discussion */}
-                    <div className="space-y-4">
-                        <h3 className="text-lg font-bold text-white tracking-wide">Échanges</h3>
+                    {/* ═══ SPRINT 22 : TABS Commentaires + Historique ═══ */}
+                    <Tabs defaultValue="comments" className="w-full">
+                        <TabsList className="bg-white/5 border border-white/10 rounded-xl p-1 w-fit">
+                            <TabsTrigger value="comments" className="data-[state=active]:bg-indigo-500/20 data-[state=active]:text-indigo-300 data-[state=active]:border-indigo-500/30 rounded-lg px-4 py-2 text-sm font-semibold text-white/50 border border-transparent transition-all gap-2">
+                                <MessageSquare className="w-4 h-4" />
+                                Commentaires & Chat
+                            </TabsTrigger>
+                            <TabsTrigger value="history" className="data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-300 data-[state=active]:border-purple-500/30 rounded-lg px-4 py-2 text-sm font-semibold text-white/50 border border-transparent transition-all gap-2">
+                                <History className="w-4 h-4" />
+                                Historique
+                            </TabsTrigger>
+                        </TabsList>
 
-                        {isLoadingComments ? (
-                            <div className="flex justify-center p-4"><Loader2 className="w-6 h-6 animate-spin text-white/30" /></div>
-                        ) : comments?.length === 0 ? (
-                            <div className="p-8 text-center text-white/40 bg-white/5 rounded-2xl border border-white/10 border-dashed">
-                                Aucun commentaire pour le moment.
-                            </div>
-                        ) : (
+                        {/* Onglet Commentaires */}
+                        <TabsContent value="comments" className="mt-4 space-y-4">
+                            {/* Fil de discussion */}
                             <div className="space-y-4">
-                                {comments?.map((comment) => (
-                                    <div
-                                        key={comment.id}
-                                        className={`p-5 rounded-2xl border backdrop-blur-md shadow-lg transition-all ${comment.is_internal
-                                            ? 'bg-amber-500/5 border-amber-500/20' // Style Note Interne
-                                            : 'bg-white/5 border-white/10' // Style Normal
-                                            }`}
-                                    >
-                                        <div className="flex items-center justify-between mb-3">
-                                            <div className="flex items-center gap-3">
-                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border ${comment.is_internal ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-white/10 text-white/70 border-white/20'
-                                                    }`}>
-                                                    {comment.author?.first_name?.[0]}{comment.author?.last_name?.[0]}
+                                {isLoadingComments ? (
+                                    <div className="flex justify-center p-4"><Loader2 className="w-6 h-6 animate-spin text-white/30" /></div>
+                                ) : comments?.length === 0 ? (
+                                    <div className="p-8 text-center text-white/40 bg-white/5 rounded-2xl border border-white/10 border-dashed">
+                                        Aucun commentaire pour le moment.
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {comments?.map((comment) => (
+                                            <div
+                                                key={comment.id}
+                                                className={`p-5 rounded-2xl border backdrop-blur-md shadow-lg transition-all ${comment.is_internal
+                                                    ? 'bg-amber-500/5 border-amber-500/20'
+                                                    : 'bg-white/5 border-white/10'
+                                                    }`}
+                                            >
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border ${comment.is_internal ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-white/10 text-white/70 border-white/20'
+                                                            }`}>
+                                                            {comment.author?.first_name?.[0]}{comment.author?.last_name?.[0]}
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-medium text-white flex items-center gap-2">
+                                                                {comment.author?.first_name} {comment.author?.last_name}
+                                                                <span className="text-[10px] px-1.5 py-0.5 bg-white/10 rounded-md text-white/50">{comment.author?.role}</span>
+                                                            </p>
+                                                            <p className="text-xs text-white/40">
+                                                                il y a {formatDistanceToNow(new Date(comment.created_at), { addSuffix: false, locale: fr })}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    {comment.is_internal && (
+                                                        <div className="flex items-center gap-1.5 text-amber-400/80 bg-amber-400/10 px-2 py-1 rounded-md text-xs font-medium border border-amber-400/20">
+                                                            <Lock className="w-3 h-3" /> Note interne
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                <div>
-                                                    <p className="text-sm font-medium text-white flex items-center gap-2">
-                                                        {comment.author?.first_name} {comment.author?.last_name}
-                                                        <span className="text-[10px] px-1.5 py-0.5 bg-white/10 rounded-md text-white/50">{comment.author?.role}</span>
-                                                    </p>
-                                                    <p className="text-xs text-white/40">
-                                                        il y a {formatDistanceToNow(new Date(comment.created_at), { addSuffix: false, locale: fr })}
-                                                    </p>
-                                                </div>
+                                                <p className={`text-sm leading-relaxed whitespace-pre-wrap ${comment.is_internal ? 'text-amber-100/90' : 'text-white/80'}`}>
+                                                    {comment.content}
+                                                </p>
                                             </div>
-                                            {comment.is_internal && (
-                                                <div className="flex items-center gap-1.5 text-amber-400/80 bg-amber-400/10 px-2 py-1 rounded-md text-xs font-medium border border-amber-400/20">
-                                                    <Lock className="w-3 h-3" /> Note interne
-                                                </div>
-                                            )}
-                                        </div>
-                                        <p className={`text-sm leading-relaxed whitespace-pre-wrap ${comment.is_internal ? 'text-amber-100/90' : 'text-white/80'}`}>
-                                            {comment.content}
-                                        </p>
+                                        ))}
                                     </div>
-                                ))}
+                                )}
                             </div>
-                        )}
-                    </div>
 
-                    {/* Formulaire de réponse */}
-                    <form onSubmit={handleSendComment} className="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl flex flex-col gap-3">
-                        <textarea
-                            value={commentContent}
-                            onChange={(e) => setCommentContent(e.target.value)}
-                            placeholder="Écrivez votre réponse..."
-                            className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-y min-h-[120px]"
-                            disabled={isPending}
-                        />
-                        <div className="flex items-center justify-between">
-                            <label className="flex items-center gap-2 cursor-pointer group">
-                                <div className="relative flex items-center justify-center w-5 h-5 rounded border border-white/20 bg-black/20 group-hover:border-amber-400/50 transition-colors">
-                                    <input
-                                        type="checkbox"
-                                        className="peer sr-only"
-                                        checked={isInternal}
-                                        onChange={(e) => setIsInternal(e.target.checked)}
-                                        disabled={isPending}
-                                    />
-                                    <div className="absolute inset-0 bg-amber-500 rounded opacity-0 peer-checked:opacity-100 transition-opacity flex items-center justify-center">
-                                        <CheckCircle2 className="w-3 h-3 text-white" />
-                                    </div>
+                            {/* Formulaire de réponse */}
+                            <form onSubmit={handleSendComment} className="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl flex flex-col gap-3">
+                                <textarea
+                                    value={commentContent}
+                                    onChange={(e) => setCommentContent(e.target.value)}
+                                    placeholder="Écrivez votre réponse..."
+                                    className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-y min-h-[120px]"
+                                    disabled={isPending}
+                                />
+                                <div className="flex items-center justify-between">
+                                    <label className="flex items-center gap-2 cursor-pointer group">
+                                        <div className="relative flex items-center justify-center w-5 h-5 rounded border border-white/20 bg-black/20 group-hover:border-amber-400/50 transition-colors">
+                                            <input
+                                                type="checkbox"
+                                                className="peer sr-only"
+                                                checked={isInternal}
+                                                onChange={(e) => setIsInternal(e.target.checked)}
+                                                disabled={isPending}
+                                            />
+                                            <div className="absolute inset-0 bg-amber-500 rounded opacity-0 peer-checked:opacity-100 transition-opacity flex items-center justify-center">
+                                                <CheckCircle2 className="w-3 h-3 text-white" />
+                                            </div>
+                                        </div>
+                                        <span className={`text-sm font-medium transition-colors ${isInternal ? 'text-amber-400' : 'text-white/50'}`}>
+                                            Note interne privée
+                                        </span>
+                                    </label>
+
+                                    <button
+                                        type="submit"
+                                        disabled={isPending || !commentContent.trim()}
+                                        className="px-6 py-2.5 bg-indigo-500 hover:bg-indigo-400 disabled:bg-indigo-500/50 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl transition-colors flex items-center gap-2 shadow-lg shadow-indigo-500/20"
+                                    >
+                                        {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                                        Envoyer
+                                    </button>
                                 </div>
-                                <span className={`text-sm font-medium transition-colors ${isInternal ? 'text-amber-400' : 'text-white/50'}`}>
-                                    Note interne privée
-                                </span>
-                            </label>
+                            </form>
+                        </TabsContent>
 
-                            <button
-                                type="submit"
-                                disabled={isPending || !commentContent.trim()}
-                                className="px-6 py-2.5 bg-indigo-500 hover:bg-indigo-400 disabled:bg-indigo-500/50 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl transition-colors flex items-center gap-2 shadow-lg shadow-indigo-500/20"
-                            >
-                                {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                                Envoyer
-                            </button>
-                        </div>
-                    </form>
+                        {/* Onglet Historique (Audit Logs) */}
+                        <TabsContent value="history" className="mt-4">
+                            <div className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl">
+                                <h3 className="text-sm font-bold tracking-wider text-purple-300/80 uppercase flex items-center gap-2 mb-6">
+                                    <History className="w-4 h-4" />
+                                    Chronologie du ticket
+                                </h3>
+
+                                {isLoadingAuditLogs ? (
+                                    <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-white/30" /></div>
+                                ) : !auditLogs || auditLogs.length === 0 ? (
+                                    <div className="p-8 text-center text-white/30 border border-dashed border-white/10 rounded-xl">
+                                        <History className="w-8 h-8 mx-auto mb-3 text-white/10" />
+                                        Aucun événement enregistré pour ce ticket.
+                                    </div>
+                                ) : (
+                                    <div className="relative">
+                                        {/* Ligne verticale */}
+                                        <div className="absolute left-[11px] top-2 bottom-2 w-px bg-gradient-to-b from-purple-500/30 via-white/10 to-transparent" />
+
+                                        <div className="space-y-4">
+                                            {auditLogs.map((log) => {
+                                                const config = auditActionConfig[log.action] || { label: log.action, icon: <Zap className="w-3 h-3" />, color: 'bg-white/20' }
+                                                return (
+                                                    <div key={log.id} className="flex items-start gap-4 group">
+                                                        {/* Pastille */}
+                                                        <div className={`relative z-10 w-6 h-6 rounded-full ${config.color} flex items-center justify-center text-white shadow-lg shrink-0 ring-4 ring-[#0a0a1a] group-hover:scale-110 transition-transform`}>
+                                                            {config.icon}
+                                                        </div>
+
+                                                        {/* Contenu */}
+                                                        <div className="flex-1 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-all min-w-0">
+                                                            <div className="flex items-center justify-between gap-2">
+                                                                <p className="text-sm text-white/80 font-medium">
+                                                                    {config.label}
+                                                                    {log.user && (
+                                                                        <span className="text-white/40 font-normal"> par {log.user.first_name} {log.user.last_name}</span>
+                                                                    )}
+                                                                </p>
+                                                                <span className="text-[10px] text-white/20 shrink-0">
+                                                                    {formatDistanceToNow(new Date(log.created_at), { addSuffix: true, locale: fr })}
+                                                                </span>
+                                                            </div>
+                                                            {log.details && Object.keys(log.details).length > 0 && (
+                                                                <div className="mt-1.5 space-y-0.5">
+                                                                    {log.details.from && log.details.to && (
+                                                                        <p className="text-xs text-white/30">
+                                                                            <span className="text-white/20">{log.details.from}</span>
+                                                                            <span className="mx-1.5">→</span>
+                                                                            <span className="text-white/50 font-medium">{log.details.to}</span>
+                                                                        </p>
+                                                                    )}
+                                                                    {log.details.message && (
+                                                                        <p className="text-xs text-white/30 italic truncate">« {log.details.message} »</p>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </TabsContent>
+                    </Tabs>
                 </div>
 
                 {/* COLONNE DROITE (30%) : Infos & Actions */}
@@ -636,7 +947,13 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                     <select
                                         className="w-full bg-black/40 border border-white/10 text-white text-sm rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 appearance-none disabled:opacity-50"
                                         value={ticket.status}
-                                        onChange={(e) => handleChangeStatus(e.target.value)}
+                                        onChange={(e) => {
+                                            if (e.target.value === 'resolu' && ticket.category === 'DEV') {
+                                                setResolveSDModalOpen(true)
+                                            } else {
+                                                handleChangeStatus(e.target.value)
+                                            }
+                                        }}
                                         disabled={isPending || ticket.status === 'resolu' || ticket.status === 'suspendu'}
                                     >
                                         <option value="nouveau" disabled={ticket.status !== 'nouveau'}>Nouveau</option>
@@ -646,6 +963,90 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                         <option value="suspendu" disabled>Suspendu (Bouton⬇️)</option>
                                         <option value="resolu">Résolu</option>
                                     </select>
+
+                                    {/* BOUTON RÉSOUDRE SD DÉDIÉ pour tickets DEV */}
+                                    {ticket.category === 'DEV' && ticket.status !== 'resolu' && (
+                                        <button
+                                            onClick={() => setResolveSDModalOpen(true)}
+                                            disabled={isPending}
+                                            className="w-full relative group overflow-hidden rounded-xl p-3 border border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 text-sm font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:shadow-[0_0_25px_rgba(16,185,129,0.4)]"
+                                        >
+                                            <CheckCircle2 className="w-4 h-4" />
+                                            Résoudre ce SD
+                                            {hlCount > 0 && (
+                                                <span className="ml-1 px-1.5 py-0.5 rounded bg-emerald-500/30 text-[10px] font-bold">
+                                                    + {hlCount} HL
+                                                </span>
+                                            )}
+                                        </button>
+                                    )}
+
+                                    {/* Modale Résolution SD en cascade (Sprint 22) */}
+                                    <Dialog open={resolveSDModalOpen} onOpenChange={setResolveSDModalOpen}>
+                                        <DialogContent className="bg-zinc-900 border-white/10 text-white sm:max-w-md">
+                                            <DialogHeader>
+                                                <DialogTitle className="text-xl font-bold text-emerald-300 flex items-center gap-2">
+                                                    <CheckCircle2 className="w-5 h-5" />
+                                                    Résoudre ce SD
+                                                </DialogTitle>
+                                                <DialogDescription className="text-white/60">
+                                                    Marquez ce ticket SD comme résolu. Vous pouvez aussi clôturer automatiquement tous les incidents HL liés.
+                                                </DialogDescription>
+                                            </DialogHeader>
+                                            <div className="space-y-4 py-4">
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="resolveSdMsg" className="text-sm font-medium text-white/80">Message de résolution (Requis)</Label>
+                                                    <Textarea
+                                                        id="resolveSdMsg"
+                                                        placeholder="Décrivez le correctif apporté…"
+                                                        value={resolveSDMessage}
+                                                        onChange={(e) => setResolveSDMessage(e.target.value)}
+                                                        className="bg-black/40 border-white/10 text-white focus:ring-emerald-500/50 min-h-[100px]"
+                                                    />
+                                                </div>
+
+                                                {hlCount > 0 && (
+                                                    <label className="flex items-start gap-3 p-3 rounded-xl bg-purple-500/5 border border-purple-500/15 cursor-pointer group">
+                                                        <div className="relative flex items-center justify-center w-5 h-5 mt-0.5 rounded border border-white/20 bg-black/20 group-hover:border-emerald-400/50 transition-colors shrink-0">
+                                                            <input
+                                                                type="checkbox"
+                                                                className="peer sr-only"
+                                                                checked={resolveSDCloseLinked}
+                                                                onChange={(e) => setResolveSDCloseLinked(e.target.checked)}
+                                                            />
+                                                            <div className="absolute inset-0 bg-emerald-500 rounded opacity-0 peer-checked:opacity-100 transition-opacity flex items-center justify-center">
+                                                                <CheckCircle2 className="w-3 h-3 text-white" />
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-medium text-white">
+                                                                Clôturer automatiquement les <span className="text-emerald-400 font-bold">{hlCount}</span> ticket{hlCount > 1 ? 's' : ''} HL associé{hlCount > 1 ? 's' : ''}
+                                                            </p>
+                                                            <p className="text-xs text-white/40 mt-0.5">
+                                                                Un commentaire de résolution automatique sera ajouté dans chaque ticket HL.
+                                                            </p>
+                                                        </div>
+                                                    </label>
+                                                )}
+                                            </div>
+                                            <DialogFooter>
+                                                <button
+                                                    onClick={() => setResolveSDModalOpen(false)}
+                                                    className="px-4 py-2 rounded-xl text-white/70 hover:bg-white/10 transition-colors"
+                                                >
+                                                    Annuler
+                                                </button>
+                                                <button
+                                                    onClick={handleResolveSD}
+                                                    disabled={!resolveSDMessage.trim() || isPending}
+                                                    className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg shadow-emerald-500/20"
+                                                >
+                                                    {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                                                    Résoudre
+                                                </button>
+                                            </DialogFooter>
+                                        </DialogContent>
+                                    </Dialog>
 
                                     <div className="h-px bg-white/10 w-full my-4" />
 

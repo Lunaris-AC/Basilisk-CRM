@@ -31,6 +31,8 @@ export interface TicketWithRelations {
     sav_details?: { serial_number: string | null; product_reference: string | null; hardware_status: string | null } | null
     formateur_details?: { travel_date: string | null; training_location: string | null; training_type: string | null } | null
     dev_details?: { type: 'BUG' | 'EVOLUTION'; reproduction_steps: string | null; impact: string | null; need_description: string | null; expected_process: string | null; complexity: string | null } | null
+    linked_sd_id?: string | null
+    linked_sd?: { id: string; title: string; status: string; priority: string } | null
 }
 
 const formatTickets = (data: any[] | null): TicketWithRelations[] => {
@@ -313,6 +315,7 @@ export async function getTicketById(id: string): Promise<TicketWithRelations | n
         .from('tickets')
         .select(`
             id, title, description, status, priority, escalation_level, created_at, category,
+            linked_sd_id,
             client:clients (
                 id,
                 company,
@@ -424,4 +427,77 @@ export async function getActiveAssignees() {
 
     if (error) throw new Error(error.message)
     return data
+}
+
+// ============== SPRINT 22 : AUDIT LOGS ==============
+
+export interface AuditLogEntry {
+    id: string
+    ticket_id: string
+    user_id: string | null
+    action: string
+    details: Record<string, any>
+    created_at: string
+    user: {
+        first_name: string
+        last_name: string
+        role: string
+    } | null
+}
+
+/**
+ * Récupère l'historique des actions (audit logs) d'un ticket.
+ */
+export async function getTicketAuditLogs(ticketId: string): Promise<AuditLogEntry[]> {
+    const supabase = createClient()
+
+    // 1. Fetch audit logs with select('*') for schema flexibility
+    const { data: logs, error } = await supabase
+        .from('ticket_audit_logs')
+        .select('*')
+        .eq('ticket_id', ticketId)
+        .order('created_at', { ascending: false })
+
+    if (error) {
+        console.error('Erreur getTicketAuditLogs:', JSON.stringify(error, null, 2))
+        return []
+    }
+
+    if (!logs || logs.length === 0) return []
+
+    // 2. Detect the user ID column (could be user_id or author_id etc.)
+    const sampleRow = logs[0] as Record<string, any>
+    const userIdKey = 'user_id' in sampleRow ? 'user_id'
+        : 'author_id' in sampleRow ? 'author_id'
+            : 'performed_by' in sampleRow ? 'performed_by'
+                : null
+
+    // 3. Batch-fetch profiles for all unique user ids
+    let profileMap: Record<string, { first_name: string; last_name: string; role: string }> = {}
+
+    if (userIdKey) {
+        const userIds = [...new Set(logs.map(l => (l as any)[userIdKey]).filter(Boolean))] as string[]
+
+        if (userIds.length > 0) {
+            const { data: profiles } = await supabase
+                .from('profiles')
+                .select('id, first_name, last_name, role')
+                .in('id', userIds)
+
+            if (profiles) {
+                profileMap = Object.fromEntries(profiles.map(p => [p.id, { first_name: p.first_name, last_name: p.last_name, role: p.role }]))
+            }
+        }
+    }
+
+    // 4. Merge into AuditLogEntry shape
+    return logs.map((log: any) => ({
+        id: log.id,
+        ticket_id: log.ticket_id,
+        user_id: userIdKey ? log[userIdKey] : null,
+        action: log.action || log.event_type || 'unknown',
+        details: log.details || log.metadata || {},
+        created_at: log.created_at,
+        user: userIdKey && log[userIdKey] ? profileMap[log[userIdKey]] || null : null,
+    }))
 }

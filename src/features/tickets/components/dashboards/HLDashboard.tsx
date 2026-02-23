@@ -1,8 +1,8 @@
 'use client'
 
-import { useMyTickets, useMyStatsByDate, useGlobalStats, useAuthUser } from '@/features/tickets/api/useTickets'
+import { useMyTickets, useMyStatsByDate, useGlobalStats } from '@/features/tickets/api/useTickets'
 import { TicketTable } from '@/features/tickets/components/TicketTable'
-import { Plus, Loader2, ChevronDown, ChevronUp, Pause, TrendingUp, Users, AlertTriangle, Clock, BarChart3, CalendarDays } from 'lucide-react'
+import { Plus, Loader2, ChevronDown, ChevronUp, Pause, AlertTriangle, Clock, CalendarDays, Inbox, Activity, Shield, Zap } from 'lucide-react'
 import { useState } from 'react'
 import { pickRandomTicket } from '@/features/tickets/actions'
 import { TicketFilters } from '@/components/TicketFilters'
@@ -13,26 +13,27 @@ import { fr } from 'date-fns/locale'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
-// Mini KPI Card
-function KpiCard({ label, value, color, icon: Icon }: { label: string; value: number | string; color: string; icon?: any }) {
-    const colorMap: Record<string, string> = {
-        indigo: 'bg-indigo-500/10 border-indigo-500/20 text-indigo-300',
-        rose: 'bg-rose-500/10 border-rose-500/20 text-rose-300',
-        amber: 'bg-amber-500/10 border-amber-500/20 text-amber-300',
-        emerald: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300',
-        purple: 'bg-purple-500/10 border-purple-500/20 text-purple-300',
-        sky: 'bg-sky-500/10 border-sky-500/20 text-sky-300',
-        pink: 'bg-pink-500/10 border-pink-500/20 text-pink-300',
-        teal: 'bg-teal-500/10 border-teal-500/20 text-teal-300',
-        white: 'bg-white/5 border-white/10 text-white/80',
+// Barre de répartition inline
+function DistributionBar({ label, value, total, color }: { label: string; value: number; total: number; color: string }) {
+    const pct = total > 0 ? Math.round((value / total) * 100) : 0
+    const colorMap: Record<string, { bar: string; text: string; bg: string }> = {
+        indigo: { bar: 'bg-indigo-500', text: 'text-indigo-300', bg: 'bg-indigo-500/10' },
+        emerald: { bar: 'bg-emerald-500', text: 'text-emerald-300', bg: 'bg-emerald-500/10' },
+        amber: { bar: 'bg-amber-500', text: 'text-amber-300', bg: 'bg-amber-500/10' },
+        purple: { bar: 'bg-purple-500', text: 'text-purple-300', bg: 'bg-purple-500/10' },
+        teal: { bar: 'bg-teal-500', text: 'text-teal-300', bg: 'bg-teal-500/10' },
+        sky: { bar: 'bg-sky-500', text: 'text-sky-300', bg: 'bg-sky-500/10' },
+        pink: { bar: 'bg-pink-500', text: 'text-pink-300', bg: 'bg-pink-500/10' },
+        rose: { bar: 'bg-rose-500', text: 'text-rose-300', bg: 'bg-rose-500/10' },
     }
+    const c = colorMap[color] || colorMap.indigo
     return (
-        <div className={`p-3 rounded-xl border backdrop-blur-md ${colorMap[color] || colorMap.white} transition-all hover:scale-[1.02]`}>
-            <div className="flex items-center justify-between gap-1 mb-1">
-                <span className="text-[10px] font-semibold tracking-wider uppercase opacity-70 truncate">{label}</span>
-                {Icon && <Icon className="w-3 h-3 opacity-50 shrink-0" />}
+        <div className="flex items-center gap-3">
+            <span className={`text-xs font-bold w-20 truncate ${c.text}`}>{label}</span>
+            <div className="flex-1 h-2 rounded-full bg-white/5 overflow-hidden">
+                <div className={`h-full rounded-full ${c.bar} transition-all duration-500`} style={{ width: `${pct}%` }} />
             </div>
-            <p className="text-xl font-black tracking-tight">{value}</p>
+            <span className={`text-xs font-black min-w-[2rem] text-right ${c.text}`}>{value}</span>
         </div>
     )
 }
@@ -50,25 +51,24 @@ export function HLDashboard() {
     const [datePickerOpen, setDatePickerOpen] = useState(false)
     const { data: personalStats } = useMyStatsByDate(statsDate.toISOString())
 
-    // Flux tendu : exclure les tickets suspendus du calcul "1 ticket actif max"
+    // Flux tendu : exclure les tickets suspendus
     const activeTickets = tickets?.filter(t => t.status !== 'resolu' && t.status !== 'ferme' && t.status !== 'suspendu') || []
     const suspendedTickets = tickets?.filter(t => t.status === 'suspendu') || []
     const hasActiveTickets = activeTickets.length > 0
 
+    const slaCount = globalStats?.slaViolations ?? 0
+    const totalForServices = (globalStats?.byCategory.HL ?? 0) + (globalStats?.byCategory.COMMERCE ?? 0) + (globalStats?.byCategory.SAV ?? 0) + (globalStats?.byCategory.FORMATION ?? 0) + (globalStats?.byCategory.DEV ?? 0)
+    const totalForLevels = (globalStats?.byLevel.N1 ?? 0) + (globalStats?.byLevel.N2 ?? 0) + (globalStats?.byLevel.N3 ?? 0) + (globalStats?.byLevel.N4 ?? 0)
+
     return (
         <div className="space-y-8 pb-10">
 
-            {/* HEADER & BOUTON GÉANT PIOCHER */}
+            {/* HEADER & BOUTON PIOCHER */}
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
                 <div>
-                    <h1 className="text-4xl font-extrabold tracking-tight text-white mb-2">
-                        Espace Personnel
-                    </h1>
-                    <p className="text-white/60 font-medium">
-                        Vos tickets en cours et vos statistiques.
-                    </p>
+                    <h1 className="text-4xl font-extrabold tracking-tight text-white mb-2">Espace Personnel</h1>
+                    <p className="text-white/60 font-medium">Vue d'ensemble et statistiques.</p>
                 </div>
-
                 <button
                     onClick={async () => {
                         setIsPicking(true)
@@ -78,19 +78,13 @@ export function HLDashboard() {
                             queryClient.invalidateQueries({ queryKey: ['myStatsByDate'] })
                             queryClient.invalidateQueries({ queryKey: ['globalStats'] })
                             queryClient.invalidateQueries({ queryKey: ['unassignedTickets'] })
-                        } else if (res?.error) {
-                            alert(res.error)
-                        }
+                        } else if (res?.error) { alert(res.error) }
                         setIsPicking(false)
                     }}
                     disabled={isPicking || hasActiveTickets}
-                    title={hasActiveTickets ? "Vous devez d'abord traiter votre ticket en cours." : "Piocher le ticket le plus ancien"}
+                    title={hasActiveTickets ? "Terminez votre ticket en cours." : "Piocher le ticket le plus ancien"}
                     className={`group relative px-8 py-4 rounded-2xl overflow-hidden transition-all shadow-xl border 
-                        ${hasActiveTickets
-                            ? 'bg-zinc-800/50 border-white/5 opacity-60 cursor-not-allowed shadow-none'
-                            : 'hover:scale-105 active:scale-95 shadow-indigo-500/20 border-indigo-400/30'
-                        } 
-                        disabled:opacity-50`}
+                        ${hasActiveTickets ? 'bg-zinc-800/50 border-white/5 opacity-60 cursor-not-allowed shadow-none' : 'hover:scale-105 active:scale-95 shadow-indigo-500/20 border-indigo-400/30'} disabled:opacity-50`}
                 >
                     {!hasActiveTickets && (
                         <>
@@ -99,125 +93,169 @@ export function HLDashboard() {
                         </>
                     )}
                     <div className="relative flex items-center justify-center gap-3 text-white font-bold text-lg tracking-wide">
-                        {isPicking ? (
-                            <Loader2 className="w-6 h-6 animate-spin" />
-                        ) : (
-                            <Plus className={`w-6 h-6 ${hasActiveTickets ? 'opacity-50' : ''}`} />
-                        )}
-                        <span>
-                            {isPicking
-                                ? 'RECHERCHE...'
-                                : hasActiveTickets
-                                    ? '1 TICKET MAXIMUM'
-                                    : suspendedTickets.length > 0
-                                        ? `PIOCHER (${suspendedTickets.length} en pause)`
-                                        : 'PIOCHER UN TICKET'
-                            }
-                        </span>
+                        {isPicking ? <Loader2 className="w-6 h-6 animate-spin" /> : <Plus className={`w-6 h-6 ${hasActiveTickets ? 'opacity-50' : ''}`} />}
+                        <span>{isPicking ? 'RECHERCHE...' : hasActiveTickets ? '1 TICKET MAXIMUM' : suspendedTickets.length > 0 ? `PIOCHER (${suspendedTickets.length} en pause)` : 'PIOCHER UN TICKET'}</span>
                     </div>
                 </button>
             </div>
 
-            {/* ===== GLOBAL STATS KPI GRID ===== */}
-            <div>
-                <h2 className="text-xs font-bold tracking-widest text-white/40 uppercase mb-3 flex items-center gap-2">
-                    <BarChart3 className="w-3.5 h-3.5" />
-                    Statistiques Globales — Portail
+            {/* ═══════════════════════════════════════════════════════════ */}
+            {/* ÉTAPE 1 — MÉTÉO GLOBALE (Top Level)                       */}
+            {/* ═══════════════════════════════════════════════════════════ */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Total Portail */}
+                <div className="relative group p-6 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-indigo-500/5 border border-indigo-500/20 backdrop-blur-xl overflow-hidden transition-all hover:border-indigo-500/40">
+                    <div className="absolute -right-8 -top-8 w-28 h-28 bg-indigo-500/10 rounded-full blur-3xl group-hover:bg-indigo-500/15 transition-colors" />
+                    <div className="relative">
+                        <div className="flex items-center gap-2 mb-3">
+                            <Activity className="w-4 h-4 text-indigo-400" />
+                            <span className="text-xs font-bold tracking-widest text-indigo-400/80 uppercase">Total Portail</span>
+                        </div>
+                        <p className="text-5xl font-black tracking-tighter text-white">{globalStats?.totalTickets ?? '—'}</p>
+                        <p className="text-xs text-white/30 mt-1 font-medium">tickets ouverts</p>
+                    </div>
+                </div>
+
+                {/* File d'attente */}
+                <div className="relative group p-6 rounded-2xl bg-gradient-to-br from-amber-500/10 to-orange-500/5 border border-amber-500/25 backdrop-blur-xl overflow-hidden transition-all hover:border-amber-500/50">
+                    <div className="absolute -right-8 -top-8 w-28 h-28 bg-amber-500/10 rounded-full blur-3xl group-hover:bg-amber-500/15 transition-colors" />
+                    <div className="relative">
+                        <div className="flex items-center gap-2 mb-3">
+                            <Inbox className="w-4 h-4 text-amber-400" />
+                            <span className="text-xs font-bold tracking-widest text-amber-400/80 uppercase">File d'attente</span>
+                        </div>
+                        <p className="text-5xl font-black tracking-tighter text-white">{globalStats?.totalUnassigned ?? '—'}</p>
+                        <p className="text-xs text-white/30 mt-1 font-medium">non affectés</p>
+                    </div>
+                </div>
+
+                {/* SLA Dépassés */}
+                <div className={`relative group p-6 rounded-2xl backdrop-blur-xl overflow-hidden transition-all
+                    ${slaCount > 0
+                        ? 'bg-gradient-to-br from-rose-500/15 to-red-500/10 border border-rose-500/40 hover:border-rose-500/60'
+                        : 'bg-gradient-to-br from-emerald-500/10 to-green-500/5 border border-emerald-500/20 hover:border-emerald-500/40'
+                    }`}
+                >
+                    <div className={`absolute -right-8 -top-8 w-28 h-28 rounded-full blur-3xl transition-colors ${slaCount > 0 ? 'bg-rose-500/15 group-hover:bg-rose-500/20' : 'bg-emerald-500/10 group-hover:bg-emerald-500/15'}`} />
+                    {/* Pulse néon si SLA > 0 */}
+                    {slaCount > 0 && <div className="absolute inset-0 rounded-2xl border border-rose-500/40 animate-pulse" />}
+                    <div className="relative">
+                        <div className="flex items-center gap-2 mb-3">
+                            <AlertTriangle className={`w-4 h-4 ${slaCount > 0 ? 'text-rose-400' : 'text-emerald-400'}`} />
+                            <span className={`text-xs font-bold tracking-widest uppercase ${slaCount > 0 ? 'text-rose-400/80' : 'text-emerald-400/80'}`}>SLA Dépassés</span>
+                        </div>
+                        <p className={`text-5xl font-black tracking-tighter ${slaCount > 0 ? 'text-rose-300' : 'text-emerald-300'}`}>{slaCount}</p>
+                        <p className={`text-xs mt-1 font-medium ${slaCount > 0 ? 'text-rose-300/40' : 'text-emerald-300/40'}`}>
+                            {slaCount > 0 ? 'à traiter en urgence' : 'aucun dépassement'}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {/* ═══════════════════════════════════════════════════════════ */}
+            {/* ÉTAPE 2 — RADIOGRAPHIE (Middle Level — Répartitions)       */}
+            {/* ═══════════════════════════════════════════════════════════ */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Répartition par Service */}
+                <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/[0.07] backdrop-blur-md">
+                    <div className="flex items-center gap-2 mb-4">
+                        <Shield className="w-4 h-4 text-white/30" />
+                        <h3 className="text-xs font-bold tracking-widest text-white/40 uppercase">Répartition par Service</h3>
+                    </div>
+                    <div className="space-y-3">
+                        <DistributionBar label="Hotline" value={globalStats?.byCategory.HL ?? 0} total={totalForServices} color="indigo" />
+                        <DistributionBar label="Commerce" value={globalStats?.byCategory.COMMERCE ?? 0} total={totalForServices} color="emerald" />
+                        <DistributionBar label="SAV" value={globalStats?.byCategory.SAV ?? 0} total={totalForServices} color="amber" />
+                        <DistributionBar label="Formation" value={globalStats?.byCategory.FORMATION ?? 0} total={totalForServices} color="purple" />
+                        <DistributionBar label="DEV" value={globalStats?.byCategory.DEV ?? 0} total={totalForServices} color="teal" />
+                    </div>
+                </div>
+
+                {/* Répartition Support HL */}
+                <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/[0.07] backdrop-blur-md">
+                    <div className="flex items-center gap-2 mb-4">
+                        <Zap className="w-4 h-4 text-white/30" />
+                        <h3 className="text-xs font-bold tracking-widest text-white/40 uppercase">Répartition Support (HL)</h3>
+                    </div>
+                    <div className="space-y-3">
+                        <DistributionBar label="Niveau 1" value={globalStats?.byLevel.N1 ?? 0} total={totalForLevels} color="sky" />
+                        <DistributionBar label="Niveau 2" value={globalStats?.byLevel.N2 ?? 0} total={totalForLevels} color="purple" />
+                        <DistributionBar label="Niveau 3" value={globalStats?.byLevel.N3 ?? 0} total={totalForLevels} color="pink" />
+                        <DistributionBar label="Niveau 4" value={globalStats?.byLevel.N4 ?? 0} total={totalForLevels} color="rose" />
+                    </div>
+                </div>
+            </div>
+
+            {/* ═══════════════════════════════════════════════════════════ */}
+            {/* ÉTAPE 3 — FEUILLE DE TEMPS PERSONNELLE (Bottom Level)      */}
+            {/* ═══════════════════════════════════════════════════════════ */}
+            <hr className="border-white/10 my-2" />
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <h2 className="text-sm font-bold tracking-wide text-white/50 flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-cyan-400" />
+                    Feuille de Temps Personnelle
                 </h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2">
-                    <KpiCard label="Total" value={globalStats?.totalTickets ?? '—'} color="indigo" icon={TrendingUp} />
-                    <KpiCard label="File d'attente" value={globalStats?.totalUnassigned ?? '—'} color="amber" icon={Users} />
-                    <KpiCard label="SLA dépassés" value={globalStats?.slaViolations ?? '—'} color="rose" icon={AlertTriangle} />
-                    <KpiCard label="N1" value={globalStats?.byLevel.N1 ?? '—'} color="sky" />
-                    <KpiCard label="N2" value={globalStats?.byLevel.N2 ?? '—'} color="purple" />
-                    <KpiCard label="N3" value={globalStats?.byLevel.N3 ?? '—'} color="pink" />
-                    <KpiCard label="N4" value={globalStats?.byLevel.N4 ?? '—'} color="rose" />
-                    <KpiCard label="DEV" value={globalStats?.byCategory.DEV ?? '—'} color="teal" />
+
+                <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+                    <PopoverTrigger asChild>
+                        <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 hover:border-cyan-500/40 text-cyan-300/80 text-xs font-bold transition-all hover:bg-cyan-500/15">
+                            <CalendarDays className="w-3.5 h-3.5" />
+                            {format(statsDate, 'EEEE d MMMM yyyy', { locale: fr })}
+                        </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 bg-zinc-900/95 backdrop-blur-xl border-white/10 shadow-2xl" align="end">
+                        <Calendar
+                            mode="single"
+                            selected={statsDate}
+                            onSelect={(date) => { if (date) { setStatsDate(date); setDatePickerOpen(false) } }}
+                            locale={fr}
+                            disabled={{ after: new Date() }}
+                            className="rounded-xl"
+                            classNames={{
+                                months: "flex flex-col", month: "space-y-3",
+                                caption: "flex justify-center pt-1 relative items-center",
+                                caption_label: "text-sm font-bold text-white",
+                                nav: "flex items-center gap-1",
+                                nav_button: "h-7 w-7 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-colors inline-flex items-center justify-center",
+                                table: "w-full border-collapse", head_row: "flex",
+                                head_cell: "text-white/40 rounded-md w-9 font-medium text-[0.8rem]",
+                                row: "flex w-full mt-1",
+                                cell: "h-9 w-9 text-center text-sm p-0 relative",
+                                day: "h-9 w-9 p-0 font-medium rounded-lg hover:bg-cyan-500/20 hover:text-cyan-300 transition-colors text-white/70 inline-flex items-center justify-center",
+                                day_selected: "bg-cyan-500 text-black hover:bg-cyan-400 font-bold",
+                                day_today: "bg-white/10 text-white font-bold",
+                                day_outside: "text-white/20",
+                                day_disabled: "text-white/10 hover:bg-transparent",
+                            }}
+                        />
+                    </PopoverContent>
+                </Popover>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-5 rounded-2xl bg-cyan-500/[0.04] border border-cyan-500/15 backdrop-blur-md transition-all hover:border-cyan-500/30">
+                    <span className="text-cyan-400/60 text-xs font-bold uppercase tracking-wider">Mes tickets en cours</span>
+                    <p className="text-3xl font-black tracking-tight text-white mt-2">{activeTickets.length}</p>
                 </div>
-                {/* Ligne 2 : répartition services */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
-                    <KpiCard label="Commerce" value={globalStats?.byCategory.COMMERCE ?? '—'} color="emerald" />
-                    <KpiCard label="SAV" value={globalStats?.byCategory.SAV ?? '—'} color="amber" />
-                    <KpiCard label="Formation" value={globalStats?.byCategory.FORMATION ?? '—'} color="purple" />
-                    <KpiCard label="Hotline" value={globalStats?.byCategory.HL ?? '—'} color="indigo" />
+                <div className="p-5 rounded-2xl bg-cyan-500/[0.04] border border-cyan-500/15 backdrop-blur-md transition-all hover:border-cyan-500/30">
+                    <span className="text-cyan-400/60 text-xs font-bold uppercase tracking-wider">Créés à cette date</span>
+                    <p className="text-3xl font-black tracking-tight text-cyan-300 mt-2">{personalStats?.createdCount ?? '—'}</p>
+                </div>
+                <div className="p-5 rounded-2xl bg-cyan-500/[0.04] border border-cyan-500/15 backdrop-blur-md transition-all hover:border-cyan-500/30">
+                    <span className="text-cyan-400/60 text-xs font-bold uppercase tracking-wider">Fermés à cette date</span>
+                    <p className="text-3xl font-black tracking-tight text-cyan-300 mt-2">{personalStats?.closedCount ?? '—'}</p>
                 </div>
             </div>
 
-            {/* ===== FEUILLE DE TEMPS PERSONNELLE ===== */}
-            <div>
-                <div className="flex items-center gap-3 mb-3">
-                    <h2 className="text-xs font-bold tracking-widest text-white/40 uppercase flex items-center gap-2">
-                        <Clock className="w-3.5 h-3.5" />
-                        Feuille de Temps
-                    </h2>
-
-                    {/* DatePicker */}
-                    <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
-                        <PopoverTrigger asChild>
-                            <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:border-indigo-500/30 text-white/70 text-xs font-medium transition-all">
-                                <CalendarDays className="w-3.5 h-3.5 text-indigo-400" />
-                                {format(statsDate, 'EEEE d MMMM yyyy', { locale: fr })}
-                            </button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 bg-zinc-900/95 backdrop-blur-xl border-white/10 shadow-2xl" align="start">
-                            <Calendar
-                                mode="single"
-                                selected={statsDate}
-                                onSelect={(date) => { if (date) { setStatsDate(date); setDatePickerOpen(false) } }}
-                                locale={fr}
-                                disabled={{ after: new Date() }}
-                                className="rounded-xl"
-                                classNames={{
-                                    months: "flex flex-col",
-                                    month: "space-y-3",
-                                    caption: "flex justify-center pt-1 relative items-center",
-                                    caption_label: "text-sm font-bold text-white",
-                                    nav: "flex items-center gap-1",
-                                    nav_button: "h-7 w-7 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-colors inline-flex items-center justify-center",
-                                    table: "w-full border-collapse",
-                                    head_row: "flex",
-                                    head_cell: "text-white/40 rounded-md w-9 font-medium text-[0.8rem]",
-                                    row: "flex w-full mt-1",
-                                    cell: "h-9 w-9 text-center text-sm p-0 relative",
-                                    day: "h-9 w-9 p-0 font-medium rounded-lg hover:bg-indigo-500/20 hover:text-indigo-300 transition-colors text-white/70 inline-flex items-center justify-center",
-                                    day_selected: "bg-indigo-500 text-white hover:bg-indigo-400 font-bold",
-                                    day_today: "bg-white/10 text-white font-bold",
-                                    day_outside: "text-white/20",
-                                    day_disabled: "text-white/10 hover:bg-transparent",
-                                }}
-                            />
-                        </PopoverContent>
-                    </Popover>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md flex flex-col">
-                        <span className="text-white/50 text-sm font-medium mb-1">Mes tickets en cours</span>
-                        <span className="text-3xl font-bold tracking-tight text-white">{activeTickets.length}</span>
-                    </div>
-                    <div className="p-5 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 backdrop-blur-md flex flex-col">
-                        <span className="text-emerald-400/80 text-sm font-medium mb-1">Créés à cette date</span>
-                        <span className="text-3xl font-bold tracking-tight text-emerald-400">
-                            {personalStats?.createdCount ?? '—'}
-                        </span>
-                    </div>
-                    <div className="p-5 rounded-2xl bg-purple-500/5 border border-purple-500/20 backdrop-blur-md flex flex-col">
-                        <span className="text-purple-400/80 text-sm font-medium mb-1">Fermés à cette date</span>
-                        <span className="text-3xl font-bold tracking-tight text-purple-400">
-                            {personalStats?.closedCount ?? '—'}
-                        </span>
-                    </div>
-                </div>
-            </div>
-
+            {/* ═══════════════════════════════════════════════════════════ */}
+            {/* TICKETS                                                    */}
+            {/* ═══════════════════════════════════════════════════════════ */}
             <TicketFilters filters={filters} setFilters={setFilters} />
 
-            {/* LISTE DES TICKETS ACTIFS */}
             <h2 className="text-xl font-bold text-white mt-10 mb-4 tracking-wide">Mes Tickets Actifs</h2>
-
             <TicketTable tickets={activeTickets} isLoading={isLoading} error={error} showAssignButton={false} />
 
-            {/* SECTION TICKETS EN PAUSE (suspendus) */}
             {suspendedTickets.length > 0 && (
                 <div className="mt-8">
                     <button
@@ -226,13 +264,10 @@ export function HLDashboard() {
                     >
                         <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 group-hover:border-amber-500/40 transition-all">
                             <Pause className="w-4 h-4" />
-                            <span className="text-sm font-bold">
-                                En pause ({suspendedTickets.length})
-                            </span>
+                            <span className="text-sm font-bold">En pause ({suspendedTickets.length})</span>
                             {showSuspended ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                         </div>
                     </button>
-
                     {showSuspended && (
                         <div className="animate-in slide-in-from-top-2 duration-300">
                             <TicketTable tickets={suspendedTickets} isLoading={false} error={null} showAssignButton={false} />
@@ -240,7 +275,6 @@ export function HLDashboard() {
                     )}
                 </div>
             )}
-
         </div>
     )
 }

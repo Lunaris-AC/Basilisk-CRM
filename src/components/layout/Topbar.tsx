@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { LogOut, User } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { GlobalSearch } from '@/components/GlobalSearch'
 
 interface UserProfile {
     first_name: string
@@ -43,7 +44,12 @@ export function Topbar() {
     }
 
     return (
-        <header className="h-20 w-full flex items-center justify-end px-8 bg-black/20 backdrop-blur-md border-b border-white/5 sticky top-0 z-40">
+        <header className="h-20 w-full flex items-center justify-between px-8 bg-black/20 backdrop-blur-md border-b border-white/5 sticky top-0 z-40">
+            {/* Recherche "Google Style" */}
+            <div className="flex-1 max-w-xl">
+                <GlobalSearch />
+            </div>
+
             <div className="flex items-center gap-6">
 
                 {profile ? (

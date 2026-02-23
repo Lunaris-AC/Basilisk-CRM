@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getMyTickets, getUnassignedTickets, getMyDailyStats, getMyStatsByDate, getGlobalStats, getTicketById, getCommentsByTicket, getActiveAssignees, getSDs, TicketFilters, SDFilters } from './getTickets'
+import { getMyTickets, getUnassignedTickets, getMyDailyStats, getMyStatsByDate, getGlobalStats, getTicketById, getCommentsByTicket, getActiveAssignees, getSDs, getTicketAuditLogs, TicketFilters, SDFilters } from './getTickets'
 import { createClient } from '@/utils/supabase/client'
 
 // Hook utilitaire pour récupérer le UserID
@@ -96,5 +96,16 @@ export const useSDs = (filters?: SDFilters) => {
     return useQuery({
         queryKey: ['sds', filters],
         queryFn: () => getSDs(filters),
+    })
+}
+
+// ============== SPRINT 22 : HOOKS AUDIT LOGS ==============
+
+export const useTicketAuditLogs = (ticketId: string) => {
+    return useQuery({
+        queryKey: ['ticketAuditLogs', ticketId],
+        queryFn: () => getTicketAuditLogs(ticketId),
+        enabled: !!ticketId,
+        staleTime: 1000 * 60 * 2,
     })
 }

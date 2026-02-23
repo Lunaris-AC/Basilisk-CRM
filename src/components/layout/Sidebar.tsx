@@ -3,23 +3,30 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Ticket, Users, Settings, Inbox, Plus, Code2, FileText, FileCode } from 'lucide-react'
+import { LayoutDashboard, Ticket, Users, Settings, Inbox, Plus, Code2, FileText, FileCode, Eye, ShieldAlert, ChevronDown, BarChart3, HardDrive } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { CreateTicketModal } from '@/features/tickets/components/CreateTicketModal'
 
 const navigation = [
     { name: 'Dashboard Personnel', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Incidents (File)', href: '/incidents', icon: Inbox },
-    { name: 'Portail SD', href: '/sd', icon: Code2 },
+    { name: 'Incidents (File)', href: '/incidents', icon: Inbox, hideForClient: true },
+    { name: 'Portail SD', href: '/sd', icon: Code2, hideForClient: true },
+    { name: 'Parc Matériel', href: '/cmdb', icon: HardDrive, hideForClient: true, hideForStandard: true },
     { name: 'Documentation', href: '/documentation', icon: FileText },
     { name: 'Patch Notes', href: '/patch-notes', icon: FileCode },
-    { name: 'Clients', href: '/clients', icon: Users },
+    { name: 'Clients', href: '/clients', icon: Users, hideForClient: true },
     { name: 'Paramètres', href: '/parametres', icon: Settings },
+]
+
+const adminNav = [
+    { name: 'God Mode (Debug)', href: '/admin/debug', icon: ShieldAlert },
+    { name: 'Analytics (God\'s Eye)', href: '/admin/analytics', icon: BarChart3 },
 ]
 
 export function Sidebar() {
     const pathname = usePathname()
     const [createModalOpen, setCreateModalOpen] = useState(false)
+    const [adminOpen, setAdminOpen] = useState(true)
     const { data: profile } = useQuery({
         queryKey: ['my-profile-sidebar'],
         queryFn: async () => {
@@ -46,17 +53,22 @@ export function Sidebar() {
                 </div>
             </div>
 
-            <div className="flex-1 py-6 px-4 space-y-2">
+            <div className="flex-1 py-6 px-4 space-y-2 overflow-y-auto custom-scrollbar">
                 {/* Bouton Nouveau Ticket → ouvre la modale */}
-                <button
-                    onClick={() => setCreateModalOpen(true)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group w-full bg-gradient-to-r from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 text-white hover:from-indigo-500/30 hover:to-purple-500/30 hover:border-indigo-500/50"
-                >
-                    <Plus className="w-5 h-5 text-indigo-400" />
-                    <span className="font-semibold text-sm">Nouveau Ticket</span>
-                </button>
+                {profile?.role !== 'CLIENT' && (
+                    <button
+                        onClick={() => setCreateModalOpen(true)}
+                        className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group w-full bg-gradient-to-r from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 text-white hover:from-indigo-500/30 hover:to-purple-500/30 hover:border-indigo-500/50"
+                    >
+                        <Plus className="w-5 h-5 text-indigo-400" />
+                        <span className="font-semibold text-sm">Nouveau Ticket</span>
+                    </button>
+                )}
 
-                {navigation.map((item) => {
+                {navigation.filter(item =>
+                    !(item.hideForClient && profile?.role === 'CLIENT') &&
+                    !(item.hideForStandard && profile?.role === 'STANDARD')
+                ).map((item) => {
                     const isActive = pathname === item.href
 
                     return (
@@ -73,6 +85,40 @@ export function Sidebar() {
                         </Link>
                     )
                 })}
+
+                {/* ═══ Section ADMIN ═══ */}
+                {profile?.role === 'ADMIN' && (
+                    <div className="pt-3">
+                        <div className="h-px bg-white/5 mb-3" />
+                        <button
+                            onClick={() => setAdminOpen(!adminOpen)}
+                            className="flex items-center justify-between w-full px-4 py-2 text-rose-400/60 hover:text-rose-400 transition-colors"
+                        >
+                            <span className="text-[10px] font-black tracking-[0.2em] uppercase">Administration</span>
+                            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${adminOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                        {adminOpen && (
+                            <div className="space-y-1 mt-1">
+                                {adminNav.map((item) => {
+                                    const isActive = pathname === item.href
+                                    return (
+                                        <Link
+                                            key={item.name}
+                                            href={item.href}
+                                            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive
+                                                ? 'bg-rose-500/10 text-rose-300 shadow-sm ring-1 ring-rose-500/20'
+                                                : 'text-white/40 hover:text-rose-300 hover:bg-rose-500/5'
+                                                }`}
+                                        >
+                                            <item.icon className={`w-5 h-5 transition-colors ${isActive ? 'text-rose-400' : 'text-white/30 group-hover:text-rose-400'}`} />
+                                            <span className="font-medium text-sm">{item.name}</span>
+                                        </Link>
+                                    )
+                                })}
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Modale de création globale */}

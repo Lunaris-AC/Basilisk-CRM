@@ -314,6 +314,9 @@ export async function createTicket(formData: FormData, assignToMe: boolean = fal
     const needDescription = formData.get('need_description') as string || null
     const expectedProcess = formData.get('expected_process') as string || null
 
+    // SPRINT 23 : Liaison optionnelle à un équipement CMDB
+    const equipmentId = formData.get('equipment_id') as string || null
+
     const attachments = formData.getAll('attachments') as File[]
 
     // 3. Validation basique
@@ -350,6 +353,7 @@ export async function createTicket(formData: FormData, assignToMe: boolean = fal
             escalation_level: 1,
             category,
             ...(category !== 'DEV' ? { client_id: clientId, store_id: storeId } : {}),
+            ...(equipmentId ? { equipment_id: equipmentId } : {}),
         })
         .select('id')
         .single()
@@ -673,3 +677,167 @@ export async function updateDevDetails(ticketId: string, data: { complexity?: st
     revalidatePath(`/tickets/${ticketId}`)
     return { success: true }
 }
+
+// ============== SPRINT 21 : LIAISON HL ↔ SD ==============
+
+/**
+ * Server Action : Lier un ticket HL (incident) à un ticket SD (DEV).
+ * Met à jour le champ `linked_sd_id` sur le ticket HL.
+ */
+export async function linkTicketToSD(hlTicketId: string, sdTicketId: string | null) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Non authentifié.' }
+
+    const { error } = await supabase
+        .from('tickets')
+        .update({ linked_sd_id: sdTicketId })
+        .eq('id', hlTicketId)
+
+    if (error) {
+        console.error('Erreur linkTicketToSD:', error)
+        return { error: 'Impossible de lier le ticket au SD.' }
+    }
+
+    if (sdTicketId) {
+        await addComment(hlTicketId, `[LIAISON SD] Ce ticket a été rattaché au SD #${sdTicketId.slice(0, 8)}.`, true)
+    } else {
+        await addComment(hlTicketId, `[LIAISON SD] Le lien vers le SD a été supprimé.`, true)
+    }
+
+    revalidatePath(`/tickets/${hlTicketId}`)
+    return { success: true }
+}
+
+// ============== SPRINT 22 : RÉSOLUTION EN CASCADE SD → HL ==============
+
+/**
+ * Server Action : Résoudre un SD et (optionnellement) clôturer tous ses tickets HL liés.
+ * Insère un commentaire automatique dans chaque ticket HL fermé en cascade.
+ */
+export async function resolveSD(sdId: string, resolutionMessage: string, closeLinkedTickets: boolean) {
+    const supabase = await createClient()
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Non authentifié.' }
+
+    // 1. Passer le SD en "résolu"
+    const { error: sdError } = await supabase
+        .from('tickets')
+        .update({ status: 'resolu' })
+        .eq('id', sdId)
+        .eq('category', 'DEV')
+
+    if (sdError) {
+        console.error('Erreur resolveSD:', sdError)
+        return { error: 'Impossible de résoudre ce SD.' }
+    }
+
+    // Commentaire de résolution sur le SD
+    await addComment(sdId, `[RÉSOLUTION SD] ${resolutionMessage}`, false)
+
+    // Audit log pour le SD
+    await supabase.from('ticket_audit_logs').insert({
+        ticket_id: sdId,
+        user_id: user.id,
+        action: 'resolved',
+        details: { message: resolutionMessage, cascade: closeLinkedTickets }
+    })
+
+    // 2. Clôture en cascade si demandé
+    if (closeLinkedTickets) {
+        // Récupérer tous les tickets HL liés
+        const { data: linkedTickets } = await supabase
+            .from('tickets')
+            .select('id')
+            .eq('linked_sd_id', sdId)
+            .neq('status', 'ferme')
+
+        if (linkedTickets && linkedTickets.length > 0) {
+            const hlIds = linkedTickets.map(t => t.id)
+
+            // UPDATE massif : passer tous les HL en "résolu"
+            await supabase
+                .from('tickets')
+                .update({ status: 'resolu' })
+                .in('id', hlIds)
+
+            // Insérer un commentaire automatique dans chaque HL
+            for (const hlId of hlIds) {
+                await addComment(
+                    hlId,
+                    `[RÉSOLUTION AUTOMATIQUE] Le bug logiciel associé (SD #${sdId.slice(0, 8)}) a été corrigé. Motif du dev : ${resolutionMessage}`,
+                    false
+                )
+
+                // Audit log pour chaque HL
+                await supabase.from('ticket_audit_logs').insert({
+                    ticket_id: hlId,
+                    user_id: user.id,
+                    action: 'resolved_cascade',
+                    details: { sd_id: sdId, message: resolutionMessage }
+                })
+            }
+        }
+    }
+
+    revalidatePath(`/tickets/${sdId}`)
+    revalidatePath('/sd')
+    revalidatePath('/dashboard')
+    revalidatePath('/incidents')
+
+    return { success: true }
+}
+
+// ============== SPRINT 22 : RECHERCHE GLOBALE (OMNIBAR) ==============
+
+/**
+ * Server Action : Recherche globale dans les tickets et contacts.
+ * Utilisée par l'Omnibar (Cmd+K).
+ */
+export async function searchOmnibar(query: string) {
+    const supabase = await createClient()
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { tickets: [], contacts: [] }
+
+    if (!query || query.trim().length < 2) return { tickets: [], contacts: [] }
+
+    const term = `%${query.trim()}%`
+
+    // Recherche dans les tickets (par titre)
+    const { data: ticketsByTitle } = await supabase
+        .from('tickets')
+        .select('id, title, status, priority, category')
+        .ilike('title', term)
+        .order('created_at', { ascending: false })
+        .limit(8)
+
+    // Recherche dans les contacts (prénom ou nom) — deux requêtes pour éviter .or()
+    const [{ data: contactsByFirst }, { data: contactsByLast }] = await Promise.all([
+        supabase
+            .from('contacts')
+            .select('id, first_name, last_name, email, phone')
+            .ilike('first_name', term)
+            .order('last_name', { ascending: true })
+            .limit(8),
+        supabase
+            .from('contacts')
+            .select('id, first_name, last_name, email, phone')
+            .ilike('last_name', term)
+            .order('last_name', { ascending: true })
+            .limit(8),
+    ])
+
+    // Dédupliquer les contacts
+    const contactMap = new Map<string, any>()
+    for (const c of [...(contactsByFirst || []), ...(contactsByLast || [])]) {
+        contactMap.set(c.id, c)
+    }
+
+    return {
+        tickets: ticketsByTitle || [],
+        contacts: [...contactMap.values()].slice(0, 8)
+    }
+}
+

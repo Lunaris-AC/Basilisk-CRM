@@ -92,3 +92,64 @@ export async function softDeleteOldClosedTickets() {
     revalidatePath('/admin/debug')
     return { success: true, count: data?.length || 0 }
 }
+
+// ============== SPRINT 20 : ADMIN CRUD ==============
+
+/**
+ * Met à jour un profil utilisateur (rôle, is_active, first_name, last_name).
+ */
+export async function adminUpdateProfile(
+    targetUserId: string,
+    updates: { role?: string; is_active?: boolean; first_name?: string; last_name?: string }
+) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Non authentifié.' }
+
+    const { data: callerProfile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    if (callerProfile?.role !== 'N4' && callerProfile?.role !== 'ADMIN') return { error: 'Accès non autorisé.' }
+
+    const { error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', targetUserId)
+
+    if (error) {
+        console.error("God Mode Error [updateProfile]:", error)
+        return { error: 'Échec de la mise à jour du profil.' }
+    }
+
+    revalidatePath('/admin/debug')
+    return { success: true }
+}
+
+/**
+ * Force Edit d'un ticket — modifie n'importe quel champ sans restriction workflow.
+ */
+export async function adminForceEditTicket(
+    ticketId: string,
+    updates: { status?: string; priority?: string; category?: string; escalation_level?: number; assignee_id?: string | null; sla_deadline_at?: string | null }
+) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Non authentifié.' }
+
+    const { data: callerProfile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    if (callerProfile?.role !== 'N4' && callerProfile?.role !== 'ADMIN') return { error: 'Accès non autorisé.' }
+
+    const { error } = await supabase
+        .from('tickets')
+        .update(updates)
+        .eq('id', ticketId)
+
+    if (error) {
+        console.error("God Mode Error [forceEditTicket]:", error)
+        return { error: 'Échec de la modification du ticket.' }
+    }
+
+    revalidatePath('/admin/debug')
+    revalidatePath('/incidents')
+    revalidatePath('/dashboard')
+    return { success: true }
+}
+
