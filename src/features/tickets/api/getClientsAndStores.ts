@@ -14,8 +14,33 @@ export type StoreSimple = {
 
 export async function getClientsAndStores() {
     const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
 
-    // Récupérer les clients actifs
+    if (!user) return { clients: [], stores: [] }
+
+    // Obtenir le profil pour vérifier si l'utilisateur est un CLIENT
+    const { data: profile } = await supabase.from('profiles').select('role, store_id').eq('id', user.id).single()
+
+    // SPRINT 29.3: Requête stricte basée sur la liaison direct profil -> magasin (store_id)
+    if (profile?.role === 'CLIENT') {
+        if (!profile.store_id) {
+            return { clients: [], stores: [] }
+        }
+
+        const { data: stores, error: storesError } = await supabase
+            .from('stores')
+            .select('id, client_id, name, city')
+            .eq('id', profile.store_id)
+            .eq('is_active', true)
+
+        if (storesError) {
+            console.error("Erreur getStoresForClient:", storesError)
+            return { clients: [], stores: [] }
+        }
+        return { clients: [], stores: stores as StoreSimple[] }
+    }
+
+    // Récupérer les clients actifs (pour Admins, N4, etc.)
     const { data: clients, error: clientsError } = await supabase
         .from('clients')
         .select('id, company')
@@ -27,7 +52,7 @@ export async function getClientsAndStores() {
         return { clients: [], stores: [] }
     }
 
-    // Récupérer les magasins actifs
+    // Récupérer tous les magasins actifs (pour Admins, N4, etc.)
     const { data: stores, error: storesError } = await supabase
         .from('stores')
         .select('id, client_id, name, city')

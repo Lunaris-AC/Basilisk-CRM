@@ -1,13 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { useClientsAndStores } from '@/features/tickets/api/useClientsAndStores'
 import { createTicket } from '@/features/tickets/actions'
-import { Loader2, UploadCloud, Ticket, AlertCircle, X, File, UserCircle, UserPlus, Bug, Sparkles } from 'lucide-react'
-import { useQueryClient } from '@tanstack/react-query'
+import { Loader2, UploadCloud, Ticket, AlertCircle, X, File, UserCircle, UserPlus, Bug, Sparkles, Activity } from 'lucide-react'
+import { useQueryClient, useQuery } from '@tanstack/react-query'
+import { createClient } from '@/utils/supabase/client'
 
 import { SmartContactSelector } from '@/components/SmartContactSelector'
 import {
@@ -68,6 +69,20 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
     const clients = data?.clients || []
     const stores = data?.stores || []
 
+    const { data: profile } = useQuery({
+        queryKey: ['my-profile-modal'],
+        queryFn: async () => {
+            const supabase = createClient()
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) return null
+            const { data } = await supabase.from('profiles').select('id, role, contact_id').eq('id', user.id).single()
+            return data
+        },
+        staleTime: 1000 * 60 * 5
+    })
+
+    const isClient = profile?.role === 'CLIENT'
+
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [submitError, setSubmitError] = useState<string | null>(null)
     const [selectedFiles, setSelectedFiles] = useState<globalThis.File[]>([])
@@ -105,13 +120,30 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
     const selectedCategory = form.watch('category')
     const filteredStores = stores.filter(store => store.client_id === selectedClientId)
 
+    // SPRINT 29.2 : Auto-sélection du magasin et forçage du client_id cache
+    useEffect(() => {
+        if (isClient && profile?.id && !form.getValues('client_id')) {
+            form.setValue('client_id', profile.id)
+        }
+        if (isClient && stores.length === 1 && !form.getValues('store_id')) {
+            form.setValue('store_id', stores[0].id)
+        }
+    }, [isClient, stores, profile?.id, form])
+
     const handleSubmit = async (values: TicketFormValues, assignToMe: boolean = false) => {
         setIsSubmitting(true)
         setSubmitError(null)
 
-        // Validation client/store pour les non-DEV
-        if (values.category !== 'DEV' && (!values.client_id || !values.store_id)) {
+        // Validation client/store pour les non-DEV et non-CLIENT
+        if (!isClient && values.category !== 'DEV' && (!values.client_id || !values.store_id)) {
             setSubmitError('Veuillez sélectionner un client et un magasin.')
+            setIsSubmitting(false)
+            return
+        }
+
+        // Si CLIENT, la sélection du magasin suffit, on s'assure juste d'avoir un store (le client_id sera forcé au backend)
+        if (isClient && !values.store_id) {
+            setSubmitError('Veuillez sélectionner un magasin.')
             setIsSubmitting(false)
             return
         }
@@ -226,19 +258,22 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
                             )}
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2 md:col-span-2">
-                                    <label className="text-sm font-bold text-white/80">Catégorie du Ticket <span className="text-rose-500">*</span></label>
-                                    <select
-                                        {...form.register('category')}
-                                        className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all appearance-none"
-                                    >
-                                        <option value="HL">Support HotLine (HL)</option>
-                                        <option value="COMMERCE">Service Commerce</option>
-                                        <option value="SAV">Service Après-Vente (SAV)</option>
-                                        <option value="FORMATION">Service Formation</option>
-                                        <option value="DEV">SD / Développement</option>
-                                    </select>
-                                </div>
+                                {/* Catégorie — masquée si CLIENT (forcé à HL en backend) */}
+                                {!isClient && (
+                                    <div className="space-y-2 md:col-span-2">
+                                        <label className="text-sm font-bold text-white/80">Catégorie du Ticket <span className="text-rose-500">*</span></label>
+                                        <select
+                                            {...form.register('category')}
+                                            className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all appearance-none"
+                                        >
+                                            <option value="HL">Support HotLine (HL)</option>
+                                            <option value="COMMERCE">Service Commerce</option>
+                                            <option value="SAV">Service Après-Vente (SAV)</option>
+                                            <option value="FORMATION">Service Formation</option>
+                                            <option value="DEV">SD / Développement</option>
+                                        </select>
+                                    </div>
+                                )}
 
                                 <div className="space-y-2 md:col-span-2">
                                     <label className="text-sm font-bold text-white/80">Titre du problème <span className="text-rose-500">*</span></label>
@@ -250,72 +285,92 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
                                     {form.formState.errors.title && <p className="text-xs text-rose-400 mt-1">{form.formState.errors.title.message}</p>}
                                 </div>
 
-                                {/* Client / Store — masqués pour DEV */}
+                                {/* Client / Store — masqués pour DEV et simplification pour CLIENT */}
                                 {selectedCategory !== 'DEV' && (
                                     <>
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-bold text-white/80">Client <span className="text-rose-500">*</span></label>
-                                            <select
-                                                {...form.register('client_id')}
-                                                className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all appearance-none"
-                                            >
-                                                <option value="">Sélectionner un client...</option>
-                                                {clients.map(c => (
-                                                    <option key={c.id} value={c.id}>{c.company}</option>
-                                                ))}
-                                            </select>
-                                            {form.formState.errors.client_id && <p className="text-xs text-rose-400 mt-1">{form.formState.errors.client_id.message}</p>}
-                                        </div>
+                                        {!isClient && (
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-bold text-white/80">Client <span className="text-rose-500">*</span></label>
+                                                <select
+                                                    {...form.register('client_id')}
+                                                    className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all appearance-none"
+                                                >
+                                                    <option value="">Sélectionner un client...</option>
+                                                    {clients.map(c => (
+                                                        <option key={c.id} value={c.id}>{c.company}</option>
+                                                    ))}
+                                                </select>
+                                                {form.formState.errors.client_id && <p className="text-xs text-rose-400 mt-1">{form.formState.errors.client_id.message}</p>}
+                                            </div>
+                                        )}
 
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-bold text-white/80">Magasin <span className="text-rose-500">*</span></label>
-                                            <select
-                                                {...form.register('store_id')}
-                                                disabled={!selectedClientId}
-                                                className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all appearance-none disabled:opacity-50"
-                                            >
-                                                <option value="">Sélectionner un magasin...</option>
-                                                {filteredStores.map(s => (
-                                                    <option key={s.id} value={s.id}>{s.name} {s.city ? `(${s.city})` : ''}</option>
-                                                ))}
-                                            </select>
-                                            {form.formState.errors.store_id && <p className="text-xs text-rose-400 mt-1">{form.formState.errors.store_id.message}</p>}
+                                        <div className="space-y-2 md:col-span-1">
+                                            <label className="text-sm font-bold text-white/80">Magasin concerné</label>
+
+                                            {isClient && stores.length === 1 ? (
+                                                <div className="w-full bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3 flex items-center gap-3">
+                                                    <div className="p-2 bg-emerald-500/20 rounded-lg">
+                                                        <Activity className="w-4 h-4 text-emerald-400" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-bold text-emerald-100">{stores[0].name}</p>
+                                                        <p className="text-xs text-emerald-400/80">Magasin lié automatiquement</p>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <select
+                                                        {...form.register('store_id')}
+                                                        disabled={!isClient && !selectedClientId}
+                                                        className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all appearance-none disabled:opacity-50"
+                                                    >
+                                                        <option value="">Sélectionner un magasin...</option>
+                                                        {filteredStores.map(s => <option key={s.id} value={s.id}>{s.name} {s.city ? `(${s.city})` : ''}</option>)}
+                                                    </select>
+                                                    {form.formState.errors.store_id && <p className="text-xs text-rose-400 mt-1">{form.formState.errors.store_id.message}</p>}
+                                                </>
+                                            )}
                                         </div>
                                     </>
                                 )}
 
-                                <div className="space-y-2 md:col-span-2">
-                                    <label className="text-sm font-bold text-white/80 flex items-center gap-2">
-                                        <UserCircle className="w-4 h-4 text-white/50" />
-                                        Interlocuteur / Contact
-                                    </label>
-                                    {!selectedClientId ? (
-                                        <div className="p-3 bg-black/20 border border-white/5 rounded-xl text-white/40 text-sm">
-                                            Sélectionnez d&apos;abord un client pour rechercher ou créer un contact.
-                                        </div>
-                                    ) : (
-                                        <SmartContactSelector
-                                            value={form.watch('contact_id')}
-                                            onChange={(val) => form.setValue('contact_id', val || '')}
-                                            clientId={selectedClientId}
-                                            storeId={selectedStoreId}
-                                        />
-                                    )}
-                                </div>
+                                {/* Masqué pour les clients qui sont EUX MEMES le contact */}
+                                {!isClient && (
+                                    <div className="space-y-2 md:col-span-2">
+                                        <label className="text-sm font-bold text-white/80 flex items-center gap-2">
+                                            <UserCircle className="w-4 h-4 text-white/50" />
+                                            Interlocuteur / Contact
+                                        </label>
+                                        {!selectedClientId ? (
+                                            <div className="p-3 bg-black/20 border border-white/5 rounded-xl text-white/40 text-sm">
+                                                Sélectionnez d&apos;abord un client pour rechercher ou créer un contact.
+                                            </div>
+                                        ) : (
+                                            <SmartContactSelector
+                                                value={form.watch('contact_id')}
+                                                onChange={(val) => form.setValue('contact_id', val || '')}
+                                                clientId={selectedClientId}
+                                                storeId={selectedStoreId}
+                                            />
+                                        )}
+                                    </div>
+                                )}
 
-                                <div className="space-y-2">
-                                    <label className="text-sm font-bold text-white/80">Priorité <span className="text-rose-500">*</span></label>
-                                    <select
-                                        {...form.register('priority')}
-                                        className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all appearance-none"
-                                    >
-                                        <option value="basse">Basse</option>
-                                        <option value="normale">Normale</option>
-                                        <option value="haute">Haute</option>
-                                        <option value="critique">Critique (Bloquant)</option>
-                                    </select>
-                                    {form.formState.errors.priority && <p className="text-xs text-rose-400 mt-1">{form.formState.errors.priority.message}</p>}
-                                </div>
+                                {!isClient && (
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold text-white/80">Priorité <span className="text-rose-500">*</span></label>
+                                        <select
+                                            {...form.register('priority')}
+                                            className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all appearance-none"
+                                        >
+                                            <option value="basse">Basse</option>
+                                            <option value="normale">Normale</option>
+                                            <option value="haute">Haute</option>
+                                            <option value="critique">Critique (Bloquant)</option>
+                                        </select>
+                                        {form.formState.errors.priority && <p className="text-xs text-rose-400 mt-1">{form.formState.errors.priority.message}</p>}
+                                    </div>
+                                )}
 
                                 <div className="space-y-2">
                                     <label className="text-sm font-bold text-white/80">Localisation (Optionnel)</label>
@@ -401,8 +456,8 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
                                                         type="button"
                                                         onClick={() => form.setValue('sd_type', 'BUG')}
                                                         className={`p-3 rounded-xl border text-sm font-bold flex items-center justify-center gap-2 transition-all ${form.watch('sd_type') === 'BUG'
-                                                                ? 'bg-rose-500/20 border-rose-500/40 text-rose-300 shadow-lg shadow-rose-500/10'
-                                                                : 'bg-black/20 border-white/10 text-white/50 hover:bg-white/5'
+                                                            ? 'bg-rose-500/20 border-rose-500/40 text-rose-300 shadow-lg shadow-rose-500/10'
+                                                            : 'bg-black/20 border-white/10 text-white/50 hover:bg-white/5'
                                                             }`}
                                                     >
                                                         <Bug className="w-4 h-4" /> Bug
@@ -411,8 +466,8 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
                                                         type="button"
                                                         onClick={() => form.setValue('sd_type', 'EVOLUTION')}
                                                         className={`p-3 rounded-xl border text-sm font-bold flex items-center justify-center gap-2 transition-all ${form.watch('sd_type') === 'EVOLUTION'
-                                                                ? 'bg-violet-500/20 border-violet-500/40 text-violet-300 shadow-lg shadow-violet-500/10'
-                                                                : 'bg-black/20 border-white/10 text-white/50 hover:bg-white/5'
+                                                            ? 'bg-violet-500/20 border-violet-500/40 text-violet-300 shadow-lg shadow-violet-500/10'
+                                                            : 'bg-black/20 border-white/10 text-white/50 hover:bg-white/5'
                                                             }`}
                                                     >
                                                         <Sparkles className="w-4 h-4" /> Évolution
@@ -530,16 +585,18 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
                                 >
                                     Annuler
                                 </button>
-                                <button
-                                    type="button"
-                                    disabled={isSubmitting}
-                                    onClick={form.handleSubmit((values) => handleSubmit(values, true))}
-                                    className="px-6 py-3 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 font-bold rounded-xl transition-all border border-emerald-500/30 disabled:opacity-50 flex items-center gap-2"
-                                >
-                                    {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                                    <UserPlus className="w-4 h-4" />
-                                    Créer et se l&apos;assigner
-                                </button>
+                                {!isClient && (
+                                    <button
+                                        type="button"
+                                        disabled={isSubmitting}
+                                        onClick={form.handleSubmit((values) => handleSubmit(values, true))}
+                                        className="px-6 py-3 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 font-bold rounded-xl transition-all border border-emerald-500/30 disabled:opacity-50 flex items-center gap-2"
+                                    >
+                                        {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                                        <UserPlus className="w-4 h-4" />
+                                        Créer et se l&apos;assigner
+                                    </button>
+                                )}
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}

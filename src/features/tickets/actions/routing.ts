@@ -67,10 +67,15 @@ export async function evaluateTicketRouting(ticketId: string): Promise<RoutingEv
     try {
         const supabase = await createClient();
 
-        // 1. Récupérer les informations du ticket complet
+        // 1. Récupérer les informations du ticket complet avec ses relations
         const { data: ticket, error: ticketError } = await supabase
             .from('tickets')
-            .select('*')
+            .select(`
+                *,
+                client:clients(*),
+                store:stores(*),
+                contact:contacts(*)
+            `)
             .eq('id', ticketId)
             .single();
 

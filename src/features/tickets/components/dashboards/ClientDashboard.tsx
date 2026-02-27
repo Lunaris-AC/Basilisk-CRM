@@ -14,34 +14,36 @@ export function ClientDashboard() {
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) return null
 
-            // Récupérer le profil avec son contact
+            // HOTFIX 29.5: Récupérer le profil avec son contact et directement son store_id
             const { data: profile } = await supabase
                 .from('profiles')
-                .select('contact_id')
+                .select('contact_id, store_id')
                 .eq('id', user.id)
                 .single()
 
-            if (!profile?.contact_id) return { storeTickets: [], linkedSDs: [], storeName: null }
+            if (!profile?.store_id) return { storeTickets: [], linkedSDs: [], storeName: null }
 
-            // Récupérer le contact pour avoir store_id et client_id
-            const { data: contact } = await supabase
-                .from('contacts')
-                .select('store_id, client_id, stores(name), clients(company)')
-                .eq('id', profile.contact_id)
-                .single()
+            // Récupérer le nom du magasin et l'entreprise via le contact (optionnel)
+            let storeName = 'Mon magasin'
+            if (profile.contact_id) {
+                const { data: contact } = await supabase
+                    .from('contacts')
+                    .select('stores(name), clients(company)')
+                    .eq('id', profile.contact_id)
+                    .single()
+                storeName = (contact as any)?.stores?.name || (contact as any)?.clients?.company || 'Mon magasin'
+            } else {
+                const { data: storeDetails } = await supabase.from('stores').select('name').eq('id', profile.store_id).single()
+                if (storeDetails?.name) storeName = storeDetails.name
+            }
 
-            if (!contact) return { storeTickets: [], linkedSDs: [], storeName: null }
-
-            // Tickets du magasin (ou du client si contact enseigne)
+            // Tickets du magasin (filtrage direct via le store_id du profil)
             let ticketQuery = supabase
                 .from('tickets')
                 .select('id, title, status, priority, category, created_at, updated_at')
+                .eq('store_id', profile.store_id)
                 .order('created_at', { ascending: false })
                 .limit(20)
-
-            if (contact.store_id) {
-                ticketQuery = ticketQuery.eq('store_id', contact.store_id)
-            }
 
             const { data: storeTickets } = await ticketQuery
 
@@ -66,8 +68,6 @@ export function ClientDashboard() {
                 .not('linked_sd_id', 'is', null)
                 .order('created_at', { ascending: false })
                 .limit(10)
-
-            const storeName = (contact as any).stores?.name || (contact as any).clients?.company || 'Mon magasin'
 
             return {
                 storeTickets: storeTickets || [],

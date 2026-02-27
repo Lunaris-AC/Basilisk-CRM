@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { HLDashboard } from '@/features/tickets/components/dashboards/HLDashboard'
 import { CommerceDashboard } from '@/features/tickets/components/dashboards/CommerceDashboard'
 import { SAVDashboard } from '@/features/tickets/components/dashboards/SAVDashboard'
+import { ClientDashboard } from '@/features/tickets/components/dashboards/ClientDashboard'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,7 +30,9 @@ export default async function DashboardPage() {
 
     return (
         <div className="w-full h-full max-w-7xl mx-auto">
-            {role === 'COM' ? (
+            {role === 'CLIENT' ? (
+                <ClientDashboard />
+            ) : role === 'COM' ? (
                 <CommerceDashboard />
             ) : role === 'SAV1' || role === 'SAV2' ? (
                 <SAVDashboard />

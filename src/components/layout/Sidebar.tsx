@@ -12,9 +12,9 @@ const navigation = [
     { name: 'Incidents (File)', href: '/incidents', icon: Inbox, hideForClient: true },
     { name: 'Portail SD', href: '/sd', icon: Code2, hideForClient: true },
     { name: 'Parc Matériel', href: '/cmdb', icon: HardDrive, hideForClient: true, hideForStandard: true },
-    { name: 'Documentation', href: '/documentation', icon: FileText },
+    { name: 'Documentation', href: '/documentation', icon: FileText, hideForClient: true },
     { name: 'Commerce & Ventes', href: '/commerce', icon: FileText, onlyFor: ['ADMIN'], lockedForOthers: true },
-    { name: 'Patch Notes', href: '/patch-notes', icon: FileCode },
+    { name: 'Patch Notes', href: '/patch-notes', icon: FileCode, hideForClient: true },
     { name: 'Clients', href: '/clients', icon: Users, hideForClient: true },
     { name: 'Paramètres', href: '/parametres', icon: Settings },
 ]
@@ -57,8 +57,8 @@ export function Sidebar() {
             </div>
 
             <div className="flex-1 py-6 px-4 space-y-2 overflow-y-auto custom-scrollbar">
-                {/* Bouton Nouveau Ticket → ouvre la modale */}
-                {profile?.role !== 'CLIENT' && (
+                {/* Bouton Nouveau Ticket → ouvre la modale (accessible à tous, y compris CLIENT) */}
+                {profile?.role && (
                     <button
                         onClick={() => setCreateModalOpen(true)}
                         className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group w-full bg-gradient-to-r from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 text-white hover:from-indigo-500/30 hover:to-purple-500/30 hover:border-indigo-500/50"

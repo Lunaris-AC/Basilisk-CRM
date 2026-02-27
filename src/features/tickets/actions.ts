@@ -2,6 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { evaluateTicketRouting } from './actions/routing'
 
 /**
  * Server Action : Piocher un ticket aléatoire selon le niveau du technicien.
@@ -16,18 +17,7 @@ export async function pickRandomTicket() {
         return { error: 'Non authentifié.' }
     }
 
-    // 2. Récupérer son profil (pour avoir son rôle)
-    const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
-
-    if (profileError || !profile) {
-        return { error: 'Profil introuvable.' }
-    }
-
-    // 2.5 VÉRIFICATION SPRINT 6.1 : Flux tendu (1 ticket max)
+    // 1.5 VÉRIFICATION SPRINT 6.1 : Flux tendu (1 ticket max)
     const { count: activeTicketsCount, error: countError } = await supabase
         .from('tickets')
         .select('*', { count: 'exact', head: true })
@@ -42,10 +32,9 @@ export async function pickRandomTicket() {
         return { error: 'Terminez d\'abord votre ticket en cours.' }
     }
 
-    // 3. Appeler la fonction RPC transactionnelle
+    // 3. Appeler la fonction RPC transactionnelle repensée (Sprint 28)
     const { data: ticketId, error: rpcError } = await supabase.rpc('pick_ticket', {
-        p_user_id: user.id,
-        p_user_role: profile.role,
+        p_user_id: user.id
     })
 
     if (rpcError) {
@@ -305,12 +294,36 @@ export async function createTicket(formData: FormData, assignToMe: boolean = fal
     // 2. Extraction des champs
     const title = formData.get('title') as string
     const description = formData.get('description') as string
-    const clientId = formData.get('client_id') as string || null
-    const storeId = formData.get('store_id') as string || null
+    let clientId = formData.get('client_id') as string || null
+    let storeId = formData.get('store_id') as string || null
     const problemLocation = formData.get('problem_location') as string || null
-    const priority = formData.get('priority') as string || 'normale'
-    const contactId = formData.get('contact_id') as string || null
-    const category = formData.get('category') as string || 'HL'
+    let priority = formData.get('priority') as string || 'normale'
+    let contactId = formData.get('contact_id') as string || null
+    let category = formData.get('category') as string || 'HL'
+
+    // SPRINT 29.3 : Override de sécurité pour le rôle CLIENT
+    // HOTFIX 29.5 : Override de sécurité pour le rôle CLIENT
+    const { data: profile } = await supabase.from('profiles').select('role, contact_id, store_id').eq('id', user.id).single()
+    if (profile?.role === 'CLIENT') {
+        category = 'HL'
+        priority = 'normale'
+        contactId = profile.contact_id || null
+
+        if (!profile.store_id) {
+            return { error: 'Aucun magasin n\'est associé à votre profil.' }
+        }
+
+        // ÉTAPE 1 : Récupère le magasin pour avoir l'entreprise
+        const { data: store } = await supabase.from('stores').select('client_id').eq('id', profile.store_id).single()
+
+        if (!store?.client_id) {
+            return { error: 'Magasin invalide ou société parente introuvable.' }
+        }
+
+        // Écrase le payload avant l'insertion
+        storeId = profile.store_id
+        clientId = store.client_id
+    }
 
     // Champs spécifiques par catégorie
     const quoteNumber = formData.get('quote_number') as string || null
@@ -349,7 +362,6 @@ export async function createTicket(formData: FormData, assignToMe: boolean = fal
 
     // Contrôle de rôle pour la catégorie DEV
     if (category === 'DEV') {
-        const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
         const allowedRoles = ['N4', 'DEV', 'COM', 'ADMIN']
         if (!profile || !allowedRoles.includes(profile.role)) {
             return { error: 'Vous n\'avez pas les droits pour créer un SD.' }
@@ -459,6 +471,28 @@ export async function createTicket(formData: FormData, assignToMe: boolean = fal
             })
         }
     }
+
+    // --- SPRINT 27: BRANCHEMENT DU MOTEUR DE ROUTAGE ---
+    const routingResult = await evaluateTicketRouting(ticketId);
+    if (routingResult.match) {
+        const updateData: any = {};
+        if (routingResult.assignToLevelId) updateData.support_level_id = routingResult.assignToLevelId;
+        if (routingResult.assignToUserId) updateData.assignee_id = routingResult.assignToUserId;
+
+        if (Object.keys(updateData).length > 0) {
+            const { error: rtError } = await supabase
+                .from('tickets')
+                .update(updateData)
+                .eq('id', ticketId);
+
+            if (!rtError) {
+                await addComment(ticketId, `[ROUTAGE AUTOMATIQUE] Ticket routé automatiquement par la règle : ${routingResult.ruleName}`, true);
+            } else {
+                console.error("Erreur lors de l'application du routage:", rtError);
+            }
+        }
+    }
+    // ---------------------------------------------------
 
     // 7. Invalidation du cache pour rafraîchir les listes
     revalidatePath('/dashboard')

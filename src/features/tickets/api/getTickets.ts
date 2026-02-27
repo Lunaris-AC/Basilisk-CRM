@@ -59,12 +59,29 @@ export const getMyTickets = async (userId: string, filters?: TicketFilters): Pro
     `)
         .neq('category', 'DEV') // Exclure les SD du support classique
 
-    if (filters?.assignee_id && filters.assignee_id !== 'all') {
-        query = query.eq('assignee_id', filters.assignee_id)
-    } else if (filters?.assignee_id === 'all') {
-        query = query.not('assignee_id', 'is', null)
+    // HOTFIX 29.5 : Récupère les tickets de SON magasin sans filtrer sur client_id
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role, store_id')
+        .eq('id', userId)
+        .single()
+
+    if (profile?.role === 'CLIENT') {
+        if (profile.store_id) {
+            query = query.eq('store_id', profile.store_id)
+        } else {
+            // Fallback en cas de profil sans magasin : on limite à ses propres créations
+            query = query.eq('creator_id', userId)
+        }
     } else {
-        query = query.eq('assignee_id', userId)
+        // Logique classique d'assignation
+        if (filters?.assignee_id && filters.assignee_id !== 'all') {
+            query = query.eq('assignee_id', filters.assignee_id)
+        } else if (filters?.assignee_id === 'all') {
+            query = query.not('assignee_id', 'is', null)
+        } else {
+            query = query.eq('assignee_id', userId)
+        }
     }
 
     if (filters?.status && filters.status !== 'all') {

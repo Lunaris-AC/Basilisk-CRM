@@ -1,4 +1,0 @@
-﻿src/app/(protected)/cmdb/page.tsx(47,13): error TS2322: Type '{ id: any; name: any; client: { company: any; }[]; }[]' is not assignable to type 'Store[]'.
-  Type '{ id: any; name: any; client: { company: any; }[]; }' is not assignable to type 'Store'.
-    Types of property 'client' are incompatible.
-      Property 'company' is missing in type '{ company: any; }[]' but required in type '{ company: string; }'.
