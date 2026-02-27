@@ -1,6 +1,6 @@
 'use client'
 
-import { useTicket, useTicketComments, useTicketAuditLogs } from '@/features/tickets/api/useTickets'
+import { useTicket, useTicketComments, useTicketAuditLogs, useSupportLevels } from '@/features/tickets/api/useTickets'
 import { useTicketAttachments } from '@/features/tickets/api/useTicketAttachments'
 import { useQueryClient, useQuery } from '@tanstack/react-query'
 import { addComment, updateTicketStatus, escalateTicket, uploadAttachments, linkContactToTicket, linkTicketToSD, resolveSD } from '@/features/tickets/actions'
@@ -85,6 +85,9 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
 
     // Audit Logs (Sprint 22)
     const { data: auditLogs, isLoading: isLoadingAuditLogs } = useTicketAuditLogs(ticketId)
+
+    // SPRINT 26.1 : Grades de support dynamiques
+    const { data: supportLevels } = useSupportLevels()
 
     // Fetch open SD tickets for linking
     const { data: openSDs } = useQuery({
@@ -332,8 +335,15 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                     <span className="px-3 py-1 bg-white/10 rounded-full text-xs font-medium text-white/80 border border-white/10">
                         PRIORITÉ {ticket.priority.toUpperCase()}
                     </span>
-                    <span className="px-3 py-1 bg-indigo-500/20 text-indigo-300 rounded-full text-xs font-bold border border-indigo-500/30">
-                        NIVEAU {ticket.escalation_level}
+                    <span
+                        className="px-3 py-1 rounded-full text-xs font-bold border transition-colors"
+                        style={{
+                            backgroundColor: ticket.support_level?.color ? `${ticket.support_level.color}20` : 'rgba(99, 102, 241, 0.2)',
+                            color: ticket.support_level?.color || '#a5b4fc',
+                            borderColor: ticket.support_level?.color ? `${ticket.support_level.color}40` : 'rgba(99, 102, 241, 0.3)'
+                        }}
+                    >
+                        {ticket.support_level?.name?.toUpperCase() || `NIVEAU ${ticket.escalation_level}`}
                     </span>
                 </div>
             </div>
@@ -1177,7 +1187,7 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                                     <DialogHeader>
                                                         <DialogTitle className="text-xl font-bold text-rose-300 flex items-center gap-2"><ArrowUpRight className="w-5 h-5" />Escalader ce ticket</DialogTitle>
                                                         <DialogDescription className="text-white/60">
-                                                            Le ticket sera ré-assigné au niveau {Math.min(4, ticket.escalation_level + 1)}. Expliquez pourquoi le niveau actuel ne peut pas le traiter.
+                                                            Le ticket sera ré-assigné au grade supérieur. Expliquez pourquoi le niveau actuel ne peut pas le traiter.
                                                         </DialogDescription>
                                                     </DialogHeader>
                                                     <div className="space-y-4 py-4">
@@ -1226,7 +1236,7 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                                     <DialogHeader>
                                                         <DialogTitle className="text-xl font-bold flex items-center gap-2"><ArrowDownRight className="w-5 h-5" />Renvoyer ce ticket</DialogTitle>
                                                         <DialogDescription className="text-white/60">
-                                                            Le ticket retournera au niveau {Math.max(1, ticket.escalation_level - 1)}.
+                                                            Le ticket retournera au grade inférieur.
                                                         </DialogDescription>
                                                     </DialogHeader>
                                                     <div className="space-y-4 py-4">

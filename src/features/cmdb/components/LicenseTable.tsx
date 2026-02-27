@@ -1,13 +1,21 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import type { SoftwareLicense } from '../actions'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { format, isPast, differenceInDays } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { Key, AlertTriangle, CheckCircle2 } from 'lucide-react'
 
+interface Store {
+    id: string
+    name: string
+    client?: { company: string } | null
+}
+
 interface LicenseTableProps {
     licenses: SoftwareLicense[]
+    stores: Store[]
 }
 
 function ExpirationCell({ date }: { date: string | null }) {
@@ -48,9 +56,16 @@ function ExpirationCell({ date }: { date: string | null }) {
     )
 }
 
-export function LicenseTable({ licenses }: LicenseTableProps) {
+export function LicenseTable({ licenses, stores }: LicenseTableProps) {
+    const [selectedStore, setSelectedStore] = useState<string>('all')
+
+    const filtered = useMemo(() => {
+        if (selectedStore === 'all') return licenses
+        return licenses.filter(lic => lic.store_id === selectedStore)
+    }, [licenses, selectedStore])
+
     const sorted = useMemo(() => {
-        return [...licenses].sort((a, b) => {
+        return [...filtered].sort((a, b) => {
             // Expired/expiring first
             const now = Date.now()
             const in30d = now + 30 * 24 * 60 * 60 * 1000
@@ -77,74 +92,100 @@ export function LicenseTable({ licenses }: LicenseTableProps) {
     }
 
     return (
-        <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-                <thead>
-                    <tr className="border-b border-white/5">
-                        <th className="text-left text-white/40 font-medium text-xs tracking-widest uppercase px-6 py-4">Logiciel</th>
-                        <th className="text-left text-white/40 font-medium text-xs tracking-widest uppercase px-4 py-4">Clé de licence</th>
-                        <th className="text-left text-white/40 font-medium text-xs tracking-widest uppercase px-4 py-4">Magasin</th>
-                        <th className="text-left text-white/40 font-medium text-xs tracking-widest uppercase px-4 py-4">Sièges</th>
-                        <th className="text-left text-white/40 font-medium text-xs tracking-widest uppercase px-4 py-4">Expiration</th>
-                        <th className="text-left text-white/40 font-medium text-xs tracking-widest uppercase px-4 py-4">Statut</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {sorted.map((lic, i) => {
-                        const isExpired = lic.expiration_date ? isPast(new Date(lic.expiration_date)) : false
-                        const isExpiringSoon = !isExpired && lic.expiration_date
-                            ? differenceInDays(new Date(lic.expiration_date), new Date()) <= 30
-                            : false
+        <>
+            <div className="px-6 py-4 flex items-center justify-end border-b border-white/5 bg-white/[0.01]">
+                <div className="w-64">
+                    <Select value={selectedStore} onValueChange={setSelectedStore}>
+                        <SelectTrigger className="bg-white/5 border-white/10 text-white/70">
+                            <SelectValue placeholder="Tous les magasins" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Tous les magasins</SelectItem>
+                            {stores.map(s => (
+                                <SelectItem key={s.id} value={s.id}>
+                                    {s.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
 
-                        const rowClass = isExpired
-                            ? 'border-l-2 border-l-red-500/60 bg-red-500/[0.04]'
-                            : isExpiringSoon
-                                ? 'border-l-2 border-l-amber-500/60 bg-amber-500/[0.04]'
-                                : i % 2 === 0 ? '' : 'bg-white/[0.01]'
-
-                        return (
-                            <tr
-                                key={lic.id}
-                                className={`group border-b border-white/[0.03] transition-all duration-150 hover:bg-white/[0.04] ${rowClass}`}
-                            >
-                                <td className="px-6 py-3.5">
-                                    <div className="font-medium text-white/90">{lic.software_name}</div>
-                                </td>
-                                <td className="px-4 py-3.5">
-                                    <span className="font-mono text-xs text-white/40 bg-white/5 px-2.5 py-1 rounded-lg border border-white/10 select-all">
-                                        {lic.license_key.length > 28 ? lic.license_key.slice(0, 28) + '…' : lic.license_key}
-                                    </span>
-                                </td>
-                                <td className="px-4 py-3.5">
-                                    <div className="text-white/70">{lic.store?.name}</div>
-                                    {lic.store?.client && (
-                                        <div className="text-white/40 text-xs">{lic.store.client.company}</div>
-                                    )}
-                                </td>
-                                <td className="px-4 py-3.5 text-center">
-                                    <span className="text-sm font-bold text-white/80">{lic.seat_count}</span>
-                                    <div className="text-[10px] text-white/30">siège{lic.seat_count > 1 ? 's' : ''}</div>
-                                </td>
-                                <td className="px-4 py-3.5">
-                                    <ExpirationCell date={lic.expiration_date} />
-                                </td>
-                                <td className="px-4 py-3.5">
-                                    {lic.is_active ? (
-                                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                                            Active
-                                        </span>
-                                    ) : (
-                                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-zinc-500/15 text-zinc-400 border border-zinc-500/30">
-                                            Inactive
-                                        </span>
-                                    )}
+            <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                    <thead>
+                        <tr className="border-b border-white/5">
+                            <th className="text-left text-white/40 font-medium text-xs tracking-widest uppercase px-6 py-4">Logiciel</th>
+                            <th className="text-left text-white/40 font-medium text-xs tracking-widest uppercase px-4 py-4">Clé de licence</th>
+                            <th className="text-left text-white/40 font-medium text-xs tracking-widest uppercase px-4 py-4">Magasin</th>
+                            <th className="text-left text-white/40 font-medium text-xs tracking-widest uppercase px-4 py-4">Sièges</th>
+                            <th className="text-left text-white/40 font-medium text-xs tracking-widest uppercase px-4 py-4">Expiration</th>
+                            <th className="text-left text-white/40 font-medium text-xs tracking-widest uppercase px-4 py-4">Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {sorted.length === 0 ? (
+                            <tr>
+                                <td colSpan={6} className="px-6 py-8 text-center text-white/40">
+                                    Aucune licence pour ce magasin
                                 </td>
                             </tr>
-                        )
-                    })}
-                </tbody>
-            </table>
-        </div>
+                        ) : sorted.map((lic, i) => {
+                            const isExpired = lic.expiration_date ? isPast(new Date(lic.expiration_date)) : false
+                            const isExpiringSoon = !isExpired && lic.expiration_date
+                                ? differenceInDays(new Date(lic.expiration_date), new Date()) <= 30
+                                : false
+
+                            const rowClass = isExpired
+                                ? 'border-l-2 border-l-red-500/60 bg-red-500/[0.04]'
+                                : isExpiringSoon
+                                    ? 'border-l-2 border-l-amber-500/60 bg-amber-500/[0.04]'
+                                    : i % 2 === 0 ? '' : 'bg-white/[0.01]'
+
+                            return (
+                                <tr
+                                    key={lic.id}
+                                    className={`group border-b border-white/[0.03] transition-all duration-150 hover:bg-white/[0.04] ${rowClass}`}
+                                >
+                                    <td className="px-6 py-3.5">
+                                        <div className="font-medium text-white/90">{lic.software_name}</div>
+                                    </td>
+                                    <td className="px-4 py-3.5">
+                                        <span className="font-mono text-xs text-white/40 bg-white/5 px-2.5 py-1 rounded-lg border border-white/10 select-all">
+                                            {lic.license_key.length > 28 ? lic.license_key.slice(0, 28) + '…' : lic.license_key}
+                                        </span>
+                                    </td>
+                                    <td className="px-4 py-3.5">
+                                        <div className="text-white/70">{lic.store?.name}</div>
+                                        {lic.store?.client && (
+                                            <div className="text-white/40 text-xs">{lic.store.client.company}</div>
+                                        )}
+                                    </td>
+                                    <td className="px-4 py-3.5 text-center">
+                                        <span className="text-sm font-bold text-white/80">{lic.seat_count}</span>
+                                        <div className="text-[10px] text-white/30">siège{lic.seat_count > 1 ? 's' : ''}</div>
+                                    </td>
+                                    <td className="px-4 py-3.5">
+                                        <ExpirationCell date={lic.expiration_date} />
+                                    </td>
+                                    <td className="px-4 py-3.5">
+                                        {lic.is_active ? (
+                                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                                                Active
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-zinc-500/15 text-zinc-400 border border-zinc-500/30">
+                                                Inactive
+                                            </span>
+                                        )}
+                                    </td>
+                                </tr>
+                            )
+                        })}
+                    </tbody>
+                </table>
+            </div>
+        </>
     )
 }

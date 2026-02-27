@@ -1,10 +1,10 @@
-export const dynamic = 'force-dynamic'
-
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { HLDashboard } from '@/features/tickets/components/dashboards/HLDashboard'
 import { CommerceDashboard } from '@/features/tickets/components/dashboards/CommerceDashboard'
 import { SAVDashboard } from '@/features/tickets/components/dashboards/SAVDashboard'
+
+export const dynamic = 'force-dynamic'
 
 export const metadata = {
     title: 'Portail | NexusSupport',

@@ -5,8 +5,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Server, Key, Plus, HardDrive } from 'lucide-react'
 import { EquipmentTable } from './EquipmentTable'
 import { LicenseTable } from './LicenseTable'
+import { CatalogueTable } from './CatalogueTable'
 import { AddEquipmentDialog } from './AddEquipmentDialog'
 import { AddLicenseDialog } from './AddLicenseDialog'
+import { AddCatalogueDialog } from './AddCatalogueDialog'
 import type { Equipment, SoftwareLicense, EquipmentCatalogue } from '../actions'
 
 interface Store {
@@ -25,6 +27,7 @@ interface CMDBPageContentProps {
 export function CMDBPageContent({ initialEquipments, initialLicenses, catalogues, stores }: CMDBPageContentProps) {
     const [addEquipmentOpen, setAddEquipmentOpen] = useState(false)
     const [addLicenseOpen, setAddLicenseOpen] = useState(false)
+    const [addCatalogueOpen, setAddCatalogueOpen] = useState(false)
     const [activeTab, setActiveTab] = useState('materiel')
 
     const expiringCount = useMemo(() => {
@@ -82,10 +85,20 @@ export function CMDBPageContent({ initialEquipments, initialLicenses, catalogues
                                     {initialLicenses.length}
                                 </span>
                             </TabsTrigger>
+                            <TabsTrigger
+                                value="catalogue"
+                                className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-300 data-[state=active]:border-blue-500/30 data-[state=active]:shadow-none rounded-lg px-4 py-2 text-sm font-medium text-white/50 transition-all gap-2"
+                            >
+                                <HardDrive className="w-4 h-4" />
+                                Catalogue
+                                <span className="ml-1 px-1.5 py-0.5 rounded-md bg-white/10 text-[10px] font-bold text-white/60">
+                                    {catalogues.length}
+                                </span>
+                            </TabsTrigger>
                         </TabsList>
 
                         {/* Contextual action button */}
-                        {activeTab === 'materiel' ? (
+                        {activeTab === 'materiel' && (
                             <button
                                 onClick={() => setAddEquipmentOpen(true)}
                                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 hover:border-cyan-500/40 text-cyan-300 text-sm font-medium transition-all duration-200"
@@ -93,7 +106,8 @@ export function CMDBPageContent({ initialEquipments, initialLicenses, catalogues
                                 <Plus className="w-4 h-4" />
                                 Ajouter un équipement
                             </button>
-                        ) : (
+                        )}
+                        {activeTab === 'licences' && (
                             <button
                                 onClick={() => setAddLicenseOpen(true)}
                                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/20 hover:border-violet-500/40 text-violet-300 text-sm font-medium transition-all duration-200"
@@ -102,14 +116,27 @@ export function CMDBPageContent({ initialEquipments, initialLicenses, catalogues
                                 Ajouter une licence
                             </button>
                         )}
+                        {activeTab === 'catalogue' && (
+                            <button
+                                onClick={() => setAddCatalogueOpen(true)}
+                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 hover:border-blue-500/40 text-blue-300 text-sm font-medium transition-all duration-200"
+                            >
+                                <Plus className="w-4 h-4" />
+                                Nouveau Modèle
+                            </button>
+                        )}
                     </div>
 
                     <TabsContent value="materiel" className="mt-0 p-0">
-                        <EquipmentTable equipments={initialEquipments} />
+                        <EquipmentTable equipments={initialEquipments} stores={stores} />
                     </TabsContent>
 
                     <TabsContent value="licences" className="mt-0 p-0">
-                        <LicenseTable licenses={initialLicenses} />
+                        <LicenseTable licenses={initialLicenses} stores={stores} />
+                    </TabsContent>
+
+                    <TabsContent value="catalogue" className="mt-0 p-0">
+                        <CatalogueTable catalogues={catalogues} />
                     </TabsContent>
                 </Tabs>
             </div>
@@ -125,6 +152,10 @@ export function CMDBPageContent({ initialEquipments, initialLicenses, catalogues
                 open={addLicenseOpen}
                 onOpenChange={setAddLicenseOpen}
                 stores={stores}
+            />
+            <AddCatalogueDialog
+                open={addCatalogueOpen}
+                onOpenChange={setAddCatalogueOpen}
             />
         </div>
     )

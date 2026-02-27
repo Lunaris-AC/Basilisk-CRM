@@ -1,0 +1,25 @@
+﻿src/features/admin/components/RoutingRuleForm.tsx(82,9): error TS2322: Type 'Resolver<{ name: string; execution_order: unknown; logical_operator: "AND" | "OR"; conditions: { field: string; operator: string; value: string; }[]; is_active?: boolean | undefined; target_support_level_id?: string | ... 1 more ... | undefined; target_user_id?: string | ... 1 more ... | undefined; }, any, { ...; }>' is not assignable to type 'Resolver<{ name: string; execution_order: number; is_active: boolean; logical_operator: "AND" | "OR"; conditions: { field: string; operator: string; value: string; }[]; target_support_level_id?: string | null | undefined; target_user_id?: string | ... 1 more ... | undefined; }, any, { ...; }>'.
+  Types of parameters 'options' and 'options' are incompatible.
+    Type 'ResolverOptions<{ name: string; execution_order: number; is_active: boolean; logical_operator: "AND" | "OR"; conditions: { field: string; operator: string; value: string; }[]; target_support_level_id?: string | null | undefined; target_user_id?: string | ... 1 more ... | undefined; }>' is not assignable to type 'ResolverOptions<{ name: string; execution_order: unknown; logical_operator: "AND" | "OR"; conditions: { field: string; operator: string; value: string; }[]; is_active?: boolean | undefined; target_support_level_id?: string | ... 1 more ... | undefined; target_user_id?: string | ... 1 more ... | undefined; }>'.
+      Types of property 'names' are incompatible.
+        Type 'string[] | undefined' is not assignable to type '("name" | "is_active" | "execution_order" | "logical_operator" | "conditions" | "target_support_level_id" | "target_user_id")[] | undefined'.
+          Type 'string[]' is not assignable to type '("name" | "is_active" | "execution_order" | "logical_operator" | "conditions" | "target_support_level_id" | "target_user_id")[]'.
+            Type 'string' is not assignable to type '"name" | "is_active" | "execution_order" | "logical_operator" | "conditions" | "target_support_level_id" | "target_user_id"'.
+src/features/admin/components/RoutingRuleForm.tsx(131,69): error TS2345: Argument of type '{ name: string; is_active: boolean; execution_order: number; conditions: { logical_operator: "AND" | "OR"; conditions: { field: string; operator: string; value: string; }[]; }; target_support_level_id: string | null; target_user_id: string | null; }' is not assignable to parameter of type 'Partial<TicketRoutingRule>'.
+  The types of 'conditions.conditions' are incompatible between these types.
+    Type '{ field: string; operator: string; value: string; }[]' is not assignable to type '(RuleCondition | RuleNode)[]'.
+      Type '{ field: string; operator: string; value: string; }' is not assignable to type 'RuleCondition | RuleNode'.
+        Type '{ field: string; operator: string; value: string; }' is not assignable to type 'RuleCondition'.
+          Types of property 'operator' are incompatible.
+            Type 'string' is not assignable to type 'RuleConditionOperator'.
+src/features/admin/components/RoutingRuleForm.tsx(135,53): error TS2345: Argument of type '{ name: string; is_active: boolean; execution_order: number; conditions: { logical_operator: "AND" | "OR"; conditions: { field: string; operator: string; value: string; }[]; }; target_support_level_id: string | null; target_user_id: string | null; }' is not assignable to parameter of type 'Partial<TicketRoutingRule>'.
+  The types of 'conditions.conditions' are incompatible between these types.
+    Type '{ field: string; operator: string; value: string; }[]' is not assignable to type '(RuleCondition | RuleNode)[]'.
+      Type '{ field: string; operator: string; value: string; }' is not assignable to type 'RuleCondition | RuleNode'.
+        Type '{ field: string; operator: string; value: string; }' is not assignable to type 'RuleCondition'.
+          Types of property 'operator' are incompatible.
+            Type 'string' is not assignable to type 'RuleConditionOperator'.
+src/features/admin/components/RoutingRuleForm.tsx(149,38): error TS2345: Argument of type '(data: FormValues) => Promise<void>' is not assignable to parameter of type 'SubmitHandler<TFieldValues>'.
+  Types of parameters 'data' and 'data' are incompatible.
+    Type 'TFieldValues' is not assignable to type '{ name: string; execution_order: number; is_active: boolean; logical_operator: "AND" | "OR"; conditions: { field: string; operator: string; value: string; }[]; target_support_level_id?: string | null | undefined; target_user_id?: string | ... 1 more ... | undefined; }'.
+      Type 'FieldValues' is missing the following properties from type '{ name: string; execution_order: number; is_active: boolean; logical_operator: "AND" | "OR"; conditions: { field: string; operator: string; value: string; }[]; target_support_level_id?: string | null | undefined; target_user_id?: string | ... 1 more ... | undefined; }': name, execution_order, is_active, logical_operator, conditions

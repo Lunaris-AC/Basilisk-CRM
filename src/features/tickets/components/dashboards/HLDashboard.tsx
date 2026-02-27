@@ -58,7 +58,9 @@ export function HLDashboard() {
 
     const slaCount = globalStats?.slaViolations ?? 0
     const totalForServices = (globalStats?.byCategory.HL ?? 0) + (globalStats?.byCategory.COMMERCE ?? 0) + (globalStats?.byCategory.SAV ?? 0) + (globalStats?.byCategory.FORMATION ?? 0) + (globalStats?.byCategory.DEV ?? 0)
-    const totalForLevels = (globalStats?.byLevel.N1 ?? 0) + (globalStats?.byLevel.N2 ?? 0) + (globalStats?.byLevel.N3 ?? 0) + (globalStats?.byLevel.N4 ?? 0)
+    const totalForLevels = Object.values(globalStats?.byLevel ?? {}).reduce((acc, curr) => acc + curr, 0)
+
+    const colors = ['sky', 'purple', 'pink', 'rose', 'indigo', 'teal', 'emerald', 'amber']
 
     return (
         <div className="space-y-8 pb-10">
@@ -178,10 +180,20 @@ export function HLDashboard() {
                         <h3 className="text-xs font-bold tracking-widest text-white/40 uppercase">Répartition Support (HL)</h3>
                     </div>
                     <div className="space-y-3">
-                        <DistributionBar label="Niveau 1" value={globalStats?.byLevel.N1 ?? 0} total={totalForLevels} color="sky" />
-                        <DistributionBar label="Niveau 2" value={globalStats?.byLevel.N2 ?? 0} total={totalForLevels} color="purple" />
-                        <DistributionBar label="Niveau 3" value={globalStats?.byLevel.N3 ?? 0} total={totalForLevels} color="pink" />
-                        <DistributionBar label="Niveau 4" value={globalStats?.byLevel.N4 ?? 0} total={totalForLevels} color="rose" />
+                        {globalStats && Object.entries(globalStats.byLevel).map(([name, count], idx) => (
+                            <DistributionBar
+                                key={name}
+                                label={name}
+                                value={count}
+                                total={totalForLevels}
+                                color={colors[idx % colors.length]}
+                            />
+                        ))}
+                        {!globalStats && (
+                            <div className="h-20 flex items-center justify-center text-white/20 text-xs italic">
+                                Chargement...
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

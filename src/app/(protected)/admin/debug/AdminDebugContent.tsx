@@ -1,13 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { forceChangeUserRole, unassignAllUserTickets, softDeleteOldClosedTickets, adminUpdateProfile, adminForceEditTicket } from '@/features/admin/actions'
+import { forceChangeUserRole, unassignAllUserTickets, softDeleteOldClosedTickets, adminUpdateProfile, adminForceEditTicket, getStoresForSelect } from '@/features/admin/actions'
 import { ShieldAlert, UserCog, Trash2, Flame, Loader2, Users, Ticket, CheckCircle, XCircle, Pencil, Save, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { createClient } from '@/utils/supabase/client'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useSupportLevels } from '@/features/tickets/api/useTickets'
 
 type UserProfile = {
     id: string
@@ -195,21 +196,38 @@ function MacrosTab({ users }: { users: UserProfile[] }) {
 function ProfilesExplorerTab() {
     const queryClient = useQueryClient()
     const [editingId, setEditingId] = useState<string | null>(null)
-    const [editForm, setEditForm] = useState({ role: '', is_active: true, first_name: '', last_name: '' })
+    const [editForm, setEditForm] = useState({ role: '', is_active: true, first_name: '', last_name: '', store_id: '' as string | null, support_level_id: '' as string | null })
     const [saving, setSaving] = useState(false)
 
     const { data: profiles, isLoading } = useQuery({
         queryKey: ['admin-all-profiles'],
         queryFn: async () => {
             const supabase = createClient()
-            const { data } = await supabase.from('profiles').select('id, first_name, last_name, role, is_active, created_at').order('last_name')
+            const { data } = await supabase.from('profiles').select('id, first_name, last_name, role, is_active, created_at, store_id, support_level_id').order('last_name')
             return data || []
         },
     })
 
+    const { data: levels } = useSupportLevels()
+
+    const { data: stores } = useQuery({
+        queryKey: ['admin-stores-select'],
+        queryFn: async () => {
+            const res = await getStoresForSelect()
+            return res.data || []
+        }
+    })
+
     const startEdit = (p: any) => {
         setEditingId(p.id)
-        setEditForm({ role: p.role, is_active: p.is_active, first_name: p.first_name, last_name: p.last_name })
+        setEditForm({
+            role: p.role,
+            is_active: p.is_active,
+            first_name: p.first_name,
+            last_name: p.last_name,
+            store_id: p.store_id || null,
+            support_level_id: p.support_level_id || null
+        })
     }
 
     const saveEdit = async () => {
@@ -244,9 +262,23 @@ function ProfilesExplorerTab() {
                                         <td className="py-2 px-3 "><input value={editForm.last_name} onChange={e => setEditForm({ ...editForm, last_name: e.target.value })} className="w-full px-2 py-1 bg-white/5 border border-white/20 rounded-lg text-white text-xs" /></td>
                                         <td className="py-2 px-3"><input value={editForm.first_name} onChange={e => setEditForm({ ...editForm, first_name: e.target.value })} className="w-full px-2 py-1 bg-white/5 border border-white/20 rounded-lg text-white text-xs" /></td>
                                         <td className="py-2 px-3">
-                                            <select value={editForm.role} onChange={e => setEditForm({ ...editForm, role: e.target.value })} className="px-2 py-1 bg-white/5 border border-white/20 rounded-lg text-white text-xs">
-                                                {['STANDARD', 'COM', 'SAV1', 'SAV2', 'N1', 'N2', 'N3', 'N4', 'ADMIN', 'FORMATEUR', 'DEV'].map(r => <option key={r} value={r}>{r}</option>)}
-                                            </select>
+                                            <div className="flex flex-col gap-2">
+                                                <select value={editForm.role} onChange={e => setEditForm({ ...editForm, role: e.target.value })} className="px-2 py-1 bg-white/5 border border-white/20 rounded-lg text-white text-xs">
+                                                    {['STANDARD', 'COM', 'SAV1', 'SAV2', 'ADMIN', 'FORMATEUR', 'DEV', 'CLIENT'].map(r => <option key={r} value={r}>{r}</option>)}
+                                                </select>
+                                                {editForm.role === 'CLIENT' && (
+                                                    <select value={editForm.store_id || ''} onChange={e => setEditForm({ ...editForm, store_id: e.target.value || null })} className="px-2 py-1 bg-white/5 border border-blue-500/50 rounded-lg text-white text-xs">
+                                                        <option value="">Aucun magasin lié</option>
+                                                        {(stores || []).map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                                    </select>
+                                                )}
+                                                {['SAV1', 'SAV2', 'DEV', 'ADMIN'].includes(editForm.role) && (
+                                                    <select value={editForm.support_level_id || ''} onChange={e => setEditForm({ ...editForm, support_level_id: e.target.value || null })} className="px-2 py-1 bg-white/5 border border-amber-500/50 rounded-lg text-white text-xs">
+                                                        <option value="">Aucun grade lié</option>
+                                                        {(levels || []).map((l: any) => <option key={l.id} value={l.id}>{l.name}</option>)}
+                                                    </select>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="py-2 px-3 text-center">
                                             <button onClick={() => setEditForm({ ...editForm, is_active: !editForm.is_active })} className={`px-2 py-1 rounded-lg text-xs font-bold ${editForm.is_active ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'}`}>
@@ -295,7 +327,7 @@ function TicketsExplorerTab() {
             const supabase = createClient()
             const { data } = await supabase
                 .from('tickets')
-                .select('id, title, status, priority, category, escalation_level, assignee_id, created_at, assignee:profiles!tickets_assignee_id_fkey(first_name, last_name)')
+                .select('id, title, status, priority, category, escalation_level, support_level_id, assignee_id, created_at, assignee:profiles!tickets_assignee_id_fkey(first_name, last_name)')
                 .order('created_at', { ascending: false })
                 .limit(100)
             return (data || []).map((t: any) => ({
@@ -304,6 +336,8 @@ function TicketsExplorerTab() {
             })) as TicketRow[]
         },
     })
+
+    const { data: levels } = useSupportLevels()
 
     const { data: allUsers } = useQuery({
         queryKey: ['admin-all-users-for-assign'],
@@ -314,9 +348,9 @@ function TicketsExplorerTab() {
         },
     })
 
-    const openEdit = (t: TicketRow) => {
+    const openEdit = (t: any) => {
         setEditTicketId(t.id)
-        setEditTicketForm({ status: t.status, priority: t.priority, category: t.category, escalation_level: t.escalation_level, assignee_id: t.assignee_id || '' })
+        setEditTicketForm({ status: t.status, priority: t.priority, category: t.category, escalation_level: t.escalation_level, support_level_id: t.support_level_id || '', assignee_id: t.assignee_id || '' })
     }
 
     const saveTicket = async () => {
@@ -405,9 +439,16 @@ function TicketsExplorerTab() {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-white/40 uppercase mb-1">Niveau d'escalade</label>
+                            <label className="block text-xs font-bold text-white/40 uppercase mb-1">Niveau d'escalade (Legacy)</label>
                             <select value={editTicketForm.escalation_level || 1} onChange={e => setEditTicketForm({ ...editTicketForm, escalation_level: parseInt(e.target.value) })} className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm">
                                 {[1, 2, 3, 4].map(n => <option key={n} value={n}>Niveau {n}</option>)}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-white/40 uppercase mb-1">Support Grade (SPRINT 26.1)</label>
+                            <select value={editTicketForm.support_level_id || ''} onChange={e => setEditTicketForm({ ...editTicketForm, support_level_id: e.target.value })} className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm">
+                                <option value="">Choisir un grade...</option>
+                                {(levels || []).map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                             </select>
                         </div>
                         <div>

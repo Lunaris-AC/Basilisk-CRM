@@ -125,8 +125,15 @@ export function TicketTable({ tickets, isLoading, error, showAssignButton = fals
                                     {ticket.client?.company || 'Inconnu'}
                                 </TableCell>
                                 <TableCell>
-                                    <span className="px-2 py-1 rounded bg-white/5 text-white/70 text-[10px] font-bold">
-                                        Lvl {ticket.escalation_level}
+                                    <span
+                                        className="px-2 py-0.5 rounded text-[10px] font-bold border transition-all"
+                                        style={ticket.support_level ? {
+                                            backgroundColor: `${ticket.support_level.color}15`,
+                                            borderColor: `${ticket.support_level.color}30`,
+                                            color: ticket.support_level.color
+                                        } : {}}
+                                    >
+                                        {ticket.support_level?.name || `Lvl ${ticket.escalation_level}`}
                                     </span>
                                 </TableCell>
                                 <TableCell>

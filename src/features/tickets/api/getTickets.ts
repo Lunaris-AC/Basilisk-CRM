@@ -8,6 +8,7 @@ export interface TicketFilters {
     status?: string | 'all'
     priority?: string | 'all'
     escalation_level?: string | 'all'
+    support_level_id?: string | 'all' // SPRINT 26.1
     assignee_id?: string | 'all'
     category?: string | 'all'
 }
@@ -19,6 +20,8 @@ export interface TicketWithRelations {
     status: TicketStatus
     priority: TicketPriority
     escalation_level: number
+    support_level_id: string | null
+    support_level: { id: string; name: string; color: string; rank: number } | null
     resume_at: string | null
     created_at: string
     category: 'HL' | 'COMMERCE' | 'SAV' | 'FORMATION' | 'DEV'
@@ -40,6 +43,7 @@ const formatTickets = (data: any[] | null): TicketWithRelations[] => {
         ...ticket,
         client: ticket.clients ? { company: ticket.clients.company } : null,
         assignee: ticket.profiles ? { first_name: ticket.profiles.first_name, last_name: ticket.profiles.last_name } : null,
+        support_level: ticket.support_levels || null
     }))
 }
 
@@ -48,10 +52,10 @@ export const getMyTickets = async (userId: string, filters?: TicketFilters): Pro
     let query = supabase
         .from('tickets')
         .select(`
-      id, title, description, status, priority, escalation_level, created_at,
+      id, title, description, status, priority, escalation_level, created_at, support_level_id,
       clients (company),
-      profiles!tickets_assignee_id_fkey (first_name, last_name)
-      profiles!tickets_assignee_id_fkey (first_name, last_name)
+      profiles!tickets_assignee_id_fkey (first_name, last_name),
+      support_levels (id, name, color, rank)
     `)
         .neq('category', 'DEV') // Exclure les SD du support classique
 
@@ -96,9 +100,9 @@ export const getUnassignedTickets = async (filters?: TicketFilters): Promise<Tic
     let query = supabase
         .from('tickets')
         .select(`
-      id, title, description, status, priority, escalation_level, created_at,
+      id, title, description, status, priority, escalation_level, created_at, support_level_id,
       clients (company),
-      profiles!tickets_assignee_id_fkey (first_name, last_name)
+      support_levels (id, name, color, rank)
     `)
         .is('assignee_id', null)
         .neq('category', 'DEV') // Exclure les SD de la file d'attente
@@ -119,6 +123,10 @@ export const getUnassignedTickets = async (filters?: TicketFilters): Promise<Tic
 
     if (filters?.escalation_level && filters.escalation_level !== 'all') {
         query = query.eq('escalation_level', parseInt(filters.escalation_level, 10))
+    }
+
+    if (filters?.support_level_id && filters.support_level_id !== 'all') {
+        query = query.eq('support_level_id', filters.support_level_id)
     }
 
     if (filters?.category && filters.category !== 'all') {
@@ -145,10 +153,11 @@ export const getSDs = async (filters?: SDFilters): Promise<TicketWithRelations[]
     let query = supabase
         .from('tickets')
         .select(`
-      id, title, description, status, priority, escalation_level, created_at, category,
+      id, title, description, status, priority, escalation_level, created_at, category, support_level_id,
       clients (company),
       creator:profiles!tickets_creator_id_fkey (id, first_name, last_name),
       assignee:profiles!tickets_assignee_id_fkey (id, first_name, last_name),
+      support_levels (id, name, color, rank),
       dev_details:ticket_dev_details (
           type, reproduction_steps, impact, need_description, expected_process, complexity
       )
@@ -186,7 +195,7 @@ export interface GlobalStats {
     totalTickets: number
     totalUnassigned: number
     slaViolations: number
-    byLevel: { N1: number; N2: number; N3: number; N4: number }
+    byLevel: Record<string, number>
     byCategory: { DEV: number; COMMERCE: number; SAV: number; FORMATION: number; HL: number }
 }
 
@@ -215,15 +224,23 @@ export const getGlobalStats = async (): Promise<GlobalStats> => {
         .not('sla_deadline_at', 'is', null)
         .lt('sla_deadline_at', new Date().toISOString())
 
-    // Par niveau d'escalade
-    const levelCounts = { N1: 0, N2: 0, N3: 0, N4: 0 }
-    for (const level of [1, 2, 3, 4]) {
-        const { count } = await supabase
-            .from('tickets')
-            .select('*', { count: 'exact', head: true })
-            .eq('escalation_level', level)
-            .neq('status', 'ferme')
-        levelCounts[`N${level}` as keyof typeof levelCounts] = count || 0
+    // Par niveau d'escalade (Dynamique SPRINT 26.1)
+    const { data: levels } = await supabase
+        .from('support_levels')
+        .select('id, name')
+        .eq('is_active', true)
+        .order('rank', { ascending: true })
+
+    const levelCounts: Record<string, number> = {}
+    if (levels) {
+        for (const level of levels) {
+            const { count } = await supabase
+                .from('tickets')
+                .select('*', { count: 'exact', head: true })
+                .eq('support_level_id', level.id)
+                .neq('status', 'ferme')
+            levelCounts[level.name] = count || 0
+        }
     }
 
     // Par catégorie/service
@@ -315,7 +332,8 @@ export async function getTicketById(id: string): Promise<TicketWithRelations | n
         .from('tickets')
         .select(`
             id, title, description, status, priority, escalation_level, created_at, category,
-            linked_sd_id,
+            linked_sd_id, support_level_id,
+            support_level:support_levels (id, name, color, rank),
             client:clients (
                 id,
                 company,

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Ticket, Users, Settings, Inbox, Plus, Code2, FileText, FileCode, Eye, ShieldAlert, ChevronDown, BarChart3, HardDrive } from 'lucide-react'
+import { LayoutDashboard, Ticket, Users, Settings, Inbox, Plus, Code2, FileText, FileCode, Eye, ShieldAlert, ChevronDown, BarChart3, HardDrive, Lock, Award, GitMerge } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { CreateTicketModal } from '@/features/tickets/components/CreateTicketModal'
 
@@ -13,12 +13,15 @@ const navigation = [
     { name: 'Portail SD', href: '/sd', icon: Code2, hideForClient: true },
     { name: 'Parc Matériel', href: '/cmdb', icon: HardDrive, hideForClient: true, hideForStandard: true },
     { name: 'Documentation', href: '/documentation', icon: FileText },
+    { name: 'Commerce & Ventes', href: '/commerce', icon: FileText, onlyFor: ['ADMIN'], lockedForOthers: true },
     { name: 'Patch Notes', href: '/patch-notes', icon: FileCode },
     { name: 'Clients', href: '/clients', icon: Users, hideForClient: true },
     { name: 'Paramètres', href: '/parametres', icon: Settings },
 ]
 
 const adminNav = [
+    { name: 'Règles de Routage', href: '/admin/routing', icon: GitMerge },
+    { name: 'Grades & Niveaux', href: '/admin/grades', icon: Award },
     { name: 'God Mode (Debug)', href: '/admin/debug', icon: ShieldAlert },
     { name: 'Analytics (God\'s Eye)', href: '/admin/analytics', icon: BarChart3 },
 ]
@@ -65,23 +68,28 @@ export function Sidebar() {
                     </button>
                 )}
 
-                {navigation.filter(item =>
-                    !(item.hideForClient && profile?.role === 'CLIENT') &&
-                    !(item.hideForStandard && profile?.role === 'STANDARD')
-                ).map((item) => {
+                {navigation.filter(item => {
+                    if (item.hideForClient && profile?.role === 'CLIENT') return false
+                    if (item.hideForStandard && profile?.role === 'STANDARD') return false
+                    if (item.onlyFor && (!profile?.role || !item.onlyFor.includes(profile.role as any))) return false
+                    return true
+                }).map((item) => {
                     const isActive = pathname === item.href
 
                     return (
                         <Link
                             key={item.name}
                             href={item.href}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive
+                            className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group ${isActive
                                 ? 'bg-white/10 text-white shadow-sm ring-1 ring-white/20'
                                 : 'text-white/60 hover:text-white hover:bg-white/5'
                                 }`}
                         >
-                            <item.icon className={`w-5 h-5 transition-colors ${isActive ? 'text-indigo-400' : 'text-white/40 group-hover:text-white/70'}`} />
-                            <span className="font-medium text-sm">{item.name}</span>
+                            <div className="flex items-center gap-3">
+                                <item.icon className={`w-5 h-5 transition-colors ${isActive ? 'text-indigo-400' : 'text-white/40 group-hover:text-white/70'}`} />
+                                <span className="font-medium text-sm">{item.name}</span>
+                            </div>
+                            {(item as any).lockedForOthers && <Lock className="w-4 h-4 text-amber-500/70" />}
                         </Link>
                     )
                 })}

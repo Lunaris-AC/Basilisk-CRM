@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { getMyTickets, getUnassignedTickets, getMyDailyStats, getMyStatsByDate, getGlobalStats, getTicketById, getCommentsByTicket, getActiveAssignees, getSDs, getTicketAuditLogs, TicketFilters, SDFilters } from './getTickets'
+import { getSupportLevels } from '@/features/admin/actions/support-levels'
 import { createClient } from '@/utils/supabase/client'
 
 // Hook utilitaire pour récupérer le UserID
@@ -87,6 +88,14 @@ export const useActiveAssignees = () => {
         queryKey: ['activeAssignees'],
         queryFn: getActiveAssignees,
         staleTime: 1000 * 60 * 5,
+    })
+}
+
+export const useSupportLevels = () => {
+    return useQuery({
+        queryKey: ['supportLevels'],
+        queryFn: getSupportLevels,
+        staleTime: 1000 * 60 * 10,
     })
 }
 

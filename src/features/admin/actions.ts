@@ -100,7 +100,7 @@ export async function softDeleteOldClosedTickets() {
  */
 export async function adminUpdateProfile(
     targetUserId: string,
-    updates: { role?: string; is_active?: boolean; first_name?: string; last_name?: string }
+    updates: { role?: string; is_active?: boolean; first_name?: string; last_name?: string; store_id?: string | null; support_level_id?: string | null }
 ) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -128,7 +128,7 @@ export async function adminUpdateProfile(
  */
 export async function adminForceEditTicket(
     ticketId: string,
-    updates: { status?: string; priority?: string; category?: string; escalation_level?: number; assignee_id?: string | null; sla_deadline_at?: string | null }
+    updates: { status?: string; priority?: string; category?: string; escalation_level?: number; support_level_id?: string | null; assignee_id?: string | null; sla_deadline_at?: string | null }
 ) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -151,5 +151,26 @@ export async function adminForceEditTicket(
     revalidatePath('/incidents')
     revalidatePath('/dashboard')
     return { success: true }
+}
+
+/**
+ * Récupère la liste simplifiée des magasins (id, name) pour un composant Select.
+ */
+export async function getStoresForSelect() {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Non authentifié.', data: [] }
+
+    const { data, error } = await supabase
+        .from('stores')
+        .select('id, name')
+        .order('name')
+
+    if (error) {
+        console.error("Erreur [getStoresForSelect]:", error)
+        return { error: 'Échec de la récupération des magasins.', data: [] }
+    }
+
+    return { success: true, data: data || [] }
 }
 

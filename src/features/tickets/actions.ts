@@ -212,16 +212,34 @@ export async function closeTicket(ticketId: string, justification: string) {
  * Server Action : Escalader un ticket (Niveau supérieur ou retour) avec justification.
  * Direction: 'up' (escalader) ou 'down' (rétrograder).
  */
-export async function escalateTicket(ticketId: string, direction: 'up' | 'down', currentLevel: number, justification: string) {
+export async function escalateTicket(ticketId: string, direction: 'up' | 'down', currentRank: number, justification: string) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Non authentifié.' }
 
-    const newLevel = direction === 'up' ? Math.min(4, currentLevel + 1) : Math.max(1, currentLevel - 1)
+    // SPRINT 26.1 : Gestion dynamique des niveaux
+    const { data: allLevels } = await supabase
+        .from('support_levels')
+        .select('id, name, rank')
+        .eq('is_active', true)
+        .order('rank', { ascending: true })
+
+    if (!allLevels || allLevels.length === 0) {
+        return { error: 'Aucun niveau de support configuré.' }
+    }
+
+    const currentIndex = allLevels.findIndex(l => l.rank === currentRank)
+    if (currentIndex === -1) return { error: 'Niveau actuel introuvable.' }
+
+    let nextIndex = direction === 'up' ? currentIndex + 1 : currentIndex - 1
+    nextIndex = Math.max(0, Math.min(allLevels.length - 1, nextIndex))
+
+    const targetLevel = allLevels[nextIndex]
 
     // Force la désassignation et la remise en file d'attente à chaque changement de niveau
     const updates: any = {
-        escalation_level: newLevel,
+        escalation_level: targetLevel.rank,
+        support_level_id: targetLevel.id,
         escalated_by_id: user.id,
         assignee_id: null,
         status: 'nouveau'
@@ -238,7 +256,7 @@ export async function escalateTicket(ticketId: string, direction: 'up' | 'down',
     }
 
     const prefix = direction === 'up' ? '[ESCALADE]' : '[DÉSESCALADE]'
-    await addComment(ticketId, `${prefix} Niveau ${currentLevel} -> ${newLevel}. Motif : ${justification}`, true)
+    await addComment(ticketId, `${prefix} ${allLevels[currentIndex].name} -> ${targetLevel.name}. Motif : ${justification}`, true)
 
     revalidatePath(`/tickets/${ticketId}`)
     revalidatePath('/dashboard')
@@ -339,6 +357,16 @@ export async function createTicket(formData: FormData, assignToMe: boolean = fal
     }
 
     // 4. Insertion du ticket (statut nouveau ou en_cours si auto-assignation)
+    // SPRINT 26.1 : Récupérer le niveau par défaut (Rank 1)
+    const { data: firstLevel } = await supabase
+        .from('support_levels')
+        .select('id')
+        .eq('rank', 1)
+        .eq('is_active', true)
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .single()
+
     const { data: ticket, error: ticketError } = await supabase
         .from('tickets')
         .insert({
@@ -350,7 +378,8 @@ export async function createTicket(formData: FormData, assignToMe: boolean = fal
             creator_id: user.id,
             status: assignToMe ? 'en_cours' : 'nouveau',
             assignee_id: assignToMe ? user.id : null,
-            escalation_level: 1,
+            escalation_level: 1, // Compatibilité
+            support_level_id: firstLevel?.id || null, // Dynamique
             category,
             ...(category !== 'DEV' ? { client_id: clientId, store_id: storeId } : {}),
             ...(equipmentId ? { equipment_id: equipmentId } : {}),

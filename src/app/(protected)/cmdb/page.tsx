@@ -44,7 +44,7 @@ export default async function CMDBPage() {
             initialEquipments={equipments}
             initialLicenses={licenses}
             catalogues={catalogues}
-            stores={stores ?? []}
+            stores={(stores as any) ?? []}
         />
     )
 }

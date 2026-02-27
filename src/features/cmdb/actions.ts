@@ -182,6 +182,90 @@ export async function getLicenses(storeId?: string): Promise<SoftwareLicense[]> 
 }
 
 // ============================================================
+// CRUD CATALOGUE
+// ============================================================
+
+/**
+ * Crée un nouveau modèle dans le catalogue.
+ */
+export async function addCatalogueItem(formData: {
+    category: string
+    brand: string
+    model_name: string
+    custom_fields_schema: Record<string, string>
+}) {
+    const supabase = await createClient()
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Non authentifié.' }
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+    if (!profile || !['DEV', 'COM', 'SAV1', 'SAV2', 'ADMIN'].includes(profile.role)) {
+        return { error: 'Droits insuffisants pour ajouter un modèle.' }
+    }
+
+    const { data, error } = await supabase
+        .from('equipment_catalogue')
+        .insert({
+            category: formData.category,
+            brand: formData.brand,
+            model_name: formData.model_name,
+            custom_fields_schema: formData.custom_fields_schema,
+        })
+        .select('id')
+        .single()
+
+    if (error) {
+        console.error('Erreur addCatalogueItem:', error)
+        return { error: 'Impossible de créer le modèle.' }
+    }
+
+    revalidatePath('/cmdb')
+    return { success: true, id: data.id }
+}
+
+/**
+ * Supprime un modèle du catalogue (utilisable s'il n'est lié à aucun équipement).
+ */
+export async function deleteCatalogueItem(catalogueId: string) {
+    const supabase = await createClient()
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Non authentifié.' }
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+    if (!profile || !['DEV', 'COM', 'SAV1', 'SAV2', 'ADMIN'].includes(profile.role)) {
+        return { error: 'Droits insuffisants pour supprimer un modèle.' }
+    }
+
+    const { error } = await supabase
+        .from('equipment_catalogue')
+        .delete()
+        .eq('id', catalogueId)
+
+    if (error) {
+        console.error('Erreur deleteCatalogueItem:', error)
+        if (error.code === '23503') {
+            return { error: 'Impossible de supprimer ce modèle car des équipements y sont liés.' }
+        }
+        return { error: 'Impossible de supprimer le modèle.' }
+    }
+
+    revalidatePath('/cmdb')
+    return { success: true }
+}
+
+// ============================================================
 // CRUD ÉQUIPEMENTS
 // ============================================================
 

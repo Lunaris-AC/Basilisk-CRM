@@ -2,7 +2,7 @@
 
 import { Search } from 'lucide-react'
 import { TicketFilters as Filters } from '@/features/tickets/api/getTickets'
-import { useActiveAssignees } from '@/features/tickets/api/useTickets'
+import { useActiveAssignees, useSupportLevels } from '@/features/tickets/api/useTickets'
 
 export type TicketFiltersProps = {
     filters: Filters;
@@ -11,6 +11,7 @@ export type TicketFiltersProps = {
 
 export function TicketFilters({ filters, setFilters }: TicketFiltersProps) {
     const { data: activeAssignees } = useActiveAssignees()
+    const { data: levels } = useSupportLevels()
 
     return (
         <div className="flex flex-col md:flex-row flex-wrap items-center gap-4 mb-6 p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl w-full">
@@ -69,17 +70,16 @@ export function TicketFilters({ filters, setFilters }: TicketFiltersProps) {
                     <option value="FORMATION">Formation</option>
                 </select>
 
-                {/* Filtre Niveau (Escalation) */}
+                {/* Filtre Niveau (Dynamic SPRINT 26.1) */}
                 <select
-                    value={filters.escalation_level || 'all'}
-                    onChange={(e) => setFilters(prev => ({ ...prev, escalation_level: e.target.value }))}
+                    value={filters.support_level_id || 'all'}
+                    onChange={(e) => setFilters(prev => ({ ...prev, support_level_id: e.target.value }))}
                     className="w-full md:w-32 px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 appearance-none cursor-pointer"
                 >
                     <option value="all">Tous Niveaux</option>
-                    <option value="1">Niveau 1</option>
-                    <option value="2">Niveau 2</option>
-                    <option value="3">Niveau 3</option>
-                    <option value="4">Niveau 4</option>
+                    {levels?.map(lvl => (
+                        <option key={lvl.id} value={lvl.id}>{lvl.name}</option>
+                    ))}
                 </select>
 
                 {/* Filtre Assigné */}
