@@ -1,10 +1,12 @@
 'use client'
-
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/utils/supabase/client'
-import { LogOut, User } from 'lucide-react'
+import { LogOut, User, Menu } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { GlobalSearch } from '@/components/GlobalSearch'
+import { WorldClock } from '@/components/layout/WorldClock'
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { Sidebar } from '@/components/layout/Sidebar'
+import { createClient } from '@/utils/supabase/client'
 
 interface UserProfile {
     first_name: string
@@ -44,10 +46,27 @@ export function Topbar() {
     }
 
     return (
-        <header className="h-20 w-full flex items-center justify-between px-8 bg-black/20 backdrop-blur-md border-b border-white/5 sticky top-0 z-40">
-            {/* Recherche "Google Style" */}
-            <div className="flex-1 max-w-xl">
-                <GlobalSearch />
+        <header className="h-20 w-full flex items-center justify-between px-4 md:px-8 bg-black/20 backdrop-blur-md border-b border-white/5 sticky top-0 z-40">
+            <div className="flex items-center gap-3 md:gap-4 flex-1 max-w-2xl">
+                {/* Hamburger Mobile */}
+                <Sheet>
+                    <SheetTrigger asChild>
+                        <button className="md:hidden p-2 text-foreground/70 hover:text-foreground hover:bg-white/10 rounded-lg transition-all">
+                            <Menu className="w-6 h-6" />
+                        </button>
+                    </SheetTrigger>
+                    <SheetContent side="left" className="p-0 border-none w-64 bg-transparent outline-none">
+                        <Sidebar />
+                    </SheetContent>
+                </Sheet>
+
+                {/* Recherche "Google Style" & Horloge Mondiale */}
+                <div className="flex-1">
+                    <GlobalSearch />
+                </div>
+                <div className="hidden sm:block">
+                    <WorldClock />
+                </div>
             </div>
 
             <div className="flex items-center gap-6">
@@ -55,11 +74,11 @@ export function Topbar() {
                 {profile ? (
                     <div className="flex items-center gap-3">
                         <div className="text-right hidden md:block">
-                            <p className="text-sm font-medium text-white">{profile.first_name} {profile.last_name}</p>
-                            <p className="text-xs text-indigo-400 font-semibold tracking-wider">{profile.role}</p>
+                            <p className="text-sm font-medium text-foreground">{profile.first_name} {profile.last_name}</p>
+                            <p className="text-xs text-primary/80 font-semibold tracking-wider">{profile.role}</p>
                         </div>
                         <div className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center">
-                            <User className="w-5 h-5 text-white/70" />
+                            <User className="w-5 h-5 text-foreground/70" />
                         </div>
                     </div>
                 ) : (
@@ -70,7 +89,7 @@ export function Topbar() {
 
                 <button
                     onClick={handleLogout}
-                    className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-all"
+                    className="p-2 text-muted-foreground hover:text-foreground hover:bg-white/10 rounded-lg transition-all"
                     title="Se déconnecter"
                 >
                     <LogOut className="w-5 h-5" />

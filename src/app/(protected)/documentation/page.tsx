@@ -30,11 +30,11 @@ export default function DocumentationPage() {
         <div className="space-y-8 pb-10 max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
                 <div>
-                    <h1 className="text-4xl font-extrabold tracking-tight text-white mb-2 flex items-center gap-3">
-                        <FileText className="w-9 h-9 text-indigo-400" />
+                    <h1 className="text-4xl font-extrabold tracking-tight text-foreground mb-2 flex items-center gap-3">
+                        <FileText className="w-9 h-9 text-primary/80" />
                         Documentation
                     </h1>
-                    <p className="text-white/60 font-medium">
+                    <p className="text-muted-foreground font-medium">
                         Guides, procédures et documents internes.
                     </p>
                 </div>
@@ -42,10 +42,10 @@ export default function DocumentationPage() {
                 {canManage && (
                     <button
                         onClick={() => setUploadOpen(true)}
-                        className="group relative px-6 py-3 rounded-2xl overflow-hidden transition-all shadow-xl border hover:scale-105 active:scale-95 shadow-indigo-500/20 border-indigo-400/30"
+                        className="group relative px-6 py-3 rounded-2xl overflow-hidden transition-all shadow-xl border hover:scale-105 active:scale-95 shadow-primary/20 border-primary/30"
                     >
-                        <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 opacity-80 group-hover:opacity-100 transition-opacity" />
-                        <div className="relative flex items-center gap-2 text-white font-bold text-sm tracking-wide">
+                        <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary opacity-80 group-hover:opacity-100 transition-opacity" />
+                        <div className="relative flex items-center gap-2 text-foreground font-bold text-sm tracking-wide">
                             <Plus className="w-5 h-5" />
                             Uploader un document
                         </div>

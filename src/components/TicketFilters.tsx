@@ -18,13 +18,13 @@ export function TicketFilters({ filters, setFilters }: TicketFiltersProps) {
 
             {/* Recherche Textuelle */}
             <div className="relative flex-1 w-full">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input
                     type="text"
                     placeholder="Chercher par titre..."
                     value={filters.search || ''}
                     onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-                    className="w-full pl-10 pr-4 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-white/30"
+                    className="w-full pl-10 pr-4 py-2 bg-black/40 border border-white/10 rounded-xl text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground"
                 />
             </div>
 
@@ -33,7 +33,7 @@ export function TicketFilters({ filters, setFilters }: TicketFiltersProps) {
                 <select
                     value={filters.status || 'all'}
                     onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-                    className="w-full md:w-40 px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 appearance-none cursor-pointer"
+                    className="w-full md:w-40 px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none cursor-pointer"
                 >
                     <option value="all">Tous les statuts</option>
                     <option value="nouveau">Nouveau</option>
@@ -48,7 +48,7 @@ export function TicketFilters({ filters, setFilters }: TicketFiltersProps) {
                 <select
                     value={filters.priority || 'all'}
                     onChange={(e) => setFilters(prev => ({ ...prev, priority: e.target.value }))}
-                    className="w-full md:w-36 px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 appearance-none cursor-pointer"
+                    className="w-full md:w-36 px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none cursor-pointer"
                 >
                     <option value="all">Toutes priorités</option>
                     <option value="basse">Basse</option>
@@ -61,7 +61,7 @@ export function TicketFilters({ filters, setFilters }: TicketFiltersProps) {
                 <select
                     value={filters.category || 'all'}
                     onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
-                    className="w-full md:w-40 px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 appearance-none cursor-pointer"
+                    className="w-full md:w-40 px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none cursor-pointer"
                 >
                     <option value="all">Tous Services</option>
                     <option value="HL">Support HL</option>
@@ -74,7 +74,7 @@ export function TicketFilters({ filters, setFilters }: TicketFiltersProps) {
                 <select
                     value={filters.support_level_id || 'all'}
                     onChange={(e) => setFilters(prev => ({ ...prev, support_level_id: e.target.value }))}
-                    className="w-full md:w-32 px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 appearance-none cursor-pointer"
+                    className="w-full md:w-32 px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 appearance-none cursor-pointer"
                 >
                     <option value="all">Tous Niveaux</option>
                     {levels?.map(lvl => (
@@ -86,7 +86,7 @@ export function TicketFilters({ filters, setFilters }: TicketFiltersProps) {
                 <select
                     value={filters.assignee_id || 'all'}
                     onChange={(e) => setFilters(prev => ({ ...prev, assignee_id: e.target.value }))}
-                    className="w-full md:w-48 px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 appearance-none cursor-pointer"
+                    className="w-full md:w-48 px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 appearance-none cursor-pointer"
                 >
                     <option value="all">Tous les Assignés</option>
                     {activeAssignees?.map(profile => (

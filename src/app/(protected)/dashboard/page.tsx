@@ -8,7 +8,7 @@ import { ClientDashboard } from '@/features/tickets/components/dashboards/Client
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-    title: 'Portail | NexusSupport',
+    title: 'Portail | Basilisk Support ERP',
     description: 'Vos tickets et tableaux de bord',
 }
 

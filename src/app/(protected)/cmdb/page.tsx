@@ -4,7 +4,7 @@ import { getCatalogues, getEquipments, getLicenses } from '@/features/cmdb/actio
 import { CMDBPageContent } from '@/features/cmdb/components/CMDBPageContent'
 
 export const metadata = {
-    title: 'Parc Matériel (CMDB) — NexusSupport',
+    title: 'Parc Matériel (CMDB) — Basilisk Support ERP',
     description: 'Gestion du parc matériel et des licences logicielles',
 }
 

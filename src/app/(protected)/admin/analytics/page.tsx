@@ -38,7 +38,7 @@ export default function AdminAnalyticsPage() {
 
     if (authorized === null) return (
         <div className="flex items-center justify-center h-96">
-            <Loader2 className="w-8 h-8 animate-spin text-white/30" />
+            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
         </div>
     )
 
@@ -48,11 +48,11 @@ export default function AdminAnalyticsPage() {
         <div className="space-y-8 pb-10 max-w-[1600px] mx-auto">
             {/* Header */}
             <div>
-                <h1 className="text-4xl font-extrabold tracking-tight text-white mb-2 flex items-center gap-3">
+                <h1 className="text-4xl font-extrabold tracking-tight text-foreground mb-2 flex items-center gap-3">
                     <Eye className="w-9 h-9 text-rose-400" />
                     L'Œil de Sauron
                 </h1>
-                <p className="text-white/50 font-medium">Tableau de bord analytique — Vision globale de l'entreprise.</p>
+                <p className="text-muted-foreground font-medium">Tableau de bord analytique — Vision globale de l'entreprise.</p>
             </div>
 
             {/* ═══ LIGNE 1 : KPIs GLOBAUX ═══ */}
@@ -67,7 +67,7 @@ export default function AdminAnalyticsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {/* LineChart — 2/3 */}
                 <div className="lg:col-span-2 p-6 rounded-2xl bg-white/[0.03] border border-white/[0.07] backdrop-blur-md">
-                    <h3 className="text-xs font-bold tracking-widest text-white/40 uppercase mb-4">Tendance Créés vs Fermés — 30 jours</h3>
+                    <h3 className="text-xs font-bold tracking-widest text-muted-foreground uppercase mb-4">Tendance Créés vs Fermés — 30 jours</h3>
                     {l4 ? <ChartSkeleton /> : (
                         <ResponsiveContainer width="100%" height={320}>
                             <LineChart data={trend || []}>
@@ -85,7 +85,7 @@ export default function AdminAnalyticsPage() {
 
                 {/* PieChart — 1/3 */}
                 <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/[0.07] backdrop-blur-md">
-                    <h3 className="text-xs font-bold tracking-widest text-white/40 uppercase mb-4">Répartition par Service</h3>
+                    <h3 className="text-xs font-bold tracking-widest text-muted-foreground uppercase mb-4">Répartition par Service</h3>
                     {l1 ? <ChartSkeleton /> : (
                         <ResponsiveContainer width="100%" height={320}>
                             <PieChart>
@@ -114,7 +114,7 @@ export default function AdminAnalyticsPage() {
 
             {/* ═══ LIGNE 3 : LEADERBOARD AGENTS ═══ */}
             <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/[0.07] backdrop-blur-md">
-                <h3 className="text-xs font-bold tracking-widest text-white/40 uppercase mb-5 flex items-center gap-2">
+                <h3 className="text-xs font-bold tracking-widest text-muted-foreground uppercase mb-5 flex items-center gap-2">
                     <Crown className="w-3.5 h-3.5 text-amber-400" />
                     Palmarès des Agents — Ce Mois
                 </h3>
@@ -122,7 +122,7 @@ export default function AdminAnalyticsPage() {
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead>
-                                <tr className="text-left text-white/30 text-xs uppercase tracking-wider">
+                                <tr className="text-left text-muted-foreground text-xs uppercase tracking-wider">
                                     <th className="pb-3 px-3">#</th>
                                     <th className="pb-3 px-3">Agent</th>
                                     <th className="pb-3 px-3">Rôle</th>
@@ -137,17 +137,17 @@ export default function AdminAnalyticsPage() {
                                     <tr key={a.id} className="hover:bg-white/[0.03] transition-colors cursor-pointer" onClick={() => { setSelectedAgent(a); setDrawerOpen(true) }}>
                                         <td className="py-3 px-3">
                                             {i === 0 ? <span className="text-amber-400 font-black">🥇</span>
-                                                : i === 1 ? <span className="text-white/50 font-bold">🥈</span>
+                                                : i === 1 ? <span className="text-muted-foreground font-bold">🥈</span>
                                                     : i === 2 ? <span className="text-amber-700 font-bold">🥉</span>
-                                                        : <span className="text-white/20 font-medium">{i + 1}</span>}
+                                                        : <span className="text-foreground/20 font-medium">{i + 1}</span>}
                                         </td>
-                                        <td className="py-3 px-3 text-white font-semibold">{a.first_name} {a.last_name}</td>
+                                        <td className="py-3 px-3 text-foreground font-semibold">{a.first_name} {a.last_name}</td>
                                         <td className="py-3 px-3">
-                                            <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-[10px] font-bold tracking-wider text-white/50">{a.role}</span>
+                                            <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-[10px] font-bold tracking-wider text-muted-foreground">{a.role}</span>
                                         </td>
-                                        <td className="py-3 px-3 text-center text-white/70">{a.ticketsInProgress}</td>
-                                        <td className="py-3 px-3 text-center font-bold text-white">{a.resolvedThisMonth}</td>
-                                        <td className="py-3 px-3 text-center text-white/50">{a.avgResolutionHours != null ? `${a.avgResolutionHours}h` : '—'}</td>
+                                        <td className="py-3 px-3 text-center text-foreground/70">{a.ticketsInProgress}</td>
+                                        <td className="py-3 px-3 text-center font-bold text-foreground">{a.resolvedThisMonth}</td>
+                                        <td className="py-3 px-3 text-center text-muted-foreground">{a.avgResolutionHours != null ? `${a.avgResolutionHours}h` : '—'}</td>
                                         <td className="py-3 px-3 text-center">
                                             <span className={`px-2.5 py-1 rounded-lg text-xs font-black border ${a.slaRate >= 90
                                                 ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
@@ -161,7 +161,7 @@ export default function AdminAnalyticsPage() {
                                     </tr>
                                 ))}
                                 {(!agents || agents.length === 0) && (
-                                    <tr><td colSpan={7} className="py-8 text-center text-white/20">Aucune donnée disponible.</td></tr>
+                                    <tr><td colSpan={7} className="py-8 text-center text-foreground/20">Aucune donnée disponible.</td></tr>
                                 )}
                             </tbody>
                         </table>
@@ -171,7 +171,7 @@ export default function AdminAnalyticsPage() {
 
             {/* ═══ LIGNE 4 : TOP CLIENTS ═══ */}
             <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/[0.07] backdrop-blur-md">
-                <h3 className="text-xs font-bold tracking-widest text-white/40 uppercase mb-5 flex items-center gap-2">
+                <h3 className="text-xs font-bold tracking-widest text-muted-foreground uppercase mb-5 flex items-center gap-2">
                     <Flame className="w-3.5 h-3.5 text-orange-400" />
                     Top 5 Clients — Volume de Tickets
                 </h3>
@@ -201,12 +201,12 @@ export default function AdminAnalyticsPage() {
 
 function KpiHero({ label, value, icon: Icon, color, subtitle }: { label: string; value: string | number; icon: any; color: string; subtitle: string }) {
     const colorMap: Record<string, { border: string; icon: string; glow: string }> = {
-        indigo: { border: 'border-indigo-500/20', icon: 'text-indigo-400', glow: 'bg-indigo-500/10' },
+        indigo: { border: 'border-primary/20', icon: 'text-primary/80', glow: 'bg-primary/10' },
         emerald: { border: 'border-emerald-500/20', icon: 'text-emerald-400', glow: 'bg-emerald-500/10' },
         amber: { border: 'border-amber-500/20', icon: 'text-amber-400', glow: 'bg-amber-500/10' },
         rose: { border: 'border-rose-500/30', icon: 'text-rose-400', glow: 'bg-rose-500/15' },
         cyan: { border: 'border-cyan-500/20', icon: 'text-cyan-400', glow: 'bg-cyan-500/10' },
-        purple: { border: 'border-purple-500/20', icon: 'text-purple-400', glow: 'bg-purple-500/10' },
+        purple: { border: 'border-primary/20', icon: 'text-primary/80', glow: 'bg-primary/10' },
     }
     const c = colorMap[color] || colorMap.indigo
     return (
@@ -215,10 +215,10 @@ function KpiHero({ label, value, icon: Icon, color, subtitle }: { label: string;
             <div className="relative">
                 <div className="flex items-center gap-2 mb-2">
                     <Icon className={`w-4 h-4 ${c.icon}`} />
-                    <span className="text-[10px] font-bold tracking-widest text-white/40 uppercase">{label}</span>
+                    <span className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">{label}</span>
                 </div>
-                <p className="text-4xl font-black tracking-tighter text-white">{value}</p>
-                <p className="text-[10px] text-white/25 mt-1 font-medium">{subtitle}</p>
+                <p className="text-4xl font-black tracking-tighter text-foreground">{value}</p>
+                <p className="text-[10px] text-foreground/25 mt-1 font-medium">{subtitle}</p>
             </div>
         </div>
     )
@@ -227,7 +227,7 @@ function KpiHero({ label, value, icon: Icon, color, subtitle }: { label: string;
 function ChartSkeleton() {
     return (
         <div className="flex items-center justify-center h-48">
-            <Loader2 className="w-6 h-6 animate-spin text-white/20" />
+            <Loader2 className="w-6 h-6 animate-spin text-foreground/20" />
         </div>
     )
 }

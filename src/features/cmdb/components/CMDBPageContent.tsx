@@ -49,8 +49,8 @@ export function CMDBPageContent({ initialEquipments, initialLicenses, catalogues
                         <HardDrive className="w-6 h-6 text-cyan-400" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-white tracking-tight">Parc Matériel</h1>
-                        <p className="text-sm text-white/50 mt-0.5">
+                        <h1 className="text-2xl font-bold text-foreground tracking-tight">Parc Matériel</h1>
+                        <p className="text-sm text-muted-foreground mt-0.5">
                             {initialEquipments.length} équipement{initialEquipments.length !== 1 ? 's' : ''} · {initialLicenses.length} licence{initialLicenses.length !== 1 ? 's' : ''}
                             {expiringCount > 0 && (
                                 <span className="ml-2 text-amber-400 font-semibold">⚠ {expiringCount} licence{expiringCount > 1 ? 's' : ''} à renouveler</span>
@@ -67,17 +67,17 @@ export function CMDBPageContent({ initialEquipments, initialLicenses, catalogues
                         <TabsList className="bg-white/5 border border-white/10 p-1 rounded-xl">
                             <TabsTrigger
                                 value="materiel"
-                                className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-cyan-500/30 data-[state=active]:shadow-none rounded-lg px-4 py-2 text-sm font-medium text-white/50 transition-all gap-2"
+                                className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-cyan-500/30 data-[state=active]:shadow-none rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-all gap-2"
                             >
                                 <Server className="w-4 h-4" />
                                 Matériel
-                                <span className="ml-1 px-1.5 py-0.5 rounded-md bg-white/10 text-[10px] font-bold text-white/60">
+                                <span className="ml-1 px-1.5 py-0.5 rounded-md bg-white/10 text-[10px] font-bold text-muted-foreground">
                                     {initialEquipments.length}
                                 </span>
                             </TabsTrigger>
                             <TabsTrigger
                                 value="licences"
-                                className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-300 data-[state=active]:border-violet-500/30 data-[state=active]:shadow-none rounded-lg px-4 py-2 text-sm font-medium text-white/50 transition-all gap-2"
+                                className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary/80 data-[state=active]:border-primary/30 data-[state=active]:shadow-none rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-all gap-2"
                             >
                                 <Key className="w-4 h-4" />
                                 Licences
@@ -87,11 +87,11 @@ export function CMDBPageContent({ initialEquipments, initialLicenses, catalogues
                             </TabsTrigger>
                             <TabsTrigger
                                 value="catalogue"
-                                className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-300 data-[state=active]:border-blue-500/30 data-[state=active]:shadow-none rounded-lg px-4 py-2 text-sm font-medium text-white/50 transition-all gap-2"
+                                className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-300 data-[state=active]:border-blue-500/30 data-[state=active]:shadow-none rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-all gap-2"
                             >
                                 <HardDrive className="w-4 h-4" />
                                 Catalogue
-                                <span className="ml-1 px-1.5 py-0.5 rounded-md bg-white/10 text-[10px] font-bold text-white/60">
+                                <span className="ml-1 px-1.5 py-0.5 rounded-md bg-white/10 text-[10px] font-bold text-muted-foreground">
                                     {catalogues.length}
                                 </span>
                             </TabsTrigger>
@@ -110,7 +110,7 @@ export function CMDBPageContent({ initialEquipments, initialLicenses, catalogues
                         {activeTab === 'licences' && (
                             <button
                                 onClick={() => setAddLicenseOpen(true)}
-                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/20 hover:border-violet-500/40 text-violet-300 text-sm font-medium transition-all duration-200"
+                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 hover:bg-primary/20 border border-primary/20 hover:border-primary/40 text-primary/80 text-sm font-medium transition-all duration-200"
                             >
                                 <Plus className="w-4 h-4" />
                                 Ajouter une licence

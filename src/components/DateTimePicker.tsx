@@ -41,8 +41,8 @@ export function DateTimePicker({ value, onChange, placeholder = 'Sélectionner u
                     disabled={disabled}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-all text-left text-sm
                         ${selectedDate
-                            ? 'bg-black/40 border-amber-500/30 text-white'
-                            : 'bg-black/40 border-white/10 text-white/40'
+                            ? 'bg-black/40 border-amber-500/30 text-foreground'
+                            : 'bg-black/40 border-white/10 text-muted-foreground'
                         }
                         hover:border-amber-500/50 focus:outline-none focus:ring-2 focus:ring-amber-500/30
                         disabled:opacity-50 disabled:cursor-not-allowed`}
@@ -70,19 +70,19 @@ export function DateTimePicker({ value, onChange, placeholder = 'Sélectionner u
                             months: "flex flex-col",
                             month: "space-y-3",
                             caption: "flex justify-center pt-1 relative items-center",
-                            caption_label: "text-sm font-bold text-white",
+                            caption_label: "text-sm font-bold text-foreground",
                             nav: "flex items-center gap-1",
-                            nav_button: "h-7 w-7 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-colors inline-flex items-center justify-center",
+                            nav_button: "h-7 w-7 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors inline-flex items-center justify-center",
                             table: "w-full border-collapse",
                             head_row: "flex",
-                            head_cell: "text-white/40 rounded-md w-9 font-medium text-[0.8rem]",
+                            head_cell: "text-muted-foreground rounded-md w-9 font-medium text-[0.8rem]",
                             row: "flex w-full mt-1",
                             cell: "h-9 w-9 text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
                             day: "h-9 w-9 p-0 font-medium rounded-lg hover:bg-amber-500/20 hover:text-amber-300 transition-colors text-white/70 inline-flex items-center justify-center",
                             day_selected: "bg-amber-500 text-black hover:bg-amber-400 font-bold",
-                            day_today: "bg-white/10 text-white font-bold",
-                            day_outside: "text-white/20",
-                            day_disabled: "text-white/10 hover:bg-transparent",
+                            day_today: "bg-white/10 text-foreground font-bold",
+                            day_outside: "text-foreground/20",
+                            day_disabled: "text-foreground/10 hover:bg-transparent",
                         }}
                     />
                 </div>
@@ -94,7 +94,7 @@ export function DateTimePicker({ value, onChange, placeholder = 'Sélectionner u
                         <select
                             value={hour}
                             onChange={(e) => setHour(parseInt(e.target.value))}
-                            className="bg-black/60 border border-white/10 text-white rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30 appearance-none cursor-pointer hover:border-amber-500/30 transition-colors"
+                            className="bg-black/60 border border-white/10 text-foreground rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30 appearance-none cursor-pointer hover:border-amber-500/30 transition-colors"
                         >
                             {Array.from({ length: 24 }, (_, i) => (
                                 <option key={i} value={i} className="bg-zinc-900">
@@ -102,11 +102,11 @@ export function DateTimePicker({ value, onChange, placeholder = 'Sélectionner u
                                 </option>
                             ))}
                         </select>
-                        <span className="text-white/50 font-bold text-lg">:</span>
+                        <span className="text-muted-foreground font-bold text-lg">:</span>
                         <select
                             value={minute}
                             onChange={(e) => setMinute(parseInt(e.target.value))}
-                            className="bg-black/60 border border-white/10 text-white rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30 appearance-none cursor-pointer hover:border-amber-500/30 transition-colors"
+                            className="bg-black/60 border border-white/10 text-foreground rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30 appearance-none cursor-pointer hover:border-amber-500/30 transition-colors"
                         >
                             {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map(m => (
                                 <option key={m} value={m} className="bg-zinc-900">
@@ -115,7 +115,7 @@ export function DateTimePicker({ value, onChange, placeholder = 'Sélectionner u
                             ))}
                         </select>
                     </div>
-                    <span className="text-white/30 text-xs ml-auto">Heure de reprise</span>
+                    <span className="text-muted-foreground text-xs ml-auto">Heure de reprise</span>
                 </div>
             </PopoverContent>
         </Popover>

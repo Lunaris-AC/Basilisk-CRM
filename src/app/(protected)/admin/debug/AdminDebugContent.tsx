@@ -57,13 +57,13 @@ export function AdminDebugContent({ users }: { users: UserProfile[] }) {
             {/* TABS */}
             <Tabs defaultValue="macros" className="w-full">
                 <TabsList className="w-full bg-white/5 border border-white/10 rounded-xl p-1 h-auto flex gap-1">
-                    <TabsTrigger value="macros" className="flex-1 data-[state=active]:bg-rose-500/20 data-[state=active]:text-rose-300 data-[state=active]:border-rose-500/30 border border-transparent rounded-lg py-3 text-white/50 font-bold text-sm transition-all">
+                    <TabsTrigger value="macros" className="flex-1 data-[state=active]:bg-rose-500/20 data-[state=active]:text-rose-300 data-[state=active]:border-rose-500/30 border border-transparent rounded-lg py-3 text-muted-foreground font-bold text-sm transition-all">
                         <Flame className="w-4 h-4 mr-2" /> Macros Systèmes
                     </TabsTrigger>
-                    <TabsTrigger value="profiles" className="flex-1 data-[state=active]:bg-indigo-500/20 data-[state=active]:text-indigo-300 data-[state=active]:border-indigo-500/30 border border-transparent rounded-lg py-3 text-white/50 font-bold text-sm transition-all">
+                    <TabsTrigger value="profiles" className="flex-1 data-[state=active]:bg-primary/20 data-[state=active]:text-primary/80 data-[state=active]:border-primary/30 border border-transparent rounded-lg py-3 text-muted-foreground font-bold text-sm transition-all">
                         <Users className="w-4 h-4 mr-2" /> Explorateur Profils
                     </TabsTrigger>
-                    <TabsTrigger value="tickets" className="flex-1 data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-300 data-[state=active]:border-purple-500/30 border border-transparent rounded-lg py-3 text-white/50 font-bold text-sm transition-all">
+                    <TabsTrigger value="tickets" className="flex-1 data-[state=active]:bg-primary/20 data-[state=active]:text-primary/80 data-[state=active]:border-primary/30 border border-transparent rounded-lg py-3 text-muted-foreground font-bold text-sm transition-all">
                         <Ticket className="w-4 h-4 mr-2" /> Explorateur Tickets
                     </TabsTrigger>
                 </TabsList>
@@ -133,19 +133,19 @@ function MacrosTab({ users }: { users: UserProfile[] }) {
             <div className="p-6 rounded-2xl bg-black/60 border border-rose-500/20 backdrop-blur-md shadow-2xl hover:border-rose-500/40 transition-all">
                 <div className="flex items-center gap-3 mb-6">
                     <UserCog className="w-6 h-6 text-rose-400" />
-                    <h2 className="text-xl font-bold text-white">Changement de Grade</h2>
+                    <h2 className="text-xl font-bold text-foreground">Changement de Grade</h2>
                 </div>
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-white/60 mb-1.5">Utilisateur cible</label>
-                        <select value={selectedUserForRole} onChange={e => setSelectedUserForRole(e.target.value)} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-rose-500/50">
+                        <label className="block text-sm font-medium text-muted-foreground mb-1.5">Utilisateur cible</label>
+                        <select value={selectedUserForRole} onChange={e => setSelectedUserForRole(e.target.value)} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-foreground focus:outline-none focus:border-rose-500/50">
                             <option value="">Choisir un utilisateur...</option>
                             {users.map(u => <option key={u.id} value={u.id}>{u.last_name} {u.first_name} ({u.role})</option>)}
                         </select>
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-white/60 mb-1.5">Nouveau Rôle</label>
-                        <select value={selectedRole} onChange={e => setSelectedRole(e.target.value)} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-rose-500/50">
+                        <label className="block text-sm font-medium text-muted-foreground mb-1.5">Nouveau Rôle</label>
+                        <select value={selectedRole} onChange={e => setSelectedRole(e.target.value)} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-foreground focus:outline-none focus:border-rose-500/50">
                             {['STANDARD', 'COM', 'SAV1', 'SAV2', 'N1', 'N2', 'N3', 'N4', 'ADMIN', 'FORMATEUR', 'DEV'].map(r => <option key={r} value={r}>{r}</option>)}
                         </select>
                     </div>
@@ -159,11 +159,11 @@ function MacrosTab({ users }: { users: UserProfile[] }) {
             <div className="p-6 rounded-2xl bg-black/60 border border-orange-500/20 backdrop-blur-md shadow-2xl hover:border-orange-500/40 transition-all">
                 <div className="flex items-center gap-3 mb-6">
                     <Trash2 className="w-6 h-6 text-orange-400" />
-                    <h2 className="text-xl font-bold text-white">Purge d'Assignation</h2>
+                    <h2 className="text-xl font-bold text-foreground">Purge d'Assignation</h2>
                 </div>
-                <p className="text-sm text-white/40 mb-6">Retire tous les tickets actuellement assignés à l'utilisateur sélectionné.</p>
+                <p className="text-sm text-muted-foreground mb-6">Retire tous les tickets actuellement assignés à l'utilisateur sélectionné.</p>
                 <div className="space-y-4">
-                    <select value={selectedUserForPurge} onChange={e => setSelectedUserForPurge(e.target.value)} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-orange-500/50">
+                    <select value={selectedUserForPurge} onChange={e => setSelectedUserForPurge(e.target.value)} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-foreground focus:outline-none focus:border-orange-500/50">
                         <option value="">Choisir un utilisateur...</option>
                         {users.map(u => <option key={u.id} value={u.id}>{u.last_name} {u.first_name} ({u.role})</option>)}
                     </select>
@@ -244,11 +244,11 @@ function ProfilesExplorerTab() {
     return (
         <div className="p-4 rounded-2xl bg-black/40 border border-white/[0.07] backdrop-blur-md overflow-x-auto">
             {isLoading ? (
-                <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-white/30" /></div>
+                <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
             ) : (
                 <table className="w-full text-sm">
                     <thead>
-                        <tr className="text-left text-white/30 text-xs uppercase tracking-wider">
+                        <tr className="text-left text-muted-foreground text-xs uppercase tracking-wider">
                             <th className="pb-3 px-3">Nom</th>
                             <th className="pb-3 px-3">Prénom</th>
                             <th className="pb-3 px-3">Rôle</th>
@@ -262,22 +262,22 @@ function ProfilesExplorerTab() {
                             <tr key={p.id} className="hover:bg-white/[0.03] transition-colors">
                                 {editingId === p.id ? (
                                     <>
-                                        <td className="py-2 px-3 "><input value={editForm.last_name} onChange={e => setEditForm({ ...editForm, last_name: e.target.value })} className="w-full px-2 py-1 bg-white/5 border border-white/20 rounded-lg text-white text-xs" /></td>
-                                        <td className="py-2 px-3"><input value={editForm.first_name} onChange={e => setEditForm({ ...editForm, first_name: e.target.value })} className="w-full px-2 py-1 bg-white/5 border border-white/20 rounded-lg text-white text-xs" /></td>
+                                        <td className="py-2 px-3 "><input value={editForm.last_name} onChange={e => setEditForm({ ...editForm, last_name: e.target.value })} className="w-full px-2 py-1 bg-white/5 border border-white/20 rounded-lg text-foreground text-xs" /></td>
+                                        <td className="py-2 px-3"><input value={editForm.first_name} onChange={e => setEditForm({ ...editForm, first_name: e.target.value })} className="w-full px-2 py-1 bg-white/5 border border-white/20 rounded-lg text-foreground text-xs" /></td>
                                         <td className="py-2 px-3">
                                             <div className="flex flex-col gap-2">
-                                                <select value={editForm.role} onChange={e => setEditForm({ ...editForm, role: e.target.value })} className="px-2 py-1 bg-white/5 border border-white/20 rounded-lg text-white text-xs">
+                                                <select value={editForm.role} onChange={e => setEditForm({ ...editForm, role: e.target.value })} className="px-2 py-1 bg-white/5 border border-white/20 rounded-lg text-foreground text-xs">
                                                     {['STANDARD', 'COM', 'SAV1', 'SAV2', 'ADMIN', 'FORMATEUR', 'DEV', 'CLIENT'].map(r => <option key={r} value={r}>{r}</option>)}
                                                 </select>
                                                 {editForm.role === 'CLIENT' && (
-                                                    <select value={editForm.store_id || ''} onChange={e => setEditForm({ ...editForm, store_id: e.target.value || null })} className="px-2 py-1 bg-white/5 border border-blue-500/50 rounded-lg text-white text-xs">
+                                                    <select value={editForm.store_id || ''} onChange={e => setEditForm({ ...editForm, store_id: e.target.value || null })} className="px-2 py-1 bg-white/5 border border-blue-500/50 rounded-lg text-foreground text-xs">
                                                         <option value="">Aucun magasin lié</option>
                                                         {(stores || []).map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}
                                                     </select>
                                                 )}
                                                 {/* HOTFIX 32.1 : Inclure les rôles N1/N2/N3/N4 dans le filtre technique */}
                                                 {['N1', 'N2', 'N3', 'N4', 'SAV1', 'SAV2', 'DEV', 'ADMIN'].includes(editForm.role) && (
-                                                    <select value={editForm.support_level_id || ''} onChange={e => setEditForm({ ...editForm, support_level_id: e.target.value || null })} className="px-2 py-1 bg-white/5 border border-amber-500/50 rounded-lg text-white text-xs">
+                                                    <select value={editForm.support_level_id || ''} onChange={e => setEditForm({ ...editForm, support_level_id: e.target.value || null })} className="px-2 py-1 bg-white/5 border border-amber-500/50 rounded-lg text-foreground text-xs">
                                                         <option value="">Aucun niveau lié</option>
                                                         {(levels || []).map((l: any) => <option key={l.id} value={l.id}>{l.name}</option>)}
                                                     </select>
@@ -294,24 +294,24 @@ function ProfilesExplorerTab() {
                                         <td className="py-2 px-3 text-center">
                                             <div className="flex justify-center gap-2">
                                                 <button onClick={saveEdit} disabled={saving} className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-colors"><Save className="w-3.5 h-3.5" /></button>
-                                                <button onClick={() => setEditingId(null)} className="p-1.5 rounded-lg bg-white/5 text-white/40 hover:bg-white/10 transition-colors"><X className="w-3.5 h-3.5" /></button>
+                                                <button onClick={() => setEditingId(null)} className="p-1.5 rounded-lg bg-white/5 text-muted-foreground hover:bg-white/10 transition-colors"><X className="w-3.5 h-3.5" /></button>
                                             </div>
                                         </td>
                                     </>
                                 ) : (
                                     <>
-                                        <td className="py-3 px-3 text-white font-medium">{p.last_name}</td>
-                                        <td className="py-3 px-3 text-white/70">{p.first_name}</td>
-                                        <td className="py-3 px-3"><span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-[10px] font-bold tracking-wider text-white/50">{p.role}</span></td>
+                                        <td className="py-3 px-3 text-foreground font-medium">{p.last_name}</td>
+                                        <td className="py-3 px-3 text-foreground/70">{p.first_name}</td>
+                                        <td className="py-3 px-3"><span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-[10px] font-bold tracking-wider text-muted-foreground">{p.role}</span></td>
                                         <td className="py-3 px-3">
                                             {p.support_level_id
                                                 ? <span className="px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/30 text-[10px] font-bold text-amber-300">{(levels || []).find((l: any) => l.id === p.support_level_id)?.name ?? '—'}</span>
-                                                : <span className="text-white/20 text-xs">—</span>
+                                                : <span className="text-foreground/20 text-xs">—</span>
                                             }
                                         </td>
                                         <td className="py-3 px-3 text-center">{p.is_active ? <CheckCircle className="w-4 h-4 text-emerald-400 inline" /> : <XCircle className="w-4 h-4 text-rose-400 inline" />}</td>
                                         <td className="py-3 px-3 text-center">
-                                            <button onClick={() => startEdit(p)} className="p-1.5 rounded-lg bg-white/5 text-white/40 hover:text-indigo-300 hover:bg-indigo-500/10 transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
+                                            <button onClick={() => startEdit(p)} className="p-1.5 rounded-lg bg-white/5 text-muted-foreground hover:text-primary/80 hover:bg-primary/10 transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
                                         </td>
                                     </>
                                 )}
@@ -378,23 +378,23 @@ function TicketsExplorerTab() {
 
     const statusColors: Record<string, string> = {
         nouveau: 'bg-sky-500/15 text-sky-300 border-sky-500/30',
-        assigne: 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30',
+        assigne: 'bg-primary/15 text-primary/80 border-primary/30',
         en_cours: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
         attente_client: 'bg-orange-500/15 text-orange-300 border-orange-500/30',
         resolu: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
-        ferme: 'bg-white/5 text-white/30 border-white/10',
-        suspendu: 'bg-purple-500/15 text-purple-300 border-purple-500/30',
+        ferme: 'bg-white/5 text-muted-foreground border-white/10',
+        suspendu: 'bg-primary/15 text-primary/80 border-primary/30',
     }
 
     return (
         <>
             <div className="p-4 rounded-2xl bg-black/40 border border-white/[0.07] backdrop-blur-md overflow-x-auto">
                 {isLoading ? (
-                    <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-white/30" /></div>
+                    <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
                 ) : (
                     <table className="w-full text-sm">
                         <thead>
-                            <tr className="text-left text-white/30 text-xs uppercase tracking-wider">
+                            <tr className="text-left text-muted-foreground text-xs uppercase tracking-wider">
                                 <th className="pb-3 px-3">Titre</th>
                                 <th className="pb-3 px-3">Statut</th>
                                 <th className="pb-3 px-3">Priorité</th>
@@ -407,14 +407,14 @@ function TicketsExplorerTab() {
                         <tbody className="divide-y divide-white/5">
                             {(tickets || []).map(t => (
                                 <tr key={t.id} className="hover:bg-white/[0.03] transition-colors">
-                                    <td className="py-3 px-3 text-white font-medium max-w-[250px] truncate">{t.title}</td>
-                                    <td className="py-3 px-3"><span className={`px-2 py-0.5 rounded-md border text-[10px] font-bold ${statusColors[t.status] || 'bg-white/5 text-white/40'}`}>{t.status}</span></td>
-                                    <td className="py-3 px-3 text-white/60 text-xs">{t.priority}</td>
-                                    <td className="py-3 px-3 text-white/60 text-xs">{t.category}</td>
-                                    <td className="py-3 px-3 text-white/60 text-xs text-center">N{t.escalation_level}</td>
-                                    <td className="py-3 px-3 text-white/50 text-xs">{t.assignee ? `${t.assignee.first_name} ${t.assignee.last_name}` : '—'}</td>
+                                    <td className="py-3 px-3 text-foreground font-medium max-w-[250px] truncate">{t.title}</td>
+                                    <td className="py-3 px-3"><span className={`px-2 py-0.5 rounded-md border text-[10px] font-bold ${statusColors[t.status] || 'bg-white/5 text-muted-foreground'}`}>{t.status}</span></td>
+                                    <td className="py-3 px-3 text-muted-foreground text-xs">{t.priority}</td>
+                                    <td className="py-3 px-3 text-muted-foreground text-xs">{t.category}</td>
+                                    <td className="py-3 px-3 text-muted-foreground text-xs text-center">N{t.escalation_level}</td>
+                                    <td className="py-3 px-3 text-muted-foreground text-xs">{t.assignee ? `${t.assignee.first_name} ${t.assignee.last_name}` : '—'}</td>
                                     <td className="py-3 px-3 text-center">
-                                        <button onClick={() => openEdit(t)} className="p-1.5 rounded-lg bg-white/5 text-white/40 hover:text-purple-300 hover:bg-purple-500/10 transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
+                                        <button onClick={() => openEdit(t)} className="p-1.5 rounded-lg bg-white/5 text-muted-foreground hover:text-primary/80 hover:bg-primary/10 transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
                                     </td>
                                 </tr>
                             ))}
@@ -425,52 +425,52 @@ function TicketsExplorerTab() {
 
             {/* Force Edit Modal */}
             <Dialog open={!!editTicketId} onOpenChange={(open) => { if (!open) setEditTicketId(null) }}>
-                <DialogContent className="bg-zinc-900/95 backdrop-blur-xl border-white/10 text-white max-w-lg">
+                <DialogContent className="bg-zinc-900/95 backdrop-blur-xl border-white/10 text-foreground max-w-lg">
                     <DialogHeader>
                         <DialogTitle className="text-lg font-bold flex items-center gap-2">
-                            <Pencil className="w-4 h-4 text-purple-400" /> Force Edit — Ticket
+                            <Pencil className="w-4 h-4 text-primary/80" /> Force Edit — Ticket
                         </DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4 pt-2">
                         <div>
-                            <label className="block text-xs font-bold text-white/40 uppercase mb-1">Statut</label>
-                            <select value={editTicketForm.status || ''} onChange={e => setEditTicketForm({ ...editTicketForm, status: e.target.value })} className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm">
+                            <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Statut</label>
+                            <select value={editTicketForm.status || ''} onChange={e => setEditTicketForm({ ...editTicketForm, status: e.target.value })} className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-foreground text-sm">
                                 {['nouveau', 'assigne', 'en_cours', 'attente_client', 'resolu', 'ferme', 'suspendu'].map(s => <option key={s} value={s}>{s}</option>)}
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-white/40 uppercase mb-1">Priorité</label>
-                            <select value={editTicketForm.priority || ''} onChange={e => setEditTicketForm({ ...editTicketForm, priority: e.target.value })} className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm">
+                            <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Priorité</label>
+                            <select value={editTicketForm.priority || ''} onChange={e => setEditTicketForm({ ...editTicketForm, priority: e.target.value })} className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-foreground text-sm">
                                 {['basse', 'normale', 'haute', 'critique'].map(p => <option key={p} value={p}>{p}</option>)}
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-white/40 uppercase mb-1">Catégorie</label>
-                            <select value={editTicketForm.category || ''} onChange={e => setEditTicketForm({ ...editTicketForm, category: e.target.value })} className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm">
+                            <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Catégorie</label>
+                            <select value={editTicketForm.category || ''} onChange={e => setEditTicketForm({ ...editTicketForm, category: e.target.value })} className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-foreground text-sm">
                                 {['HL', 'COMMERCE', 'SAV', 'FORMATION', 'DEV'].map(c => <option key={c} value={c}>{c}</option>)}
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-white/40 uppercase mb-1">Niveau d'escalade (Legacy)</label>
-                            <select value={editTicketForm.escalation_level || 1} onChange={e => setEditTicketForm({ ...editTicketForm, escalation_level: parseInt(e.target.value) })} className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm">
+                            <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Niveau d'escalade (Legacy)</label>
+                            <select value={editTicketForm.escalation_level || 1} onChange={e => setEditTicketForm({ ...editTicketForm, escalation_level: parseInt(e.target.value) })} className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-foreground text-sm">
                                 {[1, 2, 3, 4].map(n => <option key={n} value={n}>Niveau {n}</option>)}
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-white/40 uppercase mb-1">Support Grade (SPRINT 26.1)</label>
-                            <select value={editTicketForm.support_level_id || ''} onChange={e => setEditTicketForm({ ...editTicketForm, support_level_id: e.target.value })} className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm">
+                            <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Support Grade (SPRINT 26.1)</label>
+                            <select value={editTicketForm.support_level_id || ''} onChange={e => setEditTicketForm({ ...editTicketForm, support_level_id: e.target.value })} className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-foreground text-sm">
                                 <option value="">Choisir un grade...</option>
                                 {(levels || []).map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-white/40 uppercase mb-1">Assigné à</label>
-                            <select value={editTicketForm.assignee_id || ''} onChange={e => setEditTicketForm({ ...editTicketForm, assignee_id: e.target.value })} className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm">
+                            <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Assigné à</label>
+                            <select value={editTicketForm.assignee_id || ''} onChange={e => setEditTicketForm({ ...editTicketForm, assignee_id: e.target.value })} className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-foreground text-sm">
                                 <option value="">Non assigné</option>
                                 {(allUsers || []).map(u => <option key={u.id} value={u.id}>{u.last_name} {u.first_name} ({u.role})</option>)}
                             </select>
                         </div>
-                        <button onClick={saveTicket} disabled={saving} className="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold transition-colors disabled:opacity-50 flex justify-center items-center gap-2">
+                        <button onClick={saveTicket} disabled={saving} className="w-full py-3 rounded-xl bg-primary hover:bg-primary text-primary-foreground font-bold transition-colors disabled:opacity-50 flex justify-center items-center gap-2">
                             {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save className="w-4 h-4" /> Appliquer les modifications</>}
                         </button>
                     </div>

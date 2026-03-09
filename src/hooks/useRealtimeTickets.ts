@@ -56,9 +56,9 @@ export function useRealtimeTickets() {
                                 description: `${ticket.title || 'Sans titre'} — Magasin : ${storeName}`,
                                 duration: isCritique ? 10000 : 5000,
                                 classNames: isCritique
-                                    ? { toast: 'flex items-start gap-3 w-full max-w-sm p-4 rounded-2xl bg-black/80 backdrop-blur-xl border-2 border-rose-500/60 shadow-[0_0_20px_rgba(244,63,94,0.4)] text-white animate-pulse' }
+                                    ? { toast: 'flex items-start gap-3 w-full max-w-sm p-4 rounded-2xl bg-black/80 backdrop-blur-xl border-2 border-rose-500/60 shadow-[0_0_20px_rgba(244,63,94,0.4)] text-foreground animate-pulse' }
                                     : isHaute
-                                        ? { toast: 'flex items-start gap-3 w-full max-w-sm p-4 rounded-2xl bg-black/80 backdrop-blur-xl border border-orange-500/40 shadow-[0_0_15px_rgba(249,115,22,0.3)] text-white' }
+                                        ? { toast: 'flex items-start gap-3 w-full max-w-sm p-4 rounded-2xl bg-black/80 backdrop-blur-xl border border-orange-500/40 shadow-[0_0_15px_rgba(249,115,22,0.3)] text-foreground' }
                                         : undefined,
                             }
                         )

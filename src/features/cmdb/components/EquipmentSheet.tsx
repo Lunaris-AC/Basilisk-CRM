@@ -26,7 +26,7 @@ const STATUS_COLORS: Record<string, string> = {
     EN_SERVICE: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
     EN_PANNE: 'bg-red-500/15 text-red-300 border-red-500/30',
     EN_REPARATION_INTERNE: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
-    RMA_FOURNISSEUR: 'bg-violet-500/15 text-violet-300 border-violet-500/30',
+    RMA_FOURNISSEUR: 'bg-primary/15 text-primary/80 border-primary/30',
     REBUT: 'bg-zinc-500/15 text-zinc-400 border-zinc-500/30',
 }
 
@@ -116,7 +116,7 @@ export function EquipmentSheet({ equipment, open, onOpenChange }: EquipmentSheet
                             <span className="text-lg">🖥️</span>
                         </div>
                         <div>
-                            <SheetTitle className="text-white text-lg font-bold leading-tight">
+                            <SheetTitle className="text-foreground text-lg font-bold leading-tight">
                                 {equipment.catalogue?.brand} {equipment.catalogue?.model_name}
                             </SheetTitle>
                             <SheetDescription className="font-mono text-cyan-400/70 text-xs">
@@ -124,7 +124,7 @@ export function EquipmentSheet({ equipment, open, onOpenChange }: EquipmentSheet
                             </SheetDescription>
                         </div>
                     </div>
-                    <span className={`self-start inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${STATUS_COLORS[equipment.status] ?? 'bg-white/10 text-white/50 border-white/10'}`}>
+                    <span className={`self-start inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${STATUS_COLORS[equipment.status] ?? 'bg-white/10 text-muted-foreground border-white/10'}`}>
                         {STATUS_OPTIONS.find(s => s.value === equipment.status)?.label ?? equipment.status}
                     </span>
                 </SheetHeader>
@@ -139,29 +139,29 @@ export function EquipmentSheet({ equipment, open, onOpenChange }: EquipmentSheet
                 <div className="space-y-6">
                     {/* Infos générales */}
                     <section>
-                        <h3 className="text-xs font-black tracking-[0.2em] uppercase text-white/30 mb-3">Informations générales</h3>
+                        <h3 className="text-xs font-black tracking-[0.2em] uppercase text-muted-foreground mb-3">Informations générales</h3>
                         <div className="rounded-xl bg-white/[0.03] border border-white/5 divide-y divide-white/5">
                             <div className="flex justify-between items-center px-4 py-3">
-                                <span className="text-sm text-white/50">Catégorie</span>
-                                <span className="text-sm text-white/80 font-medium">{equipment.catalogue?.category}</span>
+                                <span className="text-sm text-muted-foreground">Catégorie</span>
+                                <span className="text-sm text-foreground/80 font-medium">{equipment.catalogue?.category}</span>
                             </div>
                             <div className="flex justify-between items-center px-4 py-3">
-                                <span className="text-sm text-white/50">Magasin</span>
-                                <span className="text-sm text-white/80 font-medium">{equipment.store?.name}</span>
+                                <span className="text-sm text-muted-foreground">Magasin</span>
+                                <span className="text-sm text-foreground/80 font-medium">{equipment.store?.name}</span>
                             </div>
                             <div className="flex justify-between items-center px-4 py-3">
-                                <span className="text-sm text-white/50">Client</span>
-                                <span className="text-sm text-white/80 font-medium">{equipment.store?.client?.company ?? '—'}</span>
+                                <span className="text-sm text-muted-foreground">Client</span>
+                                <span className="text-sm text-foreground/80 font-medium">{equipment.store?.client?.company ?? '—'}</span>
                             </div>
                             <div className="flex justify-between items-center px-4 py-3">
-                                <span className="text-sm text-white/50">Date d'achat</span>
-                                <span className="text-sm text-white/80">
+                                <span className="text-sm text-muted-foreground">Date d'achat</span>
+                                <span className="text-sm text-foreground/80">
                                     {equipment.purchase_date ? format(new Date(equipment.purchase_date), 'dd MMM yyyy', { locale: fr }) : '—'}
                                 </span>
                             </div>
                             <div className="flex justify-between items-center px-4 py-3">
-                                <span className="text-sm text-white/50">Fin de garantie</span>
-                                <span className={`text-sm font-medium ${warrantyExpired ? 'text-red-400' : warrantyExpired === false ? 'text-emerald-400' : 'text-white/50'}`}>
+                                <span className="text-sm text-muted-foreground">Fin de garantie</span>
+                                <span className={`text-sm font-medium ${warrantyExpired ? 'text-red-400' : warrantyExpired === false ? 'text-emerald-400' : 'text-muted-foreground'}`}>
                                     {equipment.warranty_end_date
                                         ? format(new Date(equipment.warranty_end_date), 'dd MMM yyyy', { locale: fr }) + (warrantyExpired ? ' ⚠️' : ' ✓')
                                         : '—'}
@@ -169,8 +169,8 @@ export function EquipmentSheet({ equipment, open, onOpenChange }: EquipmentSheet
                             </div>
                             {equipment.rma_tracking_number && (
                                 <div className="flex justify-between items-center px-4 py-3">
-                                    <span className="text-sm text-white/50">N° Suivi RMA</span>
-                                    <span className="text-sm font-mono text-violet-300">{equipment.rma_tracking_number}</span>
+                                    <span className="text-sm text-muted-foreground">N° Suivi RMA</span>
+                                    <span className="text-sm font-mono text-primary/80">{equipment.rma_tracking_number}</span>
                                 </div>
                             )}
                         </div>
@@ -179,7 +179,7 @@ export function EquipmentSheet({ equipment, open, onOpenChange }: EquipmentSheet
                     {/* Champ dynamiques */}
                     {Object.keys(schema).length > 0 && (
                         <section>
-                            <h3 className="text-xs font-black tracking-[0.2em] uppercase text-white/30 mb-3">Spécifications techniques</h3>
+                            <h3 className="text-xs font-black tracking-[0.2em] uppercase text-muted-foreground mb-3">Spécifications techniques</h3>
                             <div className="rounded-xl bg-white/[0.03] border border-white/5 divide-y divide-white/5">
                                 {Object.entries(schema).map(([key, type]) => {
                                     const raw = data[key]
@@ -190,10 +190,10 @@ export function EquipmentSheet({ equipment, open, onOpenChange }: EquipmentSheet
                                             : String(raw)
                                     return (
                                         <div key={key} className="flex justify-between items-center px-4 py-3">
-                                            <span className="text-sm text-white/50 capitalize">
+                                            <span className="text-sm text-muted-foreground capitalize">
                                                 {fieldTypeIcon[type as string] ?? ''} {key.replace(/_/g, ' ')}
                                             </span>
-                                            <span className="text-sm text-white/80 font-medium">{display}</span>
+                                            <span className="text-sm text-foreground/80 font-medium">{display}</span>
                                         </div>
                                     )
                                 })}
@@ -203,14 +203,14 @@ export function EquipmentSheet({ equipment, open, onOpenChange }: EquipmentSheet
 
                     {/* Modifier le statut */}
                     <section>
-                        <h3 className="text-xs font-black tracking-[0.2em] uppercase text-white/30 mb-3">Changer le statut</h3>
+                        <h3 className="text-xs font-black tracking-[0.2em] uppercase text-muted-foreground mb-3">Changer le statut</h3>
                         <Select value={newStatus} onValueChange={handleStatusChange} disabled={isPending}>
-                            <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                            <SelectTrigger className="bg-white/5 border-white/10 text-foreground">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent className="bg-zinc-900 border-white/10">
                                 {STATUS_OPTIONS.map(opt => (
-                                    <SelectItem key={opt.value} value={opt.value} className="text-white/80 focus:bg-white/10 focus:text-white">
+                                    <SelectItem key={opt.value} value={opt.value} className="text-foreground/80 focus:bg-white/10 focus:text-foreground">
                                         {opt.label}
                                     </SelectItem>
                                 ))}
@@ -221,34 +221,34 @@ export function EquipmentSheet({ equipment, open, onOpenChange }: EquipmentSheet
                     {/* Action RMA */}
                     {equipment.status !== 'RMA_FOURNISSEUR' && equipment.status !== 'REBUT' && (
                         <section>
-                            <h3 className="text-xs font-black tracking-[0.2em] uppercase text-white/30 mb-3">Retour fournisseur (RMA)</h3>
+                            <h3 className="text-xs font-black tracking-[0.2em] uppercase text-muted-foreground mb-3">Retour fournisseur (RMA)</h3>
                             {!rmaMode ? (
                                 <button
                                     onClick={() => setRmaMode(true)}
-                                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/20 hover:border-violet-500/40 text-violet-300 text-sm font-medium transition-all duration-200"
+                                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 hover:bg-primary/20 border border-primary/20 hover:border-primary/40 text-primary/80 text-sm font-medium transition-all duration-200"
                                 >
                                     <PackageCheck className="w-4 h-4" />
                                     Initier un retour RMA
                                 </button>
                             ) : (
-                                <div className="space-y-3 p-4 rounded-xl bg-violet-500/5 border border-violet-500/20">
-                                    <Label className="text-white/60 text-xs">Numéro de suivi fournisseur</Label>
+                                <div className="space-y-3 p-4 rounded-xl bg-primary/5 border border-primary/20">
+                                    <Label className="text-muted-foreground text-xs">Numéro de suivi fournisseur</Label>
                                     <Input
                                         value={rmaTracking}
                                         onChange={e => setRmaTracking(e.target.value)}
                                         placeholder="ex: RMA-2024-00123"
-                                        className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+                                        className="bg-white/5 border-white/10 text-foreground placeholder:text-muted-foreground"
                                     />
                                     <div className="flex gap-2">
                                         <Button
                                             onClick={handleSendRMA}
                                             disabled={isPending}
-                                            className="flex-1 bg-violet-500/20 hover:bg-violet-500/30 text-violet-300 border border-violet-500/30"
+                                            className="flex-1 bg-primary/20 hover:bg-primary/30 text-primary/80 border border-primary/30"
                                         >
                                             {isPending ? <RefreshCw className="w-4 h-4 animate-spin" /> : <PackageCheck className="w-4 h-4" />}
                                             Confirmer RMA
                                         </Button>
-                                        <Button variant="ghost" onClick={() => setRmaMode(false)} className="text-white/40 hover:text-white/60">
+                                        <Button variant="ghost" onClick={() => setRmaMode(false)} className="text-muted-foreground hover:text-muted-foreground">
                                             Annuler
                                         </Button>
                                     </div>
@@ -259,14 +259,14 @@ export function EquipmentSheet({ equipment, open, onOpenChange }: EquipmentSheet
 
                     {/* Tickets liés */}
                     <section>
-                        <h3 className="text-xs font-black tracking-[0.2em] uppercase text-white/30 mb-3">Tickets liés</h3>
+                        <h3 className="text-xs font-black tracking-[0.2em] uppercase text-muted-foreground mb-3">Tickets liés</h3>
                         {loadingTickets ? (
-                            <div className="flex items-center gap-2 text-white/30 text-sm py-2">
+                            <div className="flex items-center gap-2 text-muted-foreground text-sm py-2">
                                 <RefreshCw className="w-4 h-4 animate-spin" />
                                 Chargement...
                             </div>
                         ) : linkedTickets.length === 0 ? (
-                            <p className="text-white/30 text-sm py-2">Aucun ticket lié à cet équipement.</p>
+                            <p className="text-muted-foreground text-sm py-2">Aucun ticket lié à cet équipement.</p>
                         ) : (
                             <div className="rounded-xl bg-white/[0.03] border border-white/5 divide-y divide-white/5">
                                 {linkedTickets.map(ticket => (
@@ -278,14 +278,14 @@ export function EquipmentSheet({ equipment, open, onOpenChange }: EquipmentSheet
                                         className="flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-colors group"
                                     >
                                         <div>
-                                            <div className="text-sm text-white/80 font-medium group-hover:text-white transition-colors line-clamp-1">
+                                            <div className="text-sm text-foreground/80 font-medium group-hover:text-foreground transition-colors line-clamp-1">
                                                 {ticket.title}
                                             </div>
-                                            <div className="text-xs text-white/40 mt-0.5">
+                                            <div className="text-xs text-muted-foreground mt-0.5">
                                                 {format(new Date(ticket.created_at), 'dd MMM yyyy', { locale: fr })}
                                             </div>
                                         </div>
-                                        <ExternalLink className="w-3.5 h-3.5 text-white/30 group-hover:text-white/60 flex-shrink-0 ml-3" />
+                                        <ExternalLink className="w-3.5 h-3.5 text-muted-foreground group-hover:text-muted-foreground flex-shrink-0 ml-3" />
                                     </a>
                                 ))}
                             </div>
@@ -295,8 +295,8 @@ export function EquipmentSheet({ equipment, open, onOpenChange }: EquipmentSheet
                     {/* Notes */}
                     {equipment.notes && (
                         <section>
-                            <h3 className="text-xs font-black tracking-[0.2em] uppercase text-white/30 mb-3">Notes</h3>
-                            <p className="text-sm text-white/60 bg-white/[0.03] border border-white/5 rounded-xl p-4 leading-relaxed">
+                            <h3 className="text-xs font-black tracking-[0.2em] uppercase text-muted-foreground mb-3">Notes</h3>
+                            <p className="text-sm text-muted-foreground bg-white/[0.03] border border-white/5 rounded-xl p-4 leading-relaxed">
                                 {equipment.notes}
                             </p>
                         </section>

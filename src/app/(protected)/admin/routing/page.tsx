@@ -67,11 +67,11 @@ export default function AdminRoutingPage() {
                     <h1 className="text-4xl font-black bg-gradient-to-br from-white via-white to-white/40 bg-clip-text text-transparent tracking-tighter">
                         RÈGLES DE ROUTAGE
                     </h1>
-                    <p className="text-white/40 font-medium italic">Gestion intelligente de l&apos;assignation automatique des tickets.</p>
+                    <p className="text-muted-foreground font-medium italic">Gestion intelligente de l&apos;assignation automatique des tickets.</p>
                 </div>
                 <Button
                     onClick={handleOpenCreate}
-                    className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white shadow-xl shadow-indigo-500/20 h-12 px-8 rounded-2xl border-none font-bold transition-all hover:scale-[1.02] active:scale-95"
+                    className="bg-gradient-to-r from-primary to-primary hover:from-primary hover:to-primary text-foreground shadow-xl shadow-primary/20 h-12 px-8 rounded-2xl border-none font-bold transition-all hover:scale-[1.02] active:scale-95"
                 >
                     <Plus className="w-5 h-5 mr-2" />
                     CRÉER UNE RÈGLE
@@ -84,11 +84,11 @@ export default function AdminRoutingPage() {
                 <Table>
                     <TableHeader className="bg-white/[0.02]">
                         <TableRow className="border-white/10 hover:bg-transparent h-16">
-                            <TableHead className="w-24 text-center font-black text-white/30 text-[10px] uppercase tracking-widest px-6">Ordre</TableHead>
-                            <TableHead className="font-black text-white/30 text-[10px] uppercase tracking-widest px-6">Dénomination</TableHead>
-                            <TableHead className="font-black text-white/30 text-[10px] uppercase tracking-widest px-6">Statut</TableHead>
-                            <TableHead className="font-black text-white/30 text-[10px] uppercase tracking-widest px-6">Cible Action</TableHead>
-                            <TableHead className="text-right font-black text-white/30 text-[10px] uppercase tracking-widest px-6">Actions</TableHead>
+                            <TableHead className="w-24 text-center font-black text-muted-foreground text-[10px] uppercase tracking-widest px-6">Ordre</TableHead>
+                            <TableHead className="font-black text-muted-foreground text-[10px] uppercase tracking-widest px-6">Dénomination</TableHead>
+                            <TableHead className="font-black text-muted-foreground text-[10px] uppercase tracking-widest px-6">Statut</TableHead>
+                            <TableHead className="font-black text-muted-foreground text-[10px] uppercase tracking-widest px-6">Cible Action</TableHead>
+                            <TableHead className="text-right font-black text-muted-foreground text-[10px] uppercase tracking-widest px-6">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -97,10 +97,10 @@ export default function AdminRoutingPage() {
                                 <TableCell colSpan={5} className="h-80 text-center">
                                     <div className="flex flex-col items-center justify-center gap-4">
                                         <div className="relative">
-                                            <div className="absolute inset-0 bg-indigo-500/20 blur-xl rounded-full" />
-                                            <Loader2 className="w-10 h-10 text-indigo-500 animate-spin relative z-10" />
+                                            <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
+                                            <Loader2 className="w-10 h-10 text-primary animate-spin relative z-10" />
                                         </div>
-                                        <p className="text-white/40 font-bold tracking-tight">CHARGEMENT DES RÈGLES...</p>
+                                        <p className="text-muted-foreground font-bold tracking-tight">CHARGEMENT DES RÈGLES...</p>
                                     </div>
                                 </TableCell>
                             </TableRow>
@@ -116,10 +116,10 @@ export default function AdminRoutingPage() {
                         ) : (
                             rules.map((rule) => (
                                 <TableRow key={rule.id} className="border-white/5 hover:bg-white/[0.03] transition-all duration-300 group h-20">
-                                    <TableCell className="text-center font-mono font-black text-xl text-white/20 px-6">
+                                    <TableCell className="text-center font-mono font-black text-xl text-foreground/20 px-6">
                                         #{rule.execution_order.toString().padStart(2, '0')}
                                     </TableCell>
-                                    <TableCell className="font-bold text-lg text-white/90 px-6">
+                                    <TableCell className="font-bold text-lg text-foreground/90 px-6">
                                         {rule.name}
                                     </TableCell>
                                     <TableCell className="px-6">
@@ -135,9 +135,9 @@ export default function AdminRoutingPage() {
                                             </div>
                                         )}
                                     </TableCell>
-                                    <TableCell className="px-6 text-sm font-medium text-white/70">
+                                    <TableCell className="px-6 text-sm font-medium text-foreground/70">
                                         {rule.target_user_id ? (
-                                            <span className="flex items-center gap-2 text-indigo-400">
+                                            <span className="flex items-center gap-2 text-primary/80">
                                                 <Link2 className="w-4 h-4" />
                                                 {rule.target_user?.first_name} {rule.target_user?.last_name}
                                             </span>
@@ -147,7 +147,7 @@ export default function AdminRoutingPage() {
                                                 Niveau : {rule.target_support_level?.name}
                                             </span>
                                         ) : (
-                                            <span className="text-white/30 italic">Aucune cible définie</span>
+                                            <span className="text-muted-foreground italic">Aucune cible définie</span>
                                         )}
                                     </TableCell>
                                     <TableCell className="text-right px-6">
@@ -156,7 +156,7 @@ export default function AdminRoutingPage() {
                                                 variant="ghost"
                                                 size="icon"
                                                 onClick={() => handleOpenEdit(rule.id)}
-                                                className="h-10 w-10 text-white/40 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-xl"
+                                                className="h-10 w-10 text-muted-foreground hover:text-primary/80 hover:bg-primary/10 rounded-xl"
                                                 title="Modifier la règle"
                                             >
                                                 <Pencil className="w-5 h-5" />

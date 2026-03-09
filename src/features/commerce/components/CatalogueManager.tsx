@@ -27,7 +27,7 @@ const TYPE_ICONS: Record<ItemType, any> = {
 
 const TYPE_COLORS: Record<ItemType, string> = {
     'MATERIEL': 'text-blue-400 bg-blue-500/10 border-blue-500/20',
-    'LICENCE': 'text-purple-400 bg-purple-500/10 border-purple-500/20',
+    'LICENCE': 'text-primary/80 bg-primary/10 border-primary/20',
     'SERVICE': 'text-orange-400 bg-orange-500/10 border-orange-500/20'
 }
 
@@ -123,21 +123,21 @@ export function CatalogueManager({ catalogue }: { catalogue: CommercialCatalogue
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
                 <div className="flex items-center gap-4 w-full flex-wrap">
                     <div className="relative w-full md:w-80">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                         <Input
                             type="text"
                             placeholder="Rechercher un article..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="bg-white/5 border-white/10 text-white pl-10 h-11 rounded-xl"
+                            className="bg-white/5 border-white/10 text-foreground pl-10 h-11 rounded-xl"
                         />
                     </div>
 
                     <Select value={typeFilter} onValueChange={(val: any) => setTypeFilter(val)}>
-                        <SelectTrigger className="w-full md:w-48 bg-white/5 border-white/10 text-white h-11 rounded-xl">
+                        <SelectTrigger className="w-full md:w-48 bg-white/5 border-white/10 text-foreground h-11 rounded-xl">
                             <SelectValue placeholder="Catégorie" />
                         </SelectTrigger>
-                        <SelectContent className="bg-zinc-900 border-white/10 text-white">
+                        <SelectContent className="bg-zinc-900 border-white/10 text-foreground">
                             <SelectItem value="ALL">Toutes les catégories</SelectItem>
                             <SelectItem value="MATERIEL">Matériel</SelectItem>
                             <SelectItem value="LICENCE">Licence</SelectItem>
@@ -148,7 +148,7 @@ export function CatalogueManager({ catalogue }: { catalogue: CommercialCatalogue
 
                 <Button
                     onClick={openCreate}
-                    className="w-full md:w-auto bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white shadow-lg shadow-indigo-500/25 transition-all h-11 px-6 rounded-xl"
+                    className="w-full md:w-auto bg-gradient-to-r from-primary to-primary hover:from-primary hover:to-primary text-foreground shadow-lg shadow-primary/25 transition-all h-11 px-6 rounded-xl"
                 >
                     <Plus className="w-5 h-5 mr-2" />
                     Nouvel Article
@@ -159,18 +159,18 @@ export function CatalogueManager({ catalogue }: { catalogue: CommercialCatalogue
                 <Table>
                     <TableHeader className="bg-white/5 sticky top-0 z-10 backdrop-blur-md">
                         <TableRow>
-                            <TableHead className="font-semibold text-white/70">Nom</TableHead>
-                            <TableHead className="font-semibold text-white/70">Type</TableHead>
-                            <TableHead className="font-semibold text-white/70">Modèle Lié</TableHead>
-                            <TableHead className="font-semibold text-right text-white/70">Prix HT</TableHead>
-                            <TableHead className="font-semibold text-center text-white/70">TVA</TableHead>
-                            <TableHead className="font-semibold text-right text-white/70">Actions</TableHead>
+                            <TableHead className="font-semibold text-foreground/70">Nom</TableHead>
+                            <TableHead className="font-semibold text-foreground/70">Type</TableHead>
+                            <TableHead className="font-semibold text-foreground/70">Modèle Lié</TableHead>
+                            <TableHead className="font-semibold text-right text-foreground/70">Prix HT</TableHead>
+                            <TableHead className="font-semibold text-center text-foreground/70">TVA</TableHead>
+                            <TableHead className="font-semibold text-right text-foreground/70">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {filteredItems.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={6} className="py-12 text-center text-white/40">
+                                <TableCell colSpan={6} className="py-12 text-center text-muted-foreground">
                                     Aucun article dans le catalogue.
                                 </TableCell>
                             </TableRow>
@@ -179,7 +179,7 @@ export function CatalogueManager({ catalogue }: { catalogue: CommercialCatalogue
                                 const Icon = TYPE_ICONS[item.type]
                                 return (
                                     <TableRow key={item.id} className="hover:bg-white/5 transition-colors group">
-                                        <TableCell className="font-medium text-white">
+                                        <TableCell className="font-medium text-foreground">
                                             {item.name}
                                         </TableCell>
                                         <TableCell>
@@ -188,7 +188,7 @@ export function CatalogueManager({ catalogue }: { catalogue: CommercialCatalogue
                                                 {item.type}
                                             </div>
                                         </TableCell>
-                                        <TableCell className="text-white/60 text-xs">
+                                        <TableCell className="text-muted-foreground text-xs">
                                             {item.type === 'MATERIEL' && item.equipment_model
                                                 ? `${item.equipment_model.brand} ${item.equipment_model.model_name}`
                                                 : '-'}
@@ -196,12 +196,12 @@ export function CatalogueManager({ catalogue }: { catalogue: CommercialCatalogue
                                         <TableCell className="text-right font-mono font-medium text-emerald-400">
                                             {item.default_price.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
                                         </TableCell>
-                                        <TableCell className="text-center font-mono text-white/60">
+                                        <TableCell className="text-center font-mono text-muted-foreground">
                                             {item.tax_rate}%
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <Button variant="ghost" size="icon" onClick={() => openEdit(item)} className="h-8 w-8 text-white/50 hover:text-white hover:bg-white/10">
+                                                <Button variant="ghost" size="icon" onClick={() => openEdit(item)} className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-white/10">
                                                     <Pencil className="w-4 h-4" />
                                                 </Button>
                                                 <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} className="h-8 w-8 text-red-400/50 hover:text-red-400 hover:bg-red-500/10">
@@ -218,7 +218,7 @@ export function CatalogueManager({ catalogue }: { catalogue: CommercialCatalogue
             </div>
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent className="bg-zinc-950 border border-white/10 text-white sm:max-w-[425px]">
+                <DialogContent className="bg-zinc-950 border border-white/10 text-foreground sm:max-w-[425px]">
                     <DialogHeader>
                         <DialogTitle className="text-xl">
                             {editingId ? "Modifier l'article" : "Nouvel article"}
@@ -230,26 +230,26 @@ export function CatalogueManager({ catalogue }: { catalogue: CommercialCatalogue
 
                     <form onSubmit={handleSubmit} className="space-y-4 mt-4">
                         <div className="space-y-2">
-                            <Label className="text-white/70">Nom de l'article <span className="text-red-400">*</span></Label>
+                            <Label className="text-foreground/70">Nom de l'article <span className="text-red-400">*</span></Label>
                             <Input
                                 required
                                 value={formData.name}
                                 onChange={e => setFormData({ ...formData, name: e.target.value })}
                                 placeholder="Ex: Caisse Tactile HP"
-                                className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus-visible:ring-indigo-500"
+                                className="bg-white/5 border-white/10 text-foreground placeholder:text-foreground/20 focus-visible:ring-primary"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label className="text-white/70">Type <span className="text-red-400">*</span></Label>
+                            <Label className="text-foreground/70">Type <span className="text-red-400">*</span></Label>
                             <Select
                                 value={formData.type}
                                 onValueChange={(val: ItemType) => setFormData({ ...formData, type: val })}
                             >
-                                <SelectTrigger className="bg-white/5 border-white/10 text-white focus:ring-indigo-500">
+                                <SelectTrigger className="bg-white/5 border-white/10 text-foreground focus:ring-primary">
                                     <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent className="bg-zinc-900 border-white/10 text-white">
+                                <SelectContent className="bg-zinc-900 border-white/10 text-foreground">
                                     <SelectItem value="MATERIEL">Matériel</SelectItem>
                                     <SelectItem value="LICENCE">Licence</SelectItem>
                                     <SelectItem value="SERVICE">Service</SelectItem>
@@ -259,15 +259,15 @@ export function CatalogueManager({ catalogue }: { catalogue: CommercialCatalogue
 
                         {formData.type === 'MATERIEL' && (
                             <div className="space-y-2">
-                                <Label className="text-white/70">Lier à un modèle technique (Optionnel)</Label>
+                                <Label className="text-foreground/70">Lier à un modèle technique (Optionnel)</Label>
                                 <Select
                                     value={formData.equipment_model_id || 'none'}
                                     onValueChange={(val: string) => setFormData({ ...formData, equipment_model_id: val === 'none' ? null : val })}
                                 >
-                                    <SelectTrigger className="bg-white/5 border-white/10 text-white focus:ring-indigo-500">
+                                    <SelectTrigger className="bg-white/5 border-white/10 text-foreground focus:ring-primary">
                                         <SelectValue placeholder="Sélectionnez un modèle..." />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-zinc-900 border-white/10 text-white max-h-[200px]">
+                                    <SelectContent className="bg-zinc-900 border-white/10 text-foreground max-h-[200px]">
                                         <SelectItem value="none">Aucun modèle lié</SelectItem>
                                         {equipmentModels.map(m => (
                                             <SelectItem key={m.id} value={m.id}>{m.label}</SelectItem>
@@ -279,9 +279,9 @@ export function CatalogueManager({ catalogue }: { catalogue: CommercialCatalogue
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label className="text-white/70">Prix HT <span className="text-red-400">*</span></Label>
+                                <Label className="text-foreground/70">Prix HT <span className="text-red-400">*</span></Label>
                                 <div className="relative">
-                                    <Euro className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                                    <Euro className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                     <Input
                                         type="number"
                                         required
@@ -289,13 +289,13 @@ export function CatalogueManager({ catalogue }: { catalogue: CommercialCatalogue
                                         step="0.01"
                                         value={formData.default_price}
                                         onChange={e => setFormData({ ...formData, default_price: parseFloat(e.target.value) || 0 })}
-                                        className="bg-white/5 border-white/10 text-white font-mono pl-9 focus-visible:ring-indigo-500"
+                                        className="bg-white/5 border-white/10 text-foreground font-mono pl-9 focus-visible:ring-primary"
                                     />
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <Label className="text-white/70">Taux TVA (%) <span className="text-red-400">*</span></Label>
+                                <Label className="text-foreground/70">Taux TVA (%) <span className="text-red-400">*</span></Label>
                                 <Input
                                     type="number"
                                     required
@@ -303,16 +303,16 @@ export function CatalogueManager({ catalogue }: { catalogue: CommercialCatalogue
                                     step="0.1"
                                     value={formData.tax_rate}
                                     onChange={e => setFormData({ ...formData, tax_rate: parseFloat(e.target.value) || 0 })}
-                                    className="bg-white/5 border-white/10 text-white font-mono focus-visible:ring-indigo-500"
+                                    className="bg-white/5 border-white/10 text-foreground font-mono focus-visible:ring-primary"
                                 />
                             </div>
                         </div>
 
                         <DialogFooter className="mt-6">
-                            <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)} className="text-white/60 hover:text-white hover:bg-white/10">
+                            <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)} className="text-muted-foreground hover:text-foreground hover:bg-white/10">
                                 Annuler
                             </Button>
-                            <Button type="submit" disabled={isSubmitting} className="bg-indigo-600 hover:bg-indigo-500 text-white">
+                            <Button type="submit" disabled={isSubmitting} className="bg-primary hover:bg-primary text-primary-foreground">
                                 {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                                 {editingId ? "Enregistrer" : "Créer l'article"}
                             </Button>

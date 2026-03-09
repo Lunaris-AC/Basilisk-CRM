@@ -70,11 +70,11 @@ export default function AdminGradesPage() {
                     <h1 className="text-4xl font-black bg-gradient-to-br from-white via-white to-white/40 bg-clip-text text-transparent tracking-tighter">
                         ÉDITEUR DE GRADES
                     </h1>
-                    <p className="text-white/40 font-medium italic">Gestion dynamique de la hiérarchie et de l&apos;escalade.</p>
+                    <p className="text-muted-foreground font-medium italic">Gestion dynamique de la hiérarchie et de l&apos;escalade.</p>
                 </div>
                 <Button
                     onClick={handleOpenCreate}
-                    className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white shadow-xl shadow-indigo-500/20 h-12 px-8 rounded-2xl border-none font-bold transition-all hover:scale-[1.02] active:scale-95"
+                    className="bg-gradient-to-r from-primary to-primary hover:from-primary hover:to-primary text-foreground shadow-xl shadow-primary/20 h-12 px-8 rounded-2xl border-none font-bold transition-all hover:scale-[1.02] active:scale-95"
                 >
                     <Plus className="w-5 h-5 mr-2" />
                     AJOUTER UN GRADE
@@ -87,10 +87,10 @@ export default function AdminGradesPage() {
                 <Table>
                     <TableHeader className="bg-white/[0.02]">
                         <TableRow className="border-white/10 hover:bg-transparent h-16">
-                            <TableHead className="w-24 text-center font-black text-white/30 text-[10px] uppercase tracking-widest px-6">Rang</TableHead>
-                            <TableHead className="font-black text-white/30 text-[10px] uppercase tracking-widest px-6">Dénomination</TableHead>
-                            <TableHead className="font-black text-white/30 text-[10px] uppercase tracking-widest px-6">Aperçu Badge</TableHead>
-                            <TableHead className="text-right font-black text-white/30 text-[10px] uppercase tracking-widest px-6">Actions</TableHead>
+                            <TableHead className="w-24 text-center font-black text-muted-foreground text-[10px] uppercase tracking-widest px-6">Rang</TableHead>
+                            <TableHead className="font-black text-muted-foreground text-[10px] uppercase tracking-widest px-6">Dénomination</TableHead>
+                            <TableHead className="font-black text-muted-foreground text-[10px] uppercase tracking-widest px-6">Aperçu Badge</TableHead>
+                            <TableHead className="text-right font-black text-muted-foreground text-[10px] uppercase tracking-widest px-6">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -99,10 +99,10 @@ export default function AdminGradesPage() {
                                 <TableCell colSpan={4} className="h-80 text-center">
                                     <div className="flex flex-col items-center justify-center gap-4">
                                         <div className="relative">
-                                            <div className="absolute inset-0 bg-indigo-500/20 blur-xl rounded-full" />
-                                            <Loader2 className="w-10 h-10 text-indigo-500 animate-spin relative z-10" />
+                                            <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
+                                            <Loader2 className="w-10 h-10 text-primary animate-spin relative z-10" />
                                         </div>
-                                        <p className="text-white/40 font-bold tracking-tight">SÉCURISATION DU SYSTÈME...</p>
+                                        <p className="text-muted-foreground font-bold tracking-tight">SÉCURISATION DU SYSTÈME...</p>
                                     </div>
                                 </TableCell>
                             </TableRow>
@@ -118,10 +118,10 @@ export default function AdminGradesPage() {
                         ) : (
                             levels.map((level) => (
                                 <TableRow key={level.id} className="border-white/5 hover:bg-white/[0.03] transition-all duration-300 group h-20">
-                                    <TableCell className="text-center font-mono font-black text-xl text-white/20 px-6">
+                                    <TableCell className="text-center font-mono font-black text-xl text-foreground/20 px-6">
                                         {level.rank.toString().padStart(2, '0')}
                                     </TableCell>
-                                    <TableCell className="font-bold text-lg text-white/90 px-6">
+                                    <TableCell className="font-bold text-lg text-foreground/90 px-6">
                                         {level.name}
                                     </TableCell>
                                     <TableCell className="px-6">
@@ -147,7 +147,7 @@ export default function AdminGradesPage() {
                                                 variant="ghost"
                                                 size="icon"
                                                 onClick={() => handleOpenEdit(level)}
-                                                className="h-10 w-10 text-white/40 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-xl"
+                                                className="h-10 w-10 text-muted-foreground hover:text-primary/80 hover:bg-primary/10 rounded-xl"
                                             >
                                                 <Pencil className="w-5 h-5" />
                                             </Button>

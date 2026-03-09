@@ -9,9 +9,9 @@ export function Toaster() {
             toastOptions={{
                 unstyled: true,
                 classNames: {
-                    toast: 'flex items-start gap-3 w-full max-w-sm p-4 rounded-2xl bg-black/80 backdrop-blur-xl border border-white/10 shadow-2xl text-white',
+                    toast: 'flex items-start gap-3 w-full max-w-sm p-4 rounded-2xl bg-black/80 backdrop-blur-xl border border-white/10 shadow-2xl text-foreground',
                     title: 'text-sm font-bold tracking-wide',
-                    description: 'text-xs text-white/70 mt-1',
+                    description: 'text-xs text-foreground/70 mt-1',
                 },
             }}
         />

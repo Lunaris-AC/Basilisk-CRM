@@ -30,10 +30,10 @@ export function IncidentsContent() {
             {/* HEADER */}
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
                 <div>
-                    <h1 className="text-4xl font-extrabold tracking-tight text-white mb-2">
+                    <h1 className="text-4xl font-extrabold tracking-tight text-foreground mb-2">
                         Incidents (File d'attente)
                     </h1>
-                    <p className="text-white/60 font-medium">
+                    <p className="text-muted-foreground font-medium">
                         Tickets récemment créés ou non assignés en attente de prise en charge.
                     </p>
                 </div>
@@ -42,8 +42,8 @@ export function IncidentsContent() {
             {/* STATS RAPIDES (Optionnelles pour la file) */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md flex flex-col">
-                    <span className="text-white/50 text-sm font-medium mb-1">Tickets dans la file</span>
-                    <span className="text-3xl font-bold tracking-tight text-white">{tickets?.length || 0}</span>
+                    <span className="text-muted-foreground text-sm font-medium mb-1">Tickets dans la file</span>
+                    <span className="text-3xl font-bold tracking-tight text-foreground">{tickets?.length || 0}</span>
                 </div>
                 <div className="p-6 rounded-2xl bg-amber-500/5 border border-amber-500/20 backdrop-blur-md flex flex-col">
                     <span className="text-amber-400/80 text-sm font-medium mb-1">En attente critique</span>

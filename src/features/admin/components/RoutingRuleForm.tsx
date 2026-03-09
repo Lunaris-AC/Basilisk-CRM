@@ -150,20 +150,20 @@ export function RoutingRuleForm({ initialData, clients = [], stores = [] }: { in
             {/* Header Form */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
-                    <Button type="button" variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full bg-white/5 hover:bg-white/10 text-white/70">
+                    <Button type="button" variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full bg-white/5 hover:bg-white/10 text-foreground/70">
                         <ArrowLeft className="w-5 h-5" />
                     </Button>
                     <div className="space-y-1">
                         <h1 className="text-3xl font-black bg-gradient-to-br from-white via-white to-white/40 bg-clip-text text-transparent tracking-tighter">
                             {initialData ? 'ÉDITER LA RÈGLE' : 'NOUVELLE RÈGLE'}
                         </h1>
-                        <p className="text-white/40 font-medium italic">Constructeur visuel de conditions</p>
+                        <p className="text-muted-foreground font-medium italic">Constructeur visuel de conditions</p>
                     </div>
                 </div>
                 <Button
                     type="submit"
                     disabled={isLoading}
-                    className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white shadow-xl shadow-emerald-500/20 h-12 px-8 rounded-2xl border-none font-bold transition-all hover:scale-[1.02] active:scale-95"
+                    className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-foreground shadow-xl shadow-emerald-500/20 h-12 px-8 rounded-2xl border-none font-bold transition-all hover:scale-[1.02] active:scale-95"
                 >
                     {isLoading ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <Save className="w-5 h-5 mr-2" />}
                     SAUVEGARDER
@@ -172,28 +172,28 @@ export function RoutingRuleForm({ initialData, clients = [], stores = [] }: { in
 
             {/* Informations générales */}
             <div className="p-8 rounded-[2rem] border border-white/10 bg-zinc-950/40 backdrop-blur-xl shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-purple-500 opacity-50" />
-                <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary opacity-50" />
+                <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
                     <span>1. Paramètres de base</span>
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-2">
-                        <Label className="text-white/70 font-bold ml-1">Nom de la règle</Label>
+                        <Label className="text-foreground/70 font-bold ml-1">Nom de la règle</Label>
                         <Input
                             {...register("name")}
                             placeholder="Ex: VIP Client Routing"
-                            className="bg-white/5 border-white/10 text-white h-12 rounded-xl focus-visible:ring-indigo-500"
+                            className="bg-white/5 border-white/10 text-foreground h-12 rounded-xl focus-visible:ring-primary"
                         />
                         {errors.name && <p className="text-rose-500 text-sm font-medium mt-1 ml-1">{errors.name.message}</p>}
                     </div>
 
                     <div className="space-y-2">
-                        <Label className="text-white/70 font-bold ml-1">Ordre d'exécution (1 = Priorité max)</Label>
+                        <Label className="text-foreground/70 font-bold ml-1">Ordre d'exécution (1 = Priorité max)</Label>
                         <Input
                             type="number"
                             {...register("execution_order")}
-                            className="bg-white/5 border-white/10 text-white h-12 rounded-xl focus-visible:ring-indigo-500"
+                            className="bg-white/5 border-white/10 text-foreground h-12 rounded-xl focus-visible:ring-primary"
                         />
                         {errors.execution_order && <p className="text-rose-500 text-sm font-medium mt-1 ml-1">{errors.execution_order.message}</p>}
                     </div>
@@ -213,7 +213,7 @@ export function RoutingRuleForm({ initialData, clients = [], stores = [] }: { in
                         )}
                     />
                     <Label htmlFor="active" className="text-base font-bold cursor-pointer select-none">
-                        {isActive ? <span className="text-emerald-400">Règle active</span> : <span className="text-white/40">Règle inactive</span>}
+                        {isActive ? <span className="text-emerald-400">Règle active</span> : <span className="text-muted-foreground">Règle inactive</span>}
                     </Label>
                 </div>
             </div>
@@ -223,22 +223,22 @@ export function RoutingRuleForm({ initialData, clients = [], stores = [] }: { in
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 to-orange-500 opacity-50" />
 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 pb-6 border-b border-white/5 gap-4">
-                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
                         <span>2. Conditions de déclenchement</span>
                     </h2>
 
                     <div className="flex items-center gap-3">
-                        <span className="text-sm font-bold text-white/50">Opérateur global :</span>
+                        <span className="text-sm font-bold text-muted-foreground">Opérateur global :</span>
                         <div className="w-40">
                             <Controller
                                 control={control}
                                 name="logical_operator"
                                 render={({ field }) => (
                                     <Select onValueChange={field.onChange} value={field.value || undefined}>
-                                        <SelectTrigger className="bg-white/5 border-white/10 text-white font-bold h-10 w-full">
+                                        <SelectTrigger className="bg-white/5 border-white/10 text-foreground font-bold h-10 w-full">
                                             <SelectValue placeholder="Opérateur" />
                                         </SelectTrigger>
-                                        <SelectContent position="popper" className="bg-zinc-900 border-white/10 text-white z-[9999] shadow-2xl">
+                                        <SelectContent position="popper" className="bg-zinc-900 border-white/10 text-foreground z-[9999] shadow-2xl">
                                             <SelectItem value="AND" className="font-bold focus:bg-white/10">ET (Toutes vraies)</SelectItem>
                                             <SelectItem value="OR" className="font-bold focus:bg-white/10">OU (Au moins une)</SelectItem>
                                         </SelectContent>
@@ -274,10 +274,10 @@ export function RoutingRuleForm({ initialData, clients = [], stores = [] }: { in
                                             }}
                                             value={selectField.value || undefined}
                                         >
-                                            <SelectTrigger className="bg-black/40 border-white/10 text-white h-12 rounded-xl">
+                                            <SelectTrigger className="bg-black/40 border-white/10 text-foreground h-12 rounded-xl">
                                                 <SelectValue placeholder="Choisir un champ..." />
                                             </SelectTrigger>
-                                            <SelectContent position="popper" className="bg-zinc-900 border-white/10 text-white">
+                                            <SelectContent position="popper" className="bg-zinc-900 border-white/10 text-foreground">
                                                 {FIELDS.map(f => (
                                                     <SelectItem key={f.value} value={f.value} className="focus:bg-white/10">{f.label}</SelectItem>
                                                 ))}
@@ -297,7 +297,7 @@ export function RoutingRuleForm({ initialData, clients = [], stores = [] }: { in
                                             <SelectTrigger className="bg-black/40 border-white/10 text-amber-400 font-bold h-12 rounded-xl">
                                                 <SelectValue placeholder="Opérateur..." />
                                             </SelectTrigger>
-                                            <SelectContent position="popper" className="bg-zinc-900 border-white/10 text-white">
+                                            <SelectContent position="popper" className="bg-zinc-900 border-white/10 text-foreground">
                                                 {OPERATORS.map(o => (
                                                     <SelectItem key={o.value} value={o.value} className="focus:bg-white/10 font-medium">
                                                         {o.label}
@@ -322,12 +322,12 @@ export function RoutingRuleForm({ initialData, clients = [], stores = [] }: { in
                                                     name={`conditions.${index}.value`}
                                                     render={({ field: valField }) => (
                                                         <Select onValueChange={valField.onChange} value={valField.value || undefined}>
-                                                            <SelectTrigger className="bg-black/40 border-white/10 text-indigo-300 font-medium h-12 rounded-xl focus-visible:ring-amber-500">
+                                                            <SelectTrigger className="bg-black/40 border-white/10 text-primary/80 font-medium h-12 rounded-xl focus-visible:ring-amber-500">
                                                                 <SelectValue placeholder="Sélectionner un client..." />
                                                             </SelectTrigger>
-                                                            <SelectContent position="popper" className="bg-zinc-900 border-white/10 text-white max-h-60 z-[9999] shadow-2xl">
+                                                            <SelectContent position="popper" className="bg-zinc-900 border-white/10 text-foreground max-h-60 z-[9999] shadow-2xl">
                                                                 {clients.length === 0 ? (
-                                                                    <SelectItem value="no_clients_found" disabled className="text-white/40 italic">Aucun client trouvé</SelectItem>
+                                                                    <SelectItem value="no_clients_found" disabled className="text-muted-foreground italic">Aucun client trouvé</SelectItem>
                                                                 ) : (
                                                                     clients.map(c => (
                                                                         <SelectItem key={c.id} value={c.id} className="focus:bg-white/10">
@@ -349,12 +349,12 @@ export function RoutingRuleForm({ initialData, clients = [], stores = [] }: { in
                                                     name={`conditions.${index}.value`}
                                                     render={({ field: valField }) => (
                                                         <Select onValueChange={valField.onChange} value={valField.value || undefined}>
-                                                            <SelectTrigger className="bg-black/40 border-white/10 text-indigo-300 font-medium h-12 rounded-xl focus-visible:ring-amber-500">
+                                                            <SelectTrigger className="bg-black/40 border-white/10 text-primary/80 font-medium h-12 rounded-xl focus-visible:ring-amber-500">
                                                                 <SelectValue placeholder="Sélectionner un magasin..." />
                                                             </SelectTrigger>
-                                                            <SelectContent position="popper" className="bg-zinc-900 border-white/10 text-white max-h-60 z-[9999] shadow-2xl">
+                                                            <SelectContent position="popper" className="bg-zinc-900 border-white/10 text-foreground max-h-60 z-[9999] shadow-2xl">
                                                                 {stores.length === 0 ? (
-                                                                    <SelectItem value="no_stores_found" disabled className="text-white/40 italic">Aucun magasin trouvé</SelectItem>
+                                                                    <SelectItem value="no_stores_found" disabled className="text-muted-foreground italic">Aucun magasin trouvé</SelectItem>
                                                                 ) : (
                                                                     stores.map(s => (
                                                                         <SelectItem key={s.id} value={s.id} className="focus:bg-white/10">
@@ -376,10 +376,10 @@ export function RoutingRuleForm({ initialData, clients = [], stores = [] }: { in
                                                     name={`conditions.${index}.value`}
                                                     render={({ field: valField }) => (
                                                         <Select onValueChange={valField.onChange} value={valField.value || undefined}>
-                                                            <SelectTrigger className="bg-black/40 border-white/10 text-indigo-300 font-medium h-12 rounded-xl focus-visible:ring-amber-500">
+                                                            <SelectTrigger className="bg-black/40 border-white/10 text-primary/80 font-medium h-12 rounded-xl focus-visible:ring-amber-500">
                                                                 <SelectValue placeholder="Priorité..." />
                                                             </SelectTrigger>
-                                                            <SelectContent position="popper" className="bg-zinc-900 border-white/10 text-white z-[9999] shadow-2xl">
+                                                            <SelectContent position="popper" className="bg-zinc-900 border-white/10 text-foreground z-[9999] shadow-2xl">
                                                                 <SelectItem value="BASSE" className="focus:bg-white/10 text-slate-400 font-bold">Basse</SelectItem>
                                                                 <SelectItem value="NORMALE" className="focus:bg-white/10 text-sky-400 font-bold">Normale</SelectItem>
                                                                 <SelectItem value="HAUTE" className="focus:bg-white/10 text-amber-400 font-bold">Haute</SelectItem>
@@ -398,10 +398,10 @@ export function RoutingRuleForm({ initialData, clients = [], stores = [] }: { in
                                                     name={`conditions.${index}.value`}
                                                     render={({ field: valField }) => (
                                                         <Select onValueChange={valField.onChange} value={valField.value || undefined}>
-                                                            <SelectTrigger className="bg-black/40 border-white/10 text-indigo-300 font-medium h-12 rounded-xl focus-visible:ring-amber-500">
+                                                            <SelectTrigger className="bg-black/40 border-white/10 text-primary/80 font-medium h-12 rounded-xl focus-visible:ring-amber-500">
                                                                 <SelectValue placeholder="Statut..." />
                                                             </SelectTrigger>
-                                                            <SelectContent position="popper" className="bg-zinc-900 border-white/10 text-white z-[9999] shadow-2xl">
+                                                            <SelectContent position="popper" className="bg-zinc-900 border-white/10 text-foreground z-[9999] shadow-2xl">
                                                                 <SelectItem value="NOUVEAU" className="focus:bg-white/10 font-bold">Nouveau</SelectItem>
                                                                 <SelectItem value="EN_COURS" className="focus:bg-white/10 text-sky-400 font-bold">En cours</SelectItem>
                                                                 <SelectItem value="ATTENTE_CLIENT" className="focus:bg-white/10 text-amber-500 font-bold">Attente client</SelectItem>
@@ -419,7 +419,7 @@ export function RoutingRuleForm({ initialData, clients = [], stores = [] }: { in
                                             <Input
                                                 {...register(`conditions.${index}.value`)}
                                                 placeholder="Valeur (séparez par virgule pour IN/NOT_IN)"
-                                                className="bg-black/40 border-white/10 text-indigo-300 font-medium h-12 rounded-xl focus-visible:ring-amber-500"
+                                                className="bg-black/40 border-white/10 text-primary/80 font-medium h-12 rounded-xl focus-visible:ring-amber-500"
                                             />
                                         )
                                     })()}
@@ -432,7 +432,7 @@ export function RoutingRuleForm({ initialData, clients = [], stores = [] }: { in
                                         variant="ghost"
                                         size="icon"
                                         onClick={() => remove(index)}
-                                        className="h-12 w-12 shrink-0 rounded-xl text-white/20 hover:text-rose-500 hover:bg-rose-500/10"
+                                        className="h-12 w-12 shrink-0 rounded-xl text-foreground/20 hover:text-rose-500 hover:bg-rose-500/10"
                                     >
                                         <Trash2 className="w-5 h-5" />
                                     </Button>
@@ -445,7 +445,7 @@ export function RoutingRuleForm({ initialData, clients = [], stores = [] }: { in
                 <Button
                     type="button"
                     onClick={() => append({ field: '', operator: 'EQUALS', value: '' })}
-                    className="mt-6 border-dashed border-2 border-white/10 bg-transparent hover:bg-white/5 text-white/50 hover:text-white h-12 px-6 rounded-xl w-full"
+                    className="mt-6 border-dashed border-2 border-white/10 bg-transparent hover:bg-white/5 text-muted-foreground hover:text-foreground h-12 px-6 rounded-xl w-full"
                 >
                     <Plus className="w-5 h-5 mr-2" /> Ajouter une condition
                 </Button>
@@ -454,10 +454,10 @@ export function RoutingRuleForm({ initialData, clients = [], stores = [] }: { in
             {/* Cible de routage */}
             <div className="p-8 rounded-[2rem] border border-white/10 bg-zinc-950/40 backdrop-blur-xl shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-blue-500 opacity-50" />
-                <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                <h2 className="text-xl font-bold text-foreground mb-2 flex items-center gap-2">
                     <span>3. Cible d'assignation</span>
                 </h2>
-                <p className="text-white/40 text-sm mb-6">Si les conditions sont validées, le ticket sera assigné vers cette cible. Saisissez <strong>un seul</strong> des deux choix.</p>
+                <p className="text-muted-foreground text-sm mb-6">Si les conditions sont validées, le ticket sera assigné vers cette cible. Saisissez <strong>un seul</strong> des deux choix.</p>
 
                 {errors.target_support_level_id && (
                     <div className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 font-bold flex items-center gap-3">
@@ -468,12 +468,12 @@ export function RoutingRuleForm({ initialData, clients = [], stores = [] }: { in
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center relative">
 
-                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex items-center justify-center w-10 h-10 rounded-full bg-zinc-900 border border-white/10 text-white/30 font-black text-xs z-10">
+                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex items-center justify-center w-10 h-10 rounded-full bg-zinc-900 border border-white/10 text-muted-foreground font-black text-xs z-10">
                         OU
                     </div>
 
                     <div className={`p-6 rounded-2xl border transition-all ${watch('target_support_level_id') ? 'bg-cyan-500/5 border-cyan-500/30' : 'bg-white/5 border-white/5'}`}>
-                        <Label className="text-white/70 font-bold mb-3 block">Assigner à une file d'attente (Grade)</Label>
+                        <Label className="text-foreground/70 font-bold mb-3 block">Assigner à une file d'attente (Grade)</Label>
                         <Controller
                             control={control}
                             name="target_support_level_id"
@@ -485,11 +485,11 @@ export function RoutingRuleForm({ initialData, clients = [], stores = [] }: { in
                                     }}
                                     value={field.value || undefined}
                                 >
-                                    <SelectTrigger className="bg-black/50 border-white/10 text-white h-14 rounded-xl text-lg">
+                                    <SelectTrigger className="bg-black/50 border-white/10 text-foreground h-14 rounded-xl text-lg">
                                         <SelectValue placeholder="Sélectionner un grade..." />
                                     </SelectTrigger>
-                                    <SelectContent position="popper" className="bg-zinc-900 border-white/10 text-white z-[9999] shadow-2xl">
-                                        <SelectItem value="none" className="text-white/40 italic focus:bg-white/5">-- Aucun grade --</SelectItem>
+                                    <SelectContent position="popper" className="bg-zinc-900 border-white/10 text-foreground z-[9999] shadow-2xl">
+                                        <SelectItem value="none" className="text-muted-foreground italic focus:bg-white/5">-- Aucun grade --</SelectItem>
                                         {supportLevels.map(level => (
                                             <SelectItem key={level.id} value={level.id} className="font-bold focus:bg-white/10">
                                                 {level.name}
@@ -501,8 +501,8 @@ export function RoutingRuleForm({ initialData, clients = [], stores = [] }: { in
                         />
                     </div>
 
-                    <div className={`p-6 rounded-2xl border transition-all ${watch('target_user_id') ? 'bg-indigo-500/5 border-indigo-500/30' : 'bg-white/5 border-white/5'}`}>
-                        <Label className="text-white/70 font-bold mb-3 block">Assigner à un Utilisateur spécifique</Label>
+                    <div className={`p-6 rounded-2xl border transition-all ${watch('target_user_id') ? 'bg-primary/5 border-primary/30' : 'bg-white/5 border-white/5'}`}>
+                        <Label className="text-foreground/70 font-bold mb-3 block">Assigner à un Utilisateur spécifique</Label>
                         <Controller
                             control={control}
                             name="target_user_id"
@@ -514,11 +514,11 @@ export function RoutingRuleForm({ initialData, clients = [], stores = [] }: { in
                                     }}
                                     value={field.value || undefined}
                                 >
-                                    <SelectTrigger className="bg-black/50 border-white/10 text-white h-14 rounded-xl text-lg">
+                                    <SelectTrigger className="bg-black/50 border-white/10 text-foreground h-14 rounded-xl text-lg">
                                         <SelectValue placeholder="Sélectionner un agent..." />
                                     </SelectTrigger>
-                                    <SelectContent position="popper" className="bg-zinc-900 border-white/10 text-white z-[9999] shadow-2xl">
-                                        <SelectItem value="none" className="text-white/40 italic focus:bg-white/5">-- Aucun utilisateur --</SelectItem>
+                                    <SelectContent position="popper" className="bg-zinc-900 border-white/10 text-foreground z-[9999] shadow-2xl">
+                                        <SelectItem value="none" className="text-muted-foreground italic focus:bg-white/5">-- Aucun utilisateur --</SelectItem>
                                         {profiles.map(p => (
                                             <SelectItem key={p.id} value={p.id} className="font-bold focus:bg-white/10">
                                                 {p.first_name} {p.last_name} ({p.role})

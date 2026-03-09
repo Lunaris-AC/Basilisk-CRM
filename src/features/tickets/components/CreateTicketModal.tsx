@@ -209,10 +209,10 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-4xl bg-zinc-950 border-white/10 text-white p-0 gap-0 overflow-hidden" showCloseButton={false}>
+            <DialogContent className="max-w-4xl bg-zinc-950 border-white/10 text-foreground p-0 gap-0 overflow-hidden" showCloseButton={false}>
                 {/* Glassmorphism background effects */}
                 <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-[100px] pointer-events-none" />
-                <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
 
                 {/* Header */}
                 <DialogHeader className="p-6 pb-0 relative z-10">
@@ -225,7 +225,7 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
                                 <DialogTitle className="text-xl font-black tracking-tight bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent">
                                     Créer un nouveau ticket
                                 </DialogTitle>
-                                <DialogDescription className="text-white/50 text-sm mt-0.5">
+                                <DialogDescription className="text-muted-foreground text-sm mt-0.5">
                                     Déclarez un incident et joignez toutes les informations utiles.
                                 </DialogDescription>
                             </div>
@@ -234,7 +234,7 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
                             onClick={() => onOpenChange(false)}
                             className="p-2 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors"
                         >
-                            <X className="w-5 h-5 text-white/70" />
+                            <X className="w-5 h-5 text-foreground/70" />
                         </button>
                     </div>
                 </DialogHeader>
@@ -261,10 +261,10 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
                                 {/* Catégorie — masquée si CLIENT (forcé à HL en backend) */}
                                 {!isClient && (
                                     <div className="space-y-2 md:col-span-2">
-                                        <label className="text-sm font-bold text-white/80">Catégorie du Ticket <span className="text-rose-500">*</span></label>
+                                        <label className="text-sm font-bold text-foreground/80">Catégorie du Ticket <span className="text-rose-500">*</span></label>
                                         <select
                                             {...form.register('category')}
-                                            className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all appearance-none"
+                                            className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-foreground focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all appearance-none"
                                         >
                                             <option value="HL">Support HotLine (HL)</option>
                                             <option value="COMMERCE">Service Commerce</option>
@@ -276,10 +276,10 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
                                 )}
 
                                 <div className="space-y-2 md:col-span-2">
-                                    <label className="text-sm font-bold text-white/80">Titre du problème <span className="text-rose-500">*</span></label>
+                                    <label className="text-sm font-bold text-foreground/80">Titre du problème <span className="text-rose-500">*</span></label>
                                     <input
                                         {...form.register('title')}
-                                        className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all font-medium"
+                                        className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-foreground placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all font-medium"
                                         placeholder="Ex: Caisse n°2 en panne d'affichage"
                                     />
                                     {form.formState.errors.title && <p className="text-xs text-rose-400 mt-1">{form.formState.errors.title.message}</p>}
@@ -290,10 +290,10 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
                                     <>
                                         {!isClient && (
                                             <div className="space-y-2">
-                                                <label className="text-sm font-bold text-white/80">Client <span className="text-rose-500">*</span></label>
+                                                <label className="text-sm font-bold text-foreground/80">Client <span className="text-rose-500">*</span></label>
                                                 <select
                                                     {...form.register('client_id')}
-                                                    className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all appearance-none"
+                                                    className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-foreground focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all appearance-none"
                                                 >
                                                     <option value="">Sélectionner un client...</option>
                                                     {clients.map(c => (
@@ -305,7 +305,7 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
                                         )}
 
                                         <div className="space-y-2 md:col-span-1">
-                                            <label className="text-sm font-bold text-white/80">Magasin concerné</label>
+                                            <label className="text-sm font-bold text-foreground/80">Magasin concerné</label>
 
                                             {isClient && stores.length === 1 ? (
                                                 <div className="w-full bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3 flex items-center gap-3">
@@ -322,7 +322,7 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
                                                     <select
                                                         {...form.register('store_id')}
                                                         disabled={!isClient && !selectedClientId}
-                                                        className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all appearance-none disabled:opacity-50"
+                                                        className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-foreground focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all appearance-none disabled:opacity-50"
                                                     >
                                                         <option value="">Sélectionner un magasin...</option>
                                                         {filteredStores.map(s => <option key={s.id} value={s.id}>{s.name} {s.city ? `(${s.city})` : ''}</option>)}
@@ -337,12 +337,12 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
                                 {/* Masqué pour les clients qui sont EUX MEMES le contact */}
                                 {!isClient && (
                                     <div className="space-y-2 md:col-span-2">
-                                        <label className="text-sm font-bold text-white/80 flex items-center gap-2">
-                                            <UserCircle className="w-4 h-4 text-white/50" />
+                                        <label className="text-sm font-bold text-foreground/80 flex items-center gap-2">
+                                            <UserCircle className="w-4 h-4 text-muted-foreground" />
                                             Interlocuteur / Contact
                                         </label>
                                         {!selectedClientId ? (
-                                            <div className="p-3 bg-black/20 border border-white/5 rounded-xl text-white/40 text-sm">
+                                            <div className="p-3 bg-black/20 border border-white/5 rounded-xl text-muted-foreground text-sm">
                                                 Sélectionnez d&apos;abord un client pour rechercher ou créer un contact.
                                             </div>
                                         ) : (
@@ -358,10 +358,10 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
 
                                 {!isClient && (
                                     <div className="space-y-2">
-                                        <label className="text-sm font-bold text-white/80">Priorité <span className="text-rose-500">*</span></label>
+                                        <label className="text-sm font-bold text-foreground/80">Priorité <span className="text-rose-500">*</span></label>
                                         <select
                                             {...form.register('priority')}
-                                            className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all appearance-none"
+                                            className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-foreground focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all appearance-none"
                                         >
                                             <option value="basse">Basse</option>
                                             <option value="normale">Normale</option>
@@ -373,30 +373,30 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
                                 )}
 
                                 <div className="space-y-2">
-                                    <label className="text-sm font-bold text-white/80">Localisation (Optionnel)</label>
+                                    <label className="text-sm font-bold text-foreground/80">Localisation (Optionnel)</label>
                                     <input
                                         {...form.register('problem_location')}
-                                        className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
+                                        className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-foreground placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
                                         placeholder="Ex: Rayon frais, Serveur principal..."
                                     />
                                 </div>
 
                                 {/* DÉTAILS COMMERCE */}
                                 {selectedCategory === 'COMMERCE' && (
-                                    <div className="space-y-4 md:col-span-2 p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
-                                        <h3 className="text-sm font-bold text-indigo-400">Détails Commerce</h3>
+                                    <div className="space-y-4 md:col-span-2 p-4 bg-primary/10 border border-primary/20 rounded-xl">
+                                        <h3 className="text-sm font-bold text-primary/80">Détails Commerce</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                             <div className="space-y-2">
-                                                <label className="text-xs text-white/70">Numéro de devis</label>
-                                                <input {...form.register('quote_number')} className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-white text-sm focus:ring-2 focus:ring-indigo-500/50" placeholder="Ex: DEV-2026-001" />
+                                                <label className="text-xs text-foreground/70">Numéro de devis</label>
+                                                <input {...form.register('quote_number')} className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-foreground text-sm focus:ring-2 focus:ring-primary/50" placeholder="Ex: DEV-2026-001" />
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-xs text-white/70">Numéro de facture</label>
-                                                <input {...form.register('invoice_number')} className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-white text-sm focus:ring-2 focus:ring-indigo-500/50" placeholder="Ex: FAC-2026-001" />
+                                                <label className="text-xs text-foreground/70">Numéro de facture</label>
+                                                <input {...form.register('invoice_number')} className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-foreground text-sm focus:ring-2 focus:ring-primary/50" placeholder="Ex: FAC-2026-001" />
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-xs text-white/70">Type de prestation</label>
-                                                <input {...form.register('service_type')} className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-white text-sm focus:ring-2 focus:ring-indigo-500/50" placeholder="Ex: Renouvellement, Vente..." />
+                                                <label className="text-xs text-foreground/70">Type de prestation</label>
+                                                <input {...form.register('service_type')} className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-foreground text-sm focus:ring-2 focus:ring-primary/50" placeholder="Ex: Renouvellement, Vente..." />
                                             </div>
                                         </div>
                                     </div>
@@ -408,16 +408,16 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
                                         <h3 className="text-sm font-bold text-rose-400">Détails SAV</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                             <div className="space-y-2">
-                                                <label className="text-xs text-white/70">Numéro de série</label>
-                                                <input {...form.register('serial_number')} className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-white text-sm focus:ring-2 focus:ring-rose-500/50" placeholder="Ex: SN-123456789" />
+                                                <label className="text-xs text-foreground/70">Numéro de série</label>
+                                                <input {...form.register('serial_number')} className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-foreground text-sm focus:ring-2 focus:ring-rose-500/50" placeholder="Ex: SN-123456789" />
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-xs text-white/70">Référence Produit</label>
-                                                <input {...form.register('product_reference')} className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-white text-sm focus:ring-2 focus:ring-rose-500/50" placeholder="Ex: TPE-Ingenico-Move5000" />
+                                                <label className="text-xs text-foreground/70">Référence Produit</label>
+                                                <input {...form.register('product_reference')} className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-foreground text-sm focus:ring-2 focus:ring-rose-500/50" placeholder="Ex: TPE-Ingenico-Move5000" />
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-xs text-white/70">État du matériel</label>
-                                                <input {...form.register('hardware_status')} className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-white text-sm focus:ring-2 focus:ring-rose-500/50" placeholder="Ex: Ne s'allume plus..." />
+                                                <label className="text-xs text-foreground/70">État du matériel</label>
+                                                <input {...form.register('hardware_status')} className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-foreground text-sm focus:ring-2 focus:ring-rose-500/50" placeholder="Ex: Ne s'allume plus..." />
                                             </div>
                                         </div>
                                     </div>
@@ -429,16 +429,16 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
                                         <h3 className="text-sm font-bold text-emerald-400">Détails Formation</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                             <div className="space-y-2">
-                                                <label className="text-xs text-white/70">Date de déplacement</label>
-                                                <input type="date" {...form.register('travel_date')} className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-white text-sm focus:ring-2 focus:ring-emerald-500/50" />
+                                                <label className="text-xs text-foreground/70">Date de déplacement</label>
+                                                <input type="date" {...form.register('travel_date')} className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-foreground text-sm focus:ring-2 focus:ring-emerald-500/50" />
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-xs text-white/70">Lieu de formation</label>
-                                                <input {...form.register('training_location')} className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-white text-sm focus:ring-2 focus:ring-emerald-500/50" placeholder="Ex: Sur site, Distanciel..." />
+                                                <label className="text-xs text-foreground/70">Lieu de formation</label>
+                                                <input {...form.register('training_location')} className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-foreground text-sm focus:ring-2 focus:ring-emerald-500/50" placeholder="Ex: Sur site, Distanciel..." />
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-xs text-white/70">Type de formation</label>
-                                                <input {...form.register('training_type')} className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-white text-sm focus:ring-2 focus:ring-emerald-500/50" placeholder="Ex: Initiale..." />
+                                                <label className="text-xs text-foreground/70">Type de formation</label>
+                                                <input {...form.register('training_type')} className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-foreground text-sm focus:ring-2 focus:ring-emerald-500/50" placeholder="Ex: Initiale..." />
                                             </div>
                                         </div>
                                     </div>
@@ -446,18 +446,18 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
 
                                 {/* DÉTAILS SD (DEV) */}
                                 {selectedCategory === 'DEV' && (
-                                    <div className="space-y-4 md:col-span-2 p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl">
-                                        <h3 className="text-sm font-bold text-purple-400">Détails SD</h3>
+                                    <div className="space-y-4 md:col-span-2 p-4 bg-primary/10 border border-primary/20 rounded-xl">
+                                        <h3 className="text-sm font-bold text-primary/80">Détails SD</h3>
                                         <div className="space-y-4">
                                             <div className="space-y-2">
-                                                <label className="text-xs text-white/70">Type de SD <span className="text-rose-500">*</span></label>
+                                                <label className="text-xs text-foreground/70">Type de SD <span className="text-rose-500">*</span></label>
                                                 <div className="grid grid-cols-2 gap-3">
                                                     <button
                                                         type="button"
                                                         onClick={() => form.setValue('sd_type', 'BUG')}
                                                         className={`p-3 rounded-xl border text-sm font-bold flex items-center justify-center gap-2 transition-all ${form.watch('sd_type') === 'BUG'
                                                             ? 'bg-rose-500/20 border-rose-500/40 text-rose-300 shadow-lg shadow-rose-500/10'
-                                                            : 'bg-black/20 border-white/10 text-white/50 hover:bg-white/5'
+                                                            : 'bg-black/20 border-white/10 text-muted-foreground hover:bg-white/5'
                                                             }`}
                                                     >
                                                         <Bug className="w-4 h-4" /> Bug
@@ -466,8 +466,8 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
                                                         type="button"
                                                         onClick={() => form.setValue('sd_type', 'EVOLUTION')}
                                                         className={`p-3 rounded-xl border text-sm font-bold flex items-center justify-center gap-2 transition-all ${form.watch('sd_type') === 'EVOLUTION'
-                                                            ? 'bg-violet-500/20 border-violet-500/40 text-violet-300 shadow-lg shadow-violet-500/10'
-                                                            : 'bg-black/20 border-white/10 text-white/50 hover:bg-white/5'
+                                                            ? 'bg-primary/20 border-primary/40 text-primary/80 shadow-lg shadow-primary/10'
+                                                            : 'bg-black/20 border-white/10 text-muted-foreground hover:bg-white/5'
                                                             }`}
                                                     >
                                                         <Sparkles className="w-4 h-4" /> Évolution
@@ -479,18 +479,18 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
                                             {form.watch('sd_type') === 'BUG' && (
                                                 <>
                                                     <div className="space-y-2">
-                                                        <label className="text-xs text-white/70">Étapes de reproduction</label>
+                                                        <label className="text-xs text-foreground/70">Étapes de reproduction</label>
                                                         <textarea
                                                             {...form.register('reproduction_steps')}
-                                                            className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white text-sm focus:ring-2 focus:ring-rose-500/50 resize-y min-h-[80px] placeholder-white/30"
+                                                            className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-foreground text-sm focus:ring-2 focus:ring-rose-500/50 resize-y min-h-[80px] placeholder-white/30"
                                                             placeholder="1. Aller sur...\n2. Cliquer sur...\n3. Observer l'erreur..."
                                                         />
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <label className="text-xs text-white/70">Impact</label>
+                                                        <label className="text-xs text-foreground/70">Impact</label>
                                                         <input
                                                             {...form.register('sd_impact')}
-                                                            className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-white text-sm focus:ring-2 focus:ring-rose-500/50"
+                                                            className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-foreground text-sm focus:ring-2 focus:ring-rose-500/50"
                                                             placeholder="Ex: Bloque 50% des utilisateurs sur le module caisse"
                                                         />
                                                     </div>
@@ -501,18 +501,18 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
                                             {form.watch('sd_type') === 'EVOLUTION' && (
                                                 <>
                                                     <div className="space-y-2">
-                                                        <label className="text-xs text-white/70">Description du besoin</label>
+                                                        <label className="text-xs text-foreground/70">Description du besoin</label>
                                                         <textarea
                                                             {...form.register('need_description')}
-                                                            className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white text-sm focus:ring-2 focus:ring-violet-500/50 resize-y min-h-[80px] placeholder-white/30"
+                                                            className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-foreground text-sm focus:ring-2 focus:ring-primary/50 resize-y min-h-[80px] placeholder-white/30"
                                                             placeholder="Décrivez le besoin fonctionnel..."
                                                         />
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <label className="text-xs text-white/70">Procédé attendu</label>
+                                                        <label className="text-xs text-foreground/70">Procédé attendu</label>
                                                         <textarea
                                                             {...form.register('expected_process')}
-                                                            className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white text-sm focus:ring-2 focus:ring-violet-500/50 resize-y min-h-[80px] placeholder-white/30"
+                                                            className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-foreground text-sm focus:ring-2 focus:ring-primary/50 resize-y min-h-[80px] placeholder-white/30"
                                                             placeholder="Comment la fonctionnalité devrait-elle fonctionner ?"
                                                         />
                                                     </div>
@@ -523,22 +523,22 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
                                 )}
 
                                 <div className="space-y-2 md:col-span-2">
-                                    <label className="text-sm font-bold text-white/80">Description détaillée <span className="text-rose-500">*</span></label>
+                                    <label className="text-sm font-bold text-foreground/80">Description détaillée <span className="text-rose-500">*</span></label>
                                     <textarea
                                         {...form.register('description')}
-                                        className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 resize-y min-h-[120px] transition-all"
+                                        className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-foreground placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 resize-y min-h-[120px] transition-all"
                                         placeholder="Décrivez précisément les symptômes, les actions déjà tentées..."
                                     />
                                     {form.formState.errors.description && <p className="text-xs text-rose-400 mt-1">{form.formState.errors.description.message}</p>}
                                 </div>
 
                                 <div className="space-y-4 md:col-span-2 pt-4 border-t border-white/10">
-                                    <label className="text-sm font-bold text-white/80 flex items-center gap-2">
-                                        <UploadCloud className="w-4 h-4 text-white/50" />
+                                    <label className="text-sm font-bold text-foreground/80 flex items-center gap-2">
+                                        <UploadCloud className="w-4 h-4 text-muted-foreground" />
                                         Pièces jointes (Photos, Logs, PDF...)
                                     </label>
                                     <div className="relative group cursor-pointer">
-                                        <div className="absolute inset-0 bg-indigo-500/5 rounded-xl border border-dashed border-indigo-500/30 group-hover:bg-indigo-500/10 group-hover:border-indigo-500/50 transition-all" />
+                                        <div className="absolute inset-0 bg-primary/5 rounded-xl border border-dashed border-primary/30 group-hover:bg-primary/10 group-hover:border-primary/50 transition-all" />
                                         <input
                                             id="modal-attachments"
                                             type="file"
@@ -552,9 +552,9 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
                                             disabled={isSubmitting}
                                         />
                                         <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center text-center p-4">
-                                            <UploadCloud className="w-8 h-8 text-indigo-400 mb-2 group-hover:scale-110 transition-transform" />
-                                            <p className="text-sm font-medium text-white/80">Cliquez ou glissez vos fichiers ici</p>
-                                            <p className="text-xs text-white/40 mt-1">Multiples fichiers autorisés</p>
+                                            <UploadCloud className="w-8 h-8 text-primary/80 mb-2 group-hover:scale-110 transition-transform" />
+                                            <p className="text-sm font-medium text-foreground/80">Cliquez ou glissez vos fichiers ici</p>
+                                            <p className="text-xs text-muted-foreground mt-1">Multiples fichiers autorisés</p>
                                         </div>
                                     </div>
                                     {selectedFiles.length > 0 && (
@@ -562,8 +562,8 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
                                             {selectedFiles.map((file, idx) => (
                                                 <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-black/40 border border-white/10">
                                                     <div className="flex items-center gap-3">
-                                                        <File className="w-5 h-5 text-indigo-400" />
-                                                        <span className="text-sm text-white truncate max-w-[200px]">{file.name}</span>
+                                                        <File className="w-5 h-5 text-primary/80" />
+                                                        <span className="text-sm text-foreground truncate max-w-[200px]">{file.name}</span>
                                                     </div>
                                                     <button type="button" onClick={() => setSelectedFiles(prev => prev.filter((_, i) => i !== idx))} className="text-rose-500 hover:text-rose-400">
                                                         <X className="w-4 h-4" />
@@ -581,7 +581,7 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
                                     type="button"
                                     onClick={() => onOpenChange(false)}
                                     disabled={isSubmitting}
-                                    className="px-6 py-3 bg-white/5 hover:bg-white/10 text-white/70 font-medium rounded-xl transition-all border border-white/10 disabled:opacity-50"
+                                    className="px-6 py-3 bg-white/5 hover:bg-white/10 text-foreground/70 font-medium rounded-xl transition-all border border-white/10 disabled:opacity-50"
                                 >
                                     Annuler
                                 </button>
@@ -600,7 +600,7 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="px-8 py-3 bg-indigo-500 hover:bg-indigo-400 text-white font-bold rounded-xl transition-all disabled:opacity-50 flex items-center gap-2"
+                                    className="px-8 py-3 bg-primary hover:bg-primary/20 text-primary-foreground font-bold rounded-xl transition-all disabled:opacity-50 flex items-center gap-2"
                                 >
                                     {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
                                     Créer le ticket

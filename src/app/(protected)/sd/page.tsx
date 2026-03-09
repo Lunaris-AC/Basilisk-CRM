@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic'
 import { SDContent } from './SDContent'
 
 export const metadata = {
-    title: 'Portail SD | NexusSupport',
+    title: 'Portail SD | Basilisk Support ERP',
     description: 'File des SD — Bugs et Évolutions du département Développement',
 }
 

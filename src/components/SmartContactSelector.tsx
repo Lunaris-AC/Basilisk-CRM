@@ -117,18 +117,18 @@ export function SmartContactSelector({ value, onChange, clientId, storeId, defau
         <div className="space-y-3">
             <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Phone className="h-4 w-4 text-white/40" />
+                    <Phone className="h-4 w-4 text-muted-foreground" />
                 </div>
                 <Input
                     type="tel"
                     placeholder="Tapez un numéro de téléphone..."
                     value={phoneInput}
                     onChange={(e) => setPhoneInput(e.target.value)}
-                    className="pl-10 bg-black/40 border-white/10 text-white placeholder-white/30 focus:ring-indigo-500/50"
+                    className="pl-10 bg-black/40 border-white/10 text-foreground placeholder-white/30 focus:ring-primary/50"
                 />
                 {isSearching && (
                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                        <Loader2 className="h-4 w-4 animate-spin text-white/40" />
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                     </div>
                 )}
             </div>
@@ -146,7 +146,7 @@ export function SmartContactSelector({ value, onChange, clientId, storeId, defau
                         <button
                             type="button"
                             onClick={() => setIsModalOpen(true)}
-                            className="w-fit flex items-center gap-2 px-3 py-1.5 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 text-xs font-bold rounded-lg border border-indigo-500/30 transition-colors"
+                            className="w-fit flex items-center gap-2 px-3 py-1.5 bg-primary/20 hover:bg-primary/30 text-primary/80 text-xs font-bold rounded-lg border border-primary/30 transition-colors"
                         >
                             <Plus className="w-3.5 h-3.5" />
                             Créer ce nouveau contact
@@ -157,9 +157,9 @@ export function SmartContactSelector({ value, onChange, clientId, storeId, defau
 
             {/* Modal Glassmorphism de création */}
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                <DialogContent className="sm:max-w-md bg-black/60 border border-white/10 backdrop-blur-xl shadow-[0_0_50px_rgba(99,102,241,0.15)] text-white">
+                <DialogContent className="sm:max-w-md bg-black/60 border border-white/10 backdrop-blur-xl shadow-[0_0_50px_rgba(99,102,241,0.15)] text-foreground">
                     <DialogHeader>
-                        <DialogTitle className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400">
+                        <DialogTitle className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary">
                             Nouveau Contact
                         </DialogTitle>
                     </DialogHeader>
@@ -167,27 +167,27 @@ export function SmartContactSelector({ value, onChange, clientId, storeId, defau
                     <div className="space-y-4 py-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="f_name" className="text-white/70">Prénom <span className="text-rose-400">*</span></Label>
+                                <Label htmlFor="f_name" className="text-foreground/70">Prénom <span className="text-rose-400">*</span></Label>
                                 <Input id="f_name" value={firstName} onChange={e => setFirstName(e.target.value)} className="bg-white/5 border-white/10" autoFocus />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="l_name" className="text-white/70">Nom <span className="text-rose-400">*</span></Label>
+                                <Label htmlFor="l_name" className="text-foreground/70">Nom <span className="text-rose-400">*</span></Label>
                                 <Input id="l_name" value={lastName} onChange={e => setLastName(e.target.value)} className="bg-white/5 border-white/10" />
                             </div>
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="c_phone" className="text-white/70">Téléphone</Label>
-                            <Input id="c_phone" value={phoneInput} readOnly className="bg-white/5 border-white/10 text-white/50 cursor-not-allowed" />
+                            <Label htmlFor="c_phone" className="text-foreground/70">Téléphone</Label>
+                            <Input id="c_phone" value={phoneInput} readOnly className="bg-white/5 border-white/10 text-muted-foreground cursor-not-allowed" />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="c_email" className="text-white/70">Email (Optionnel)</Label>
+                            <Label htmlFor="c_email" className="text-foreground/70">Email (Optionnel)</Label>
                             <Input id="c_email" type="email" value={email} onChange={e => setEmail(e.target.value)} className="bg-white/5 border-white/10" />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="c_job" className="text-white/70">Rôle / Fonction (Optionnel)</Label>
+                            <Label htmlFor="c_job" className="text-foreground/70">Rôle / Fonction (Optionnel)</Label>
                             <Input id="c_job" placeholder="ex: Directeur, Manager..." value={jobTitle} onChange={e => setJobTitle(e.target.value)} className="bg-white/5 border-white/10" />
                         </div>
                     </div>
@@ -196,7 +196,7 @@ export function SmartContactSelector({ value, onChange, clientId, storeId, defau
                         <button
                             type="button"
                             onClick={() => setIsModalOpen(false)}
-                            className="px-4 py-2 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-colors"
+                            className="px-4 py-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors"
                         >
                             Annuler
                         </button>
@@ -204,7 +204,7 @@ export function SmartContactSelector({ value, onChange, clientId, storeId, defau
                             type="button"
                             onClick={handleCreateContact}
                             disabled={!firstName || !lastName || isCreating}
-                            className="px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-bold disabled:opacity-50 flex items-center gap-2 transition-colors shadow-lg shadow-indigo-500/20"
+                            className="px-4 py-2 rounded-xl bg-primary hover:bg-primary/20 text-primary-foreground font-bold disabled:opacity-50 flex items-center gap-2 transition-colors shadow-lg shadow-primary/20"
                         >
                             {isCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                             Créer et Sélectionner

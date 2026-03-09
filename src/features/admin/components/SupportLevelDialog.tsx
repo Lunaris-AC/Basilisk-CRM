@@ -69,45 +69,45 @@ export function SupportLevelDialog({ open, onOpenChange, level, onSuccess }: Sup
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="bg-zinc-950 border border-white/10 text-white sm:max-w-[425px] overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+            <DialogContent className="bg-zinc-950 border border-white/10 text-foreground sm:max-w-[425px] overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
 
                 <DialogHeader className="relative z-10">
-                    <DialogTitle className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+                    <DialogTitle className="text-xl font-bold bg-gradient-to-r from-primary to-primary bg-clip-text text-transparent">
                         {level ? "Modifier le niveau" : "Nouveau niveau"}
                     </DialogTitle>
-                    <DialogDescription className="text-white/50">
+                    <DialogDescription className="text-muted-foreground">
                         Définissez le nom, le rang hiérarchique et la couleur du badge.
                     </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-4 mt-1 relative z-10">
                     <div className="space-y-2">
-                        <Label className="text-white/70 text-xs uppercase tracking-wider font-semibold">Nom du niveau <span className="text-rose-500">*</span></Label>
+                        <Label className="text-foreground/70 text-xs uppercase tracking-wider font-semibold">Nom du niveau <span className="text-rose-500">*</span></Label>
                         <Input
                             required
                             value={formData.name}
                             onChange={e => setFormData({ ...formData, name: e.target.value })}
                             placeholder="Ex: N1 - Helpdesk"
-                            className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus-visible:ring-indigo-500 h-11 rounded-xl"
+                            className="bg-white/5 border-white/10 text-foreground placeholder:text-foreground/20 focus-visible:ring-primary h-11 rounded-xl"
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <Label className="text-white/70 text-xs uppercase tracking-wider font-semibold">Rang (Hiérarchie) <span className="text-rose-500">*</span></Label>
+                        <Label className="text-foreground/70 text-xs uppercase tracking-wider font-semibold">Rang (Hiérarchie) <span className="text-rose-500">*</span></Label>
                         <Input
                             type="number"
                             required
                             min="1"
                             value={formData.rank}
                             onChange={e => setFormData({ ...formData, rank: parseInt(e.target.value) || 1 })}
-                            className="bg-white/5 border-white/10 text-white focus-visible:ring-indigo-500 h-11 rounded-xl"
+                            className="bg-white/5 border-white/10 text-foreground focus-visible:ring-primary h-11 rounded-xl"
                         />
-                        <p className="text-[10px] text-white/40 italic px-1">Le rang définit l&apos;ordre d&apos;escalade (1 = plus bas).</p>
+                        <p className="text-[10px] text-muted-foreground italic px-1">Le rang définit l&apos;ordre d&apos;escalade (1 = plus bas).</p>
                     </div>
 
                     <div className="space-y-2">
-                        <Label className="text-white/70 text-xs uppercase tracking-wider font-semibold">Couleur du Badge <span className="text-rose-500">*</span></Label>
+                        <Label className="text-foreground/70 text-xs uppercase tracking-wider font-semibold">Couleur du Badge <span className="text-rose-500">*</span></Label>
                         <div className="flex gap-3">
                             <div className="relative group overflow-hidden rounded-xl border border-white/10 w-12 h-11">
                                 <Input
@@ -121,10 +121,10 @@ export function SupportLevelDialog({ open, onOpenChange, level, onSuccess }: Sup
                                 <Input
                                     value={formData.color}
                                     onChange={e => setFormData({ ...formData, color: e.target.value })}
-                                    className="bg-white/5 border-white/10 text-white uppercase font-mono h-11 rounded-xl pl-9"
+                                    className="bg-white/5 border-white/10 text-foreground uppercase font-mono h-11 rounded-xl pl-9"
                                     placeholder="#HEX"
                                 />
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 font-mono">#</span>
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-mono">#</span>
                             </div>
                         </div>
                     </div>
@@ -134,14 +134,14 @@ export function SupportLevelDialog({ open, onOpenChange, level, onSuccess }: Sup
                             type="button"
                             variant="ghost"
                             onClick={() => onOpenChange(false)}
-                            className="text-white/60 hover:text-white hover:bg-white/10 h-11 rounded-xl"
+                            className="text-muted-foreground hover:text-foreground hover:bg-white/10 h-11 rounded-xl"
                         >
                             Annuler
                         </Button>
                         <Button
                             type="submit"
                             disabled={isSubmitting}
-                            className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white font-bold h-11 rounded-xl px-6 border-none shadow-lg shadow-indigo-500/20"
+                            className="bg-gradient-to-r from-primary to-primary hover:from-primary hover:to-primary text-foreground font-bold h-11 rounded-xl px-6 border-none shadow-lg shadow-primary/20"
                         >
                             {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                             {level ? "Enregistrer" : "Créer le niveau"}

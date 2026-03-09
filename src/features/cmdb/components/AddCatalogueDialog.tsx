@@ -89,15 +89,15 @@ export function AddCatalogueDialog({ open, onOpenChange }: AddCatalogueDialogPro
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
-            <DialogContent className="bg-zinc-950 border border-white/10 text-white max-w-lg max-h-[90vh] overflow-y-auto">
+            <DialogContent className="bg-zinc-950 border border-white/10 text-foreground max-w-lg max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
                             <HardDrive className="w-5 h-5 text-blue-400" />
                         </div>
                         <div>
-                            <DialogTitle className="text-white">Nouveau Modèle</DialogTitle>
-                            <DialogDescription className="text-white/40">Ajouter un nouveau modèle d'équipement au catalogue.</DialogDescription>
+                            <DialogTitle className="text-foreground">Nouveau Modèle</DialogTitle>
+                            <DialogDescription className="text-muted-foreground">Ajouter un nouveau modèle d'équipement au catalogue.</DialogDescription>
                         </div>
                     </div>
                 </DialogHeader>
@@ -110,14 +110,14 @@ export function AddCatalogueDialog({ open, onOpenChange }: AddCatalogueDialogPro
                     )}
 
                     <div className="space-y-1.5">
-                        <Label className="text-white/60 text-xs uppercase tracking-wider">Catégorie *</Label>
+                        <Label className="text-muted-foreground text-xs uppercase tracking-wider">Catégorie *</Label>
                         <Select value={category} onValueChange={setCategory}>
-                            <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                            <SelectTrigger className="bg-white/5 border-white/10 text-foreground">
                                 <SelectValue placeholder="Sélectionner une catégorie..." />
                             </SelectTrigger>
                             <SelectContent className="bg-zinc-900 border-white/10">
                                 {CATEGORIES.map(cat => (
-                                    <SelectItem key={cat} value={cat} className="text-white/80 focus:bg-white/10 focus:text-white">
+                                    <SelectItem key={cat} value={cat} className="text-foreground/80 focus:bg-white/10 focus:text-foreground">
                                         {cat}
                                     </SelectItem>
                                 ))}
@@ -126,36 +126,36 @@ export function AddCatalogueDialog({ open, onOpenChange }: AddCatalogueDialogPro
                     </div>
 
                     <div className="space-y-1.5">
-                        <Label className="text-white/60 text-xs uppercase tracking-wider">Marque *</Label>
+                        <Label className="text-muted-foreground text-xs uppercase tracking-wider">Marque *</Label>
                         <Input
                             value={brand}
                             onChange={e => setBrand(e.target.value)}
                             placeholder="ex: Dell, HP, Epson..."
-                            className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+                            className="bg-white/5 border-white/10 text-foreground placeholder:text-muted-foreground"
                         />
                     </div>
 
                     <div className="space-y-1.5">
-                        <Label className="text-white/60 text-xs uppercase tracking-wider">Modèle *</Label>
+                        <Label className="text-muted-foreground text-xs uppercase tracking-wider">Modèle *</Label>
                         <Input
                             value={modelName}
                             onChange={e => setModelName(e.target.value)}
                             placeholder="ex: OptiPlex 7090, TM-T88VI..."
-                            className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+                            className="bg-white/5 border-white/10 text-foreground placeholder:text-muted-foreground"
                         />
                     </div>
 
                     <div className="space-y-1.5">
-                        <Label className="text-white/60 text-xs uppercase tracking-wider">Schéma JSON (Champs personnalisés)</Label>
+                        <Label className="text-muted-foreground text-xs uppercase tracking-wider">Schéma JSON (Champs personnalisés)</Label>
                         <Textarea
                             value={schemaStr}
                             onChange={e => setSchemaStr(e.target.value)}
                             placeholder={'{"os": "string", "ram": "number"}'}
-                            className="bg-white/5 border-white/10 text-white placeholder:text-white/30 resize-none font-mono text-xs"
+                            className="bg-white/5 border-white/10 text-foreground placeholder:text-muted-foreground resize-none font-mono text-xs"
                             rows={6}
                         />
-                        <p className="text-[10px] text-white/40 mt-1">
-                            Types supportés: <code className="text-white/60">string</code>, <code className="text-white/60">number</code>, <code className="text-white/60">boolean</code>, <code className="text-white/60">date</code>
+                        <p className="text-[10px] text-muted-foreground mt-1">
+                            Types supportés: <code className="text-muted-foreground">string</code>, <code className="text-muted-foreground">number</code>, <code className="text-muted-foreground">boolean</code>, <code className="text-muted-foreground">date</code>
                         </p>
                     </div>
 
@@ -163,7 +163,7 @@ export function AddCatalogueDialog({ open, onOpenChange }: AddCatalogueDialogPro
                         <Button
                             variant="ghost"
                             onClick={() => handleClose(false)}
-                            className="flex-1 text-white/50 hover:text-white/80 border border-white/10 hover:border-white/20"
+                            className="flex-1 text-muted-foreground hover:text-foreground/80 border border-white/10 hover:border-white/20"
                         >
                             Annuler
                         </Button>

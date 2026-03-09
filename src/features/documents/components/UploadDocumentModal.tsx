@@ -55,13 +55,13 @@ export function UploadDocumentModal({ open, onOpenChange, category }: UploadDocu
 
     return (
         <Dialog open={open} onOpenChange={(val) => { if (!val) resetForm(); onOpenChange(val) }}>
-            <DialogContent className="bg-zinc-900 border-white/10 text-white sm:max-w-md">
+            <DialogContent className="bg-zinc-900 border-white/10 text-foreground sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
-                        <FileUp className="w-5 h-5 text-indigo-400" />
+                    <DialogTitle className="text-xl font-bold text-foreground flex items-center gap-2">
+                        <FileUp className="w-5 h-5 text-primary/80" />
                         Uploader un document
                     </DialogTitle>
-                    <DialogDescription className="text-white/60">
+                    <DialogDescription className="text-muted-foreground">
                         {category === 'DOC'
                             ? 'Ajoutez un fichier à la documentation interne.'
                             : 'Publiez une nouvelle note de patch.'
@@ -72,7 +72,7 @@ export function UploadDocumentModal({ open, onOpenChange, category }: UploadDocu
                 <div className="space-y-4 py-4">
                     {/* Titre */}
                     <div className="space-y-2">
-                        <Label htmlFor="docTitle" className="text-sm font-medium text-white/80">
+                        <Label htmlFor="docTitle" className="text-sm font-medium text-foreground/80">
                             Titre du document
                         </Label>
                         <Input
@@ -80,14 +80,14 @@ export function UploadDocumentModal({ open, onOpenChange, category }: UploadDocu
                             placeholder="Ex: Guide d'utilisation v3.2"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
-                            className="bg-black/40 border-white/10 text-white focus:ring-indigo-500/50"
+                            className="bg-black/40 border-white/10 text-foreground focus:ring-primary/50"
                             disabled={isPending}
                         />
                     </div>
 
                     {/* Zone upload fichier */}
                     <div className="space-y-2">
-                        <Label className="text-sm font-medium text-white/80">Fichier</Label>
+                        <Label className="text-sm font-medium text-foreground/80">Fichier</Label>
                         {!selectedFile ? (
                             <div className="relative group cursor-pointer border border-dashed border-white/20 rounded-xl bg-black/20 hover:bg-white/5 transition-all">
                                 <input
@@ -102,18 +102,18 @@ export function UploadDocumentModal({ open, onOpenChange, category }: UploadDocu
                                     disabled={isPending}
                                 />
                                 <div className="flex flex-col items-center justify-center p-8 text-center pointer-events-none">
-                                    <UploadCloud className="w-8 h-8 text-white/30 mb-2 group-hover:text-indigo-400 transition-colors" />
-                                    <p className="text-sm text-white/50">Cliquez ou glissez votre fichier ici</p>
-                                    <p className="text-xs text-white/30 mt-1">PDF, Excel, Word, ZIP...</p>
+                                    <UploadCloud className="w-8 h-8 text-muted-foreground mb-2 group-hover:text-primary/80 transition-colors" />
+                                    <p className="text-sm text-muted-foreground">Cliquez ou glissez votre fichier ici</p>
+                                    <p className="text-xs text-muted-foreground mt-1">PDF, Excel, Word, ZIP...</p>
                                 </div>
                             </div>
                         ) : (
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/30">
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-primary/10 border border-primary/30">
                                 <div className="flex items-center gap-3 min-w-0">
-                                    <FileUp className="w-5 h-5 text-indigo-400 shrink-0" />
+                                    <FileUp className="w-5 h-5 text-primary/80 shrink-0" />
                                     <div className="min-w-0">
                                         <p className="text-sm text-indigo-200 font-medium truncate">{selectedFile.name}</p>
-                                        <p className="text-xs text-white/40">{(selectedFile.size / 1024).toFixed(1)} KB</p>
+                                        <p className="text-xs text-muted-foreground">{(selectedFile.size / 1024).toFixed(1)} KB</p>
                                     </div>
                                 </div>
                                 <button
@@ -131,7 +131,7 @@ export function UploadDocumentModal({ open, onOpenChange, category }: UploadDocu
                 <DialogFooter>
                     <button
                         onClick={() => { resetForm(); onOpenChange(false) }}
-                        className="px-4 py-2 rounded-xl text-white/70 hover:bg-white/10 transition-colors"
+                        className="px-4 py-2 rounded-xl text-foreground/70 hover:bg-white/10 transition-colors"
                         disabled={isPending}
                     >
                         Annuler
@@ -139,7 +139,7 @@ export function UploadDocumentModal({ open, onOpenChange, category }: UploadDocu
                     <button
                         onClick={handleSubmit}
                         disabled={!title.trim() || !selectedFile || isPending}
-                        className="px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-bold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg shadow-indigo-500/20"
+                        className="px-4 py-2 rounded-xl bg-primary hover:bg-primary/20 text-primary-foreground font-bold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg shadow-primary/20"
                     >
                         {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4" />}
                         Uploader

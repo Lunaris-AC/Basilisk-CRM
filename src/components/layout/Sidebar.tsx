@@ -44,14 +44,14 @@ export function Sidebar() {
     })
 
     return (
-        <div className="flex flex-col w-64 h-full bg-black/40 backdrop-blur-xl border-r border-white/10 text-white">
+        <div className="hidden md:flex flex-col w-64 h-full bg-black/40 backdrop-blur-xl border-r border-white/10 text-foreground shrink-0 z-50">
             <div className="flex items-center justify-center h-20 border-b border-white/5">
                 <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 shadow-lg shadow-indigo-500/20 flex items-center justify-center">
-                        <Ticket className="w-5 h-5 text-white" />
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary shadow-lg shadow-primary/20 flex items-center justify-center">
+                        <Ticket className="w-5 h-5 text-foreground" />
                     </div>
                     <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">
-                        NexusSupport
+                        Basilisk Support ERP
                     </span>
                 </div>
             </div>
@@ -61,9 +61,9 @@ export function Sidebar() {
                 {profile?.role && (
                     <button
                         onClick={() => setCreateModalOpen(true)}
-                        className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group w-full bg-gradient-to-r from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 text-white hover:from-indigo-500/30 hover:to-purple-500/30 hover:border-indigo-500/50"
+                        className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group w-full bg-gradient-to-r from-primary/20 to-primary/20 border border-primary/30 text-foreground hover:from-primary/30 hover:to-primary/30 hover:border-primary/50"
                     >
-                        <Plus className="w-5 h-5 text-indigo-400" />
+                        <Plus className="w-5 h-5 text-primary/80" />
                         <span className="font-semibold text-sm">Nouveau Ticket</span>
                     </button>
                 )}
@@ -81,12 +81,12 @@ export function Sidebar() {
                             key={item.name}
                             href={item.href}
                             className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group ${isActive
-                                ? 'bg-white/10 text-white shadow-sm ring-1 ring-white/20'
-                                : 'text-white/60 hover:text-white hover:bg-white/5'
+                                ? 'bg-white/10 text-foreground shadow-sm ring-1 ring-white/20'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
                                 }`}
                         >
                             <div className="flex items-center gap-3">
-                                <item.icon className={`w-5 h-5 transition-colors ${isActive ? 'text-indigo-400' : 'text-white/40 group-hover:text-white/70'}`} />
+                                <item.icon className={`w-5 h-5 transition-colors ${isActive ? 'text-primary/80' : 'text-muted-foreground group-hover:text-foreground/70'}`} />
                                 <span className="font-medium text-sm">{item.name}</span>
                             </div>
                             {(item as any).lockedForOthers && <Lock className="w-4 h-4 text-amber-500/70" />}
@@ -118,7 +118,7 @@ export function Sidebar() {
                                                 : 'text-white/40 hover:text-rose-300 hover:bg-rose-500/5'
                                                 }`}
                                         >
-                                            <item.icon className={`w-5 h-5 transition-colors ${isActive ? 'text-rose-400' : 'text-white/30 group-hover:text-rose-400'}`} />
+                                            <item.icon className={`w-5 h-5 transition-colors ${isActive ? 'text-rose-400' : 'text-muted-foreground group-hover:text-rose-400'}`} />
                                             <span className="font-medium text-sm">{item.name}</span>
                                         </Link>
                                     )
@@ -134,22 +134,22 @@ export function Sidebar() {
 
             {/* Profile & Role Badge */}
             <div className="p-4 border-t border-white/5">
-                <div className="p-4 rounded-xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-white/5 backdrop-blur-md flex flex-col gap-2 relative overflow-hidden group">
+                <div className="p-4 rounded-xl bg-gradient-to-br from-primary/10 to-primary/10 border border-white/5 backdrop-blur-md flex flex-col gap-2 relative overflow-hidden group">
                     {/* Glow effect */}
-                    <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
                     <div className="flex items-center gap-3 relative z-10">
-                        <div className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex flex-shrink-0 items-center justify-center text-white font-bold shadow-xl">
+                        <div className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex flex-shrink-0 items-center justify-center text-foreground font-bold shadow-xl">
                             {profile?.first_name?.[0]}{profile?.last_name?.[0]}
                         </div>
                         <div className="flex flex-col truncate">
-                            <span className="text-sm font-semibold text-white truncate">
+                            <span className="text-sm font-semibold text-foreground truncate">
                                 {profile?.first_name} {profile?.last_name}
                             </span>
                             <div className="flex items-center gap-1.5 mt-0.5">
                                 <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wider border ${profile?.role === 'N4'
                                     ? 'bg-rose-500/20 text-rose-300 border-rose-500/50 shadow-[0_0_10px_rgba(244,63,94,0.3)]'
-                                    : 'bg-indigo-500/20 text-indigo-300 border-indigo-500/50'
+                                    : 'bg-primary/20 text-primary/80 border-primary/50'
                                     }`}>
                                     {profile?.role === 'N4' ? 'ADMIN N4' : `NIVEAU ${profile?.role}`}
                                 </span>

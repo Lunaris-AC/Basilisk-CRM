@@ -89,15 +89,15 @@ export function AddLicenseDialog({ open, onOpenChange, stores }: AddLicenseDialo
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
-            <DialogContent className="bg-zinc-950 border border-white/10 text-white max-w-lg">
+            <DialogContent className="bg-zinc-950 border border-white/10 text-foreground max-w-lg">
                 <DialogHeader>
                     <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
-                            <Key className="w-5 h-5 text-violet-400" />
+                        <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                            <Key className="w-5 h-5 text-primary/80" />
                         </div>
                         <div>
-                            <DialogTitle className="text-white">Ajouter une licence</DialogTitle>
-                            <DialogDescription className="text-white/40">Enregistrer une nouvelle clé logicielle pour un magasin.</DialogDescription>
+                            <DialogTitle className="text-foreground">Ajouter une licence</DialogTitle>
+                            <DialogDescription className="text-muted-foreground">Enregistrer une nouvelle clé logicielle pour un magasin.</DialogDescription>
                         </div>
                     </div>
                 </DialogHeader>
@@ -111,16 +111,16 @@ export function AddLicenseDialog({ open, onOpenChange, stores }: AddLicenseDialo
 
                     {/* Magasin */}
                     <div className="space-y-1.5">
-                        <Label className="text-white/60 text-xs uppercase tracking-wider">Magasin *</Label>
+                        <Label className="text-muted-foreground text-xs uppercase tracking-wider">Magasin *</Label>
                         <Select value={storeId} onValueChange={setStoreId}>
-                            <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                            <SelectTrigger className="bg-white/5 border-white/10 text-foreground">
                                 <SelectValue placeholder="Sélectionner un magasin..." />
                             </SelectTrigger>
                             <SelectContent className="bg-zinc-900 border-white/10">
                                 {stores.map(store => (
-                                    <SelectItem key={store.id} value={store.id} className="text-white/80 focus:bg-white/10 focus:text-white">
+                                    <SelectItem key={store.id} value={store.id} className="text-foreground/80 focus:bg-white/10 focus:text-foreground">
                                         {store.name}
-                                        {store.client && <span className="text-white/40 ml-1 text-xs">({store.client.company})</span>}
+                                        {store.client && <span className="text-muted-foreground ml-1 text-xs">({store.client.company})</span>}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -129,57 +129,57 @@ export function AddLicenseDialog({ open, onOpenChange, stores }: AddLicenseDialo
 
                     {/* Nom du logiciel */}
                     <div className="space-y-1.5">
-                        <Label className="text-white/60 text-xs uppercase tracking-wider">Nom du logiciel *</Label>
+                        <Label className="text-muted-foreground text-xs uppercase tracking-wider">Nom du logiciel *</Label>
                         <Input
                             value={softwareName}
                             onChange={e => setSoftwareName(e.target.value)}
                             placeholder="ex: Microsoft 365 Business, Antivirus Endpoint..."
-                            className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+                            className="bg-white/5 border-white/10 text-foreground placeholder:text-muted-foreground"
                         />
                     </div>
 
                     {/* Clé de licence */}
                     <div className="space-y-1.5">
-                        <Label className="text-white/60 text-xs uppercase tracking-wider">Clé de licence *</Label>
+                        <Label className="text-muted-foreground text-xs uppercase tracking-wider">Clé de licence *</Label>
                         <Input
                             value={licenseKey}
                             onChange={e => setLicenseKey(e.target.value)}
                             placeholder="XXXXX-XXXXX-XXXXX-XXXXX"
-                            className="bg-white/5 border-white/10 text-white placeholder:text-white/30 font-mono"
+                            className="bg-white/5 border-white/10 text-foreground placeholder:text-muted-foreground font-mono"
                         />
                     </div>
 
                     {/* Nombre de sièges */}
                     <div className="space-y-1.5">
-                        <Label className="text-white/60 text-xs uppercase tracking-wider">Nombre de sièges *</Label>
+                        <Label className="text-muted-foreground text-xs uppercase tracking-wider">Nombre de sièges *</Label>
                         <Input
                             type="number"
                             min="1"
                             value={seatCount}
                             onChange={e => setSeatCount(e.target.value)}
-                            className="bg-white/5 border-white/10 text-white"
+                            className="bg-white/5 border-white/10 text-foreground"
                         />
                     </div>
 
                     {/* Dates */}
                     <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1.5">
-                            <Label className="text-white/60 text-xs uppercase tracking-wider">Date d'activation</Label>
+                            <Label className="text-muted-foreground text-xs uppercase tracking-wider">Date d'activation</Label>
                             <Input
                                 type="date"
                                 value={activationDate}
                                 onChange={e => setActivationDate(e.target.value)}
-                                className="bg-white/5 border-white/10 text-white"
+                                className="bg-white/5 border-white/10 text-foreground"
                             />
                         </div>
                         <div className="space-y-1.5">
-                            <Label className="text-white/60 text-xs uppercase tracking-wider">Date d'expiration</Label>
+                            <Label className="text-muted-foreground text-xs uppercase tracking-wider">Date d'expiration</Label>
                             <Input
                                 type="date"
                                 value={expirationDate}
                                 onChange={e => setExpirationDate(e.target.value)}
                                 disabled={isPerpetual}
-                                className="bg-white/5 border-white/10 text-white disabled:opacity-30"
+                                className="bg-white/5 border-white/10 text-foreground disabled:opacity-30"
                             />
                         </div>
                     </div>
@@ -193,19 +193,19 @@ export function AddLicenseDialog({ open, onOpenChange, stores }: AddLicenseDialo
                         >
                             <span className={`absolute top-0.5 w-4 h-4 rounded-full transition-all duration-200 ${isPerpetual ? 'left-5 bg-emerald-400' : 'left-0.5 bg-white/50'}`} />
                         </button>
-                        <Label className="text-white/50 text-sm cursor-pointer" onClick={() => { setIsPerpetual(!isPerpetual); setExpirationDate('') }}>
+                        <Label className="text-muted-foreground text-sm cursor-pointer" onClick={() => { setIsPerpetual(!isPerpetual); setExpirationDate('') }}>
                             Licence perpétuelle (aucune expiration)
                         </Label>
                     </div>
 
                     {/* Notes */}
                     <div className="space-y-1.5">
-                        <Label className="text-white/60 text-xs uppercase tracking-wider">Notes (optionnel)</Label>
+                        <Label className="text-muted-foreground text-xs uppercase tracking-wider">Notes (optionnel)</Label>
                         <Textarea
                             value={notes}
                             onChange={e => setNotes(e.target.value)}
                             placeholder="Revendeur, contact support, conditions..."
-                            className="bg-white/5 border-white/10 text-white placeholder:text-white/30 resize-none"
+                            className="bg-white/5 border-white/10 text-foreground placeholder:text-muted-foreground resize-none"
                             rows={2}
                         />
                     </div>
@@ -215,14 +215,14 @@ export function AddLicenseDialog({ open, onOpenChange, stores }: AddLicenseDialo
                         <Button
                             variant="ghost"
                             onClick={() => handleClose(false)}
-                            className="flex-1 text-white/50 hover:text-white/80 border border-white/10 hover:border-white/20"
+                            className="flex-1 text-muted-foreground hover:text-foreground/80 border border-white/10 hover:border-white/20"
                         >
                             Annuler
                         </Button>
                         <Button
                             onClick={handleSubmit}
                             disabled={isPending}
-                            className="flex-1 bg-violet-500/20 hover:bg-violet-500/30 text-violet-300 border border-violet-500/30 hover:border-violet-500/50"
+                            className="flex-1 bg-primary/20 hover:bg-primary/30 text-primary/80 border border-primary/30 hover:border-primary/50"
                         >
                             {isPending ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
                             Enregistrer la licence

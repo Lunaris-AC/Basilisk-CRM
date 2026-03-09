@@ -19,10 +19,10 @@ export function CommerceDashboard() {
         <div className="space-y-8 pb-10">
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
                 <div>
-                    <h1 className="text-4xl font-extrabold tracking-tight text-white mb-2">
+                    <h1 className="text-4xl font-extrabold tracking-tight text-foreground mb-2">
                         Portail Commerce
                     </h1>
-                    <p className="text-white/60 font-medium">
+                    <p className="text-muted-foreground font-medium">
                         Tickets de vos clients.
                     </p>
                 </div>
@@ -30,7 +30,7 @@ export function CommerceDashboard() {
 
             <TicketFilters filters={filters} setFilters={setFilters} />
 
-            <h2 className="text-xl font-bold text-white mt-10 mb-4 tracking-wide">Mes Tickets</h2>
+            <h2 className="text-xl font-bold text-foreground mt-10 mb-4 tracking-wide">Mes Tickets</h2>
             <TicketTable tickets={tickets} isLoading={isLoading} error={error} showAssignButton={false} />
 
         </div>

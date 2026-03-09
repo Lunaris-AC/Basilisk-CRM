@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic'
 import { IncidentsContent } from './IncidentsContent'
 
 export const metadata = {
-    title: 'Incidents | NexusSupport',
+    title: 'Incidents | Basilisk Support ERP',
     description: 'File d\'attente des tickets non assignés',
 }
 

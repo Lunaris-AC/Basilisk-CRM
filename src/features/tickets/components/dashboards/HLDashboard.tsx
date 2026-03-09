@@ -19,10 +19,10 @@ import { toast } from 'sonner'
 function DistributionBar({ label, value, total, color }: { label: string; value: number; total: number; color: string }) {
     const pct = total > 0 ? Math.round((value / total) * 100) : 0
     const colorMap: Record<string, { bar: string; text: string; bg: string }> = {
-        indigo: { bar: 'bg-indigo-500', text: 'text-indigo-300', bg: 'bg-indigo-500/10' },
+        indigo: { bar: 'bg-primary', text: 'text-primary/80', bg: 'bg-primary/10' },
         emerald: { bar: 'bg-emerald-500', text: 'text-emerald-300', bg: 'bg-emerald-500/10' },
         amber: { bar: 'bg-amber-500', text: 'text-amber-300', bg: 'bg-amber-500/10' },
-        purple: { bar: 'bg-purple-500', text: 'text-purple-300', bg: 'bg-purple-500/10' },
+        purple: { bar: 'bg-primary', text: 'text-primary/80', bg: 'bg-primary/10' },
         teal: { bar: 'bg-teal-500', text: 'text-teal-300', bg: 'bg-teal-500/10' },
         sky: { bar: 'bg-sky-500', text: 'text-sky-300', bg: 'bg-sky-500/10' },
         pink: { bar: 'bg-pink-500', text: 'text-pink-300', bg: 'bg-pink-500/10' },
@@ -71,8 +71,8 @@ export function HLDashboard() {
             {/* HEADER & BOUTON PIOCHER */}
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
                 <div>
-                    <h1 className="text-4xl font-extrabold tracking-tight text-white mb-2">Espace Personnel</h1>
-                    <p className="text-white/60 font-medium">Vue d'ensemble et statistiques.</p>
+                    <h1 className="text-4xl font-extrabold tracking-tight text-foreground mb-2">Espace Personnel</h1>
+                    <p className="text-muted-foreground font-medium">Vue d'ensemble et statistiques.</p>
                 </div>
                 <button
                     onClick={async () => {
@@ -99,15 +99,15 @@ export function HLDashboard() {
                     disabled={isPicking || hasActiveTickets}
                     title={hasActiveTickets ? "Terminez votre ticket en cours." : "Piocher le ticket le plus ancien"}
                     className={`group relative px-8 py-4 rounded-2xl overflow-hidden transition-all shadow-xl border 
-                        ${hasActiveTickets ? 'bg-zinc-800/50 border-white/5 opacity-60 cursor-not-allowed shadow-none' : 'hover:scale-105 active:scale-95 shadow-indigo-500/20 border-indigo-400/30'} disabled:opacity-50`}
+                        ${hasActiveTickets ? 'bg-zinc-800/50 border-white/5 opacity-60 cursor-not-allowed shadow-none' : 'hover:scale-105 active:scale-95 shadow-primary/20 border-primary/30'} disabled:opacity-50`}
                 >
                     {!hasActiveTickets && (
                         <>
-                            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 opacity-80 group-hover:opacity-100 transition-opacity" />
+                            <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary opacity-80 group-hover:opacity-100 transition-opacity" />
                             <div className="absolute inset-0 bg-white/10 blur-md group-hover:bg-white/20 transition-all" />
                         </>
                     )}
-                    <div className="relative flex items-center justify-center gap-3 text-white font-bold text-lg tracking-wide">
+                    <div className="relative flex items-center justify-center gap-3 text-foreground font-bold text-lg tracking-wide">
                         {isPicking ? <Loader2 className="w-6 h-6 animate-spin" /> : <Plus className={`w-6 h-6 ${hasActiveTickets ? 'opacity-50' : ''}`} />}
                         <span>{isPicking ? 'RECHERCHE...' : hasActiveTickets ? '1 TICKET MAXIMUM' : suspendedTickets.length > 0 ? `PIOCHER (${suspendedTickets.length} en pause)` : 'PIOCHER UN TICKET'}</span>
                     </div>
@@ -119,15 +119,15 @@ export function HLDashboard() {
             {/* ═══════════════════════════════════════════════════════════ */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Total Portail */}
-                <div className="relative group p-6 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-indigo-500/5 border border-indigo-500/20 backdrop-blur-xl overflow-hidden transition-all hover:border-indigo-500/40">
-                    <div className="absolute -right-8 -top-8 w-28 h-28 bg-indigo-500/10 rounded-full blur-3xl group-hover:bg-indigo-500/15 transition-colors" />
+                <div className="relative group p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 backdrop-blur-xl overflow-hidden transition-all hover:border-primary/40">
+                    <div className="absolute -right-8 -top-8 w-28 h-28 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/15 transition-colors" />
                     <div className="relative">
                         <div className="flex items-center gap-2 mb-3">
-                            <Activity className="w-4 h-4 text-indigo-400" />
-                            <span className="text-xs font-bold tracking-widest text-indigo-400/80 uppercase">Total Portail</span>
+                            <Activity className="w-4 h-4 text-primary/80" />
+                            <span className="text-xs font-bold tracking-widest text-primary/80 uppercase">Total Portail</span>
                         </div>
-                        <p className="text-5xl font-black tracking-tighter text-white">{globalStats?.totalTickets ?? '—'}</p>
-                        <p className="text-xs text-white/30 mt-1 font-medium">tickets ouverts</p>
+                        <p className="text-5xl font-black tracking-tighter text-foreground">{globalStats?.totalTickets ?? '—'}</p>
+                        <p className="text-xs text-muted-foreground mt-1 font-medium">tickets ouverts</p>
                     </div>
                 </div>
 
@@ -139,8 +139,8 @@ export function HLDashboard() {
                             <Inbox className="w-4 h-4 text-amber-400" />
                             <span className="text-xs font-bold tracking-widest text-amber-400/80 uppercase">File d'attente</span>
                         </div>
-                        <p className="text-5xl font-black tracking-tighter text-white">{globalStats?.totalUnassigned ?? '—'}</p>
-                        <p className="text-xs text-white/30 mt-1 font-medium">non affectés</p>
+                        <p className="text-5xl font-black tracking-tighter text-foreground">{globalStats?.totalUnassigned ?? '—'}</p>
+                        <p className="text-xs text-muted-foreground mt-1 font-medium">non affectés</p>
                     </div>
                 </div>
 
@@ -174,8 +174,8 @@ export function HLDashboard() {
                 {/* Répartition par Service */}
                 <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/[0.07] backdrop-blur-md">
                     <div className="flex items-center gap-2 mb-4">
-                        <Shield className="w-4 h-4 text-white/30" />
-                        <h3 className="text-xs font-bold tracking-widest text-white/40 uppercase">Répartition par Service</h3>
+                        <Shield className="w-4 h-4 text-muted-foreground" />
+                        <h3 className="text-xs font-bold tracking-widest text-muted-foreground uppercase">Répartition par Service</h3>
                     </div>
                     <div className="space-y-3">
                         <DistributionBar label="Hotline" value={globalStats?.byCategory.HL ?? 0} total={totalForServices} color="indigo" />
@@ -189,8 +189,8 @@ export function HLDashboard() {
                 {/* Répartition Support HL */}
                 <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/[0.07] backdrop-blur-md">
                     <div className="flex items-center gap-2 mb-4">
-                        <Zap className="w-4 h-4 text-white/30" />
-                        <h3 className="text-xs font-bold tracking-widest text-white/40 uppercase">Répartition Support (HL)</h3>
+                        <Zap className="w-4 h-4 text-muted-foreground" />
+                        <h3 className="text-xs font-bold tracking-widest text-muted-foreground uppercase">Répartition Support (HL)</h3>
                     </div>
                     <div className="space-y-3">
                         {globalStats && Object.entries(globalStats.byLevel).map(([name, count], idx) => (
@@ -203,7 +203,7 @@ export function HLDashboard() {
                             />
                         ))}
                         {!globalStats && (
-                            <div className="h-20 flex items-center justify-center text-white/20 text-xs italic">
+                            <div className="h-20 flex items-center justify-center text-foreground/20 text-xs italic">
                                 Chargement...
                             </div>
                         )}
@@ -217,7 +217,7 @@ export function HLDashboard() {
             <hr className="border-white/10 my-2" />
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <h2 className="text-sm font-bold tracking-wide text-white/50 flex items-center gap-2">
+                <h2 className="text-sm font-bold tracking-wide text-muted-foreground flex items-center gap-2">
                     <Clock className="w-4 h-4 text-cyan-400" />
                     Feuille de Temps Personnelle
                 </h2>
@@ -240,18 +240,18 @@ export function HLDashboard() {
                             classNames={{
                                 months: "flex flex-col", month: "space-y-3",
                                 caption: "flex justify-center pt-1 relative items-center",
-                                caption_label: "text-sm font-bold text-white",
+                                caption_label: "text-sm font-bold text-foreground",
                                 nav: "flex items-center gap-1",
-                                nav_button: "h-7 w-7 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-colors inline-flex items-center justify-center",
+                                nav_button: "h-7 w-7 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors inline-flex items-center justify-center",
                                 table: "w-full border-collapse", head_row: "flex",
-                                head_cell: "text-white/40 rounded-md w-9 font-medium text-[0.8rem]",
+                                head_cell: "text-muted-foreground rounded-md w-9 font-medium text-[0.8rem]",
                                 row: "flex w-full mt-1",
                                 cell: "h-9 w-9 text-center text-sm p-0 relative",
-                                day: "h-9 w-9 p-0 font-medium rounded-lg hover:bg-cyan-500/20 hover:text-cyan-300 transition-colors text-white/70 inline-flex items-center justify-center",
+                                day: "h-9 w-9 p-0 font-medium rounded-lg hover:bg-cyan-500/20 hover:text-cyan-300 transition-colors text-foreground/70 inline-flex items-center justify-center",
                                 day_selected: "bg-cyan-500 text-black hover:bg-cyan-400 font-bold",
-                                day_today: "bg-white/10 text-white font-bold",
-                                day_outside: "text-white/20",
-                                day_disabled: "text-white/10 hover:bg-transparent",
+                                day_today: "bg-white/10 text-foreground font-bold",
+                                day_outside: "text-foreground/20",
+                                day_disabled: "text-foreground/10 hover:bg-transparent",
                             }}
                         />
                     </PopoverContent>
@@ -261,7 +261,7 @@ export function HLDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-5 rounded-2xl bg-cyan-500/[0.04] border border-cyan-500/15 backdrop-blur-md transition-all hover:border-cyan-500/30">
                     <span className="text-cyan-400/60 text-xs font-bold uppercase tracking-wider">Mes tickets en cours</span>
-                    <p className="text-3xl font-black tracking-tight text-white mt-2">{activeTickets.length}</p>
+                    <p className="text-3xl font-black tracking-tight text-foreground mt-2">{activeTickets.length}</p>
                 </div>
                 <div className="p-5 rounded-2xl bg-cyan-500/[0.04] border border-cyan-500/15 backdrop-blur-md transition-all hover:border-cyan-500/30">
                     <span className="text-cyan-400/60 text-xs font-bold uppercase tracking-wider">Créés à cette date</span>
@@ -278,7 +278,7 @@ export function HLDashboard() {
             {/* ═══════════════════════════════════════════════════════════ */}
             <TicketFilters filters={filters} setFilters={setFilters} />
 
-            <h2 className="text-xl font-bold text-white mt-10 mb-4 tracking-wide">Mes Tickets Actifs</h2>
+            <h2 className="text-xl font-bold text-foreground mt-10 mb-4 tracking-wide">Mes Tickets Actifs</h2>
             <TicketTable tickets={activeTickets} isLoading={isLoading} error={error} showAssignButton={false} />
 
             {suspendedTickets.length > 0 && (

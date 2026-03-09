@@ -27,10 +27,10 @@ export function SAVDashboard() {
         <div className="space-y-8 pb-10">
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
                 <div>
-                    <h1 className="text-4xl font-extrabold tracking-tight text-white mb-2">
+                    <h1 className="text-4xl font-extrabold tracking-tight text-foreground mb-2">
                         Portail SAV
                     </h1>
-                    <p className="text-white/60 font-medium">
+                    <p className="text-muted-foreground font-medium">
                         Tickets assignés au Service Après-Vente et en attente de prise en charge.
                     </p>
                 </div>
@@ -38,7 +38,7 @@ export function SAVDashboard() {
 
             <TicketFilters filters={filters} setFilters={setFilters} />
 
-            <h2 className="text-xl font-bold text-white mt-10 mb-4 tracking-wide">Tickets Service Après-Vente</h2>
+            <h2 className="text-xl font-bold text-foreground mt-10 mb-4 tracking-wide">Tickets Service Après-Vente</h2>
             <TicketTable tickets={tickets} isLoading={isGlobalLoading} error={null} showAssignButton={true} />
 
         </div>

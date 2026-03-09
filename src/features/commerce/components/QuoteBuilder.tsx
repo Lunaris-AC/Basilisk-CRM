@@ -145,7 +145,7 @@ export function QuoteBuilder({ catalogue }: QuoteBuilderProps) {
     }
 
     if (isLoading) {
-        return <div className="p-8 text-center text-white/50 animate-pulse">Chargement des données...</div>
+        return <div className="p-8 text-center text-muted-foreground animate-pulse">Chargement des données...</div>
     }
 
     return (
@@ -160,7 +160,7 @@ export function QuoteBuilder({ catalogue }: QuoteBuilderProps) {
             {/* SELECTION CLIENT & MAGASIN */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl">
                 <div className="space-y-2">
-                    <Label className="text-white/80">Client <span className="text-red-400">*</span></Label>
+                    <Label className="text-foreground/80">Client <span className="text-red-400">*</span></Label>
                     <Select value={clientId} onValueChange={(val) => {
                         setClientId(val)
                         const clientStores = stores.filter(s => s.client_id === val)
@@ -170,10 +170,10 @@ export function QuoteBuilder({ catalogue }: QuoteBuilderProps) {
                             setStoreId("")
                         }
                     }}>
-                        <SelectTrigger className="bg-black/20 border-white/10 text-white focus:ring-emerald-500/50">
+                        <SelectTrigger className="bg-black/20 border-white/10 text-foreground focus:ring-emerald-500/50">
                             <SelectValue placeholder="Sélectionner un client..." />
                         </SelectTrigger>
-                        <SelectContent className="bg-zinc-900 border-white/10 text-white max-h-[300px]">
+                        <SelectContent className="bg-zinc-900 border-white/10 text-foreground max-h-[300px]">
                             {clients.map(c => (
                                 <SelectItem key={c.id} value={c.id} className="hover:bg-white/10 cursor-pointer">
                                     {c.company}
@@ -184,34 +184,34 @@ export function QuoteBuilder({ catalogue }: QuoteBuilderProps) {
                 </div>
 
                 <div className="space-y-2">
-                    <Label className="text-white/80">Magasin <span className="text-red-400">*</span></Label>
+                    <Label className="text-foreground/80">Magasin <span className="text-red-400">*</span></Label>
                     <Select value={storeId} onValueChange={setStoreId} disabled={!clientId}>
-                        <SelectTrigger className="bg-black/20 border-white/10 text-white focus:ring-emerald-500/50 disabled:opacity-50">
+                        <SelectTrigger className="bg-black/20 border-white/10 text-foreground focus:ring-emerald-500/50 disabled:opacity-50">
                             <SelectValue placeholder={clientId ? "Sélectionner un magasin..." : "Choisissez un client d'abord"} />
                         </SelectTrigger>
-                        <SelectContent className="bg-zinc-900 border-white/10 text-white max-h-[300px]">
+                        <SelectContent className="bg-zinc-900 border-white/10 text-foreground max-h-[300px]">
                             {availableStores.map(s => (
                                 <SelectItem key={s.id} value={s.id} className="hover:bg-white/10 cursor-pointer">
                                     {s.name} {s.city ? `(${s.city})` : ''}
                                 </SelectItem>
                             ))}
                             {availableStores.length === 0 && clientId && (
-                                <div className="p-2 text-sm text-white/50 text-center">Aucun magasin lié à ce client</div>
+                                <div className="p-2 text-sm text-muted-foreground text-center">Aucun magasin lié à ce client</div>
                             )}
                         </SelectContent>
                     </Select>
                 </div>
 
                 <div className="space-y-2 md:col-span-2 md:w-1/2">
-                    <Label className="text-white/80">Date de validité (optionnelle)</Label>
+                    <Label className="text-foreground/80">Date de validité (optionnelle)</Label>
                     <div className="relative">
                         <Input
                             type="date"
-                            className="bg-black/20 border-white/10 text-white focus:ring-emerald-500/50 pl-10 block w-full [color-scheme:dark]"
+                            className="bg-black/20 border-white/10 text-foreground focus:ring-emerald-500/50 pl-10 block w-full [color-scheme:dark]"
                             value={validUntil}
                             onChange={(e) => setValidUntil(e.target.value)}
                         />
-                        <CalendarIcon className="absolute left-3 top-2.5 h-4 w-4 text-white/50 pointer-events-none" />
+                        <CalendarIcon className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
                     </div>
                 </div>
             </div>
@@ -219,7 +219,7 @@ export function QuoteBuilder({ catalogue }: QuoteBuilderProps) {
             {/* LIGNES DU DEVIS */}
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-semibold text-white/90">Lignes du devis</h2>
+                    <h2 className="text-xl font-semibold text-foreground/90">Lignes du devis</h2>
                     <Button type="button" variant="outline" size="sm" onClick={addLine} className="border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300">
                         <PlusCircle className="mr-2 h-4 w-4" />
                         Ajouter une ligne
@@ -227,8 +227,8 @@ export function QuoteBuilder({ catalogue }: QuoteBuilderProps) {
                 </div>
 
                 <div className="rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl p-6 custom-scrollbar overflow-x-auto">
-                    <table className="w-full text-sm text-left text-white/80 min-w-[800px]">
-                        <thead className="text-xs text-white/60 uppercase border-b border-white/10">
+                    <table className="w-full text-sm text-left text-foreground/80 min-w-[800px]">
+                        <thead className="text-xs text-muted-foreground uppercase border-b border-white/10">
                             <tr>
                                 <th scope="col" className="px-2 py-3 w-[45%] font-medium">Désignation</th>
                                 <th scope="col" className="px-2 py-3 w-[10%] font-medium text-center">Qté</th>
@@ -245,10 +245,10 @@ export function QuoteBuilder({ catalogue }: QuoteBuilderProps) {
                                             value={line.catalogue_item_id || "custom"}
                                             onValueChange={(val) => updateLine(line.id, "catalogue_item_id", val)}
                                         >
-                                            <SelectTrigger className="bg-black/20 border-white/10 text-white w-full h-8 text-xs">
+                                            <SelectTrigger className="bg-black/20 border-white/10 text-foreground w-full h-8 text-xs">
                                                 <SelectValue placeholder="Piocher dans le catalogue..." />
                                             </SelectTrigger>
-                                            <SelectContent className="bg-zinc-900 border-white/10 text-white max-w-sm">
+                                            <SelectContent className="bg-zinc-900 border-white/10 text-foreground max-w-sm">
                                                 <SelectItem value="custom" className="text-emerald-400 font-medium text-xs">-- Ligne Libre --</SelectItem>
                                                 {catalogue.map(c => (
                                                     <SelectItem key={c.id} value={c.id} className="text-xs">
@@ -261,7 +261,7 @@ export function QuoteBuilder({ catalogue }: QuoteBuilderProps) {
                                             value={line.designation}
                                             onChange={(e) => updateLine(line.id, "designation", e.target.value)}
                                             placeholder="Description..."
-                                            className="bg-black/20 border-white/10 text-white"
+                                            className="bg-black/20 border-white/10 text-foreground"
                                         />
                                     </td>
                                     <td className="px-2 py-4">
@@ -270,7 +270,7 @@ export function QuoteBuilder({ catalogue }: QuoteBuilderProps) {
                                             min="1"
                                             value={line.quantity || ''}
                                             onChange={(e) => updateLine(line.id, "quantity", parseFloat(e.target.value) || 0)}
-                                            className="bg-black/20 border-white/10 text-white text-center"
+                                            className="bg-black/20 border-white/10 text-foreground text-center"
                                         />
                                     </td>
                                     <td className="px-2 py-4">
@@ -280,7 +280,7 @@ export function QuoteBuilder({ catalogue }: QuoteBuilderProps) {
                                             step="0.01"
                                             value={line.unit_price || ''}
                                             onChange={(e) => updateLine(line.id, "unit_price", parseFloat(e.target.value) || 0)}
-                                            className="bg-black/20 border-white/10 text-white text-right font-mono"
+                                            className="bg-black/20 border-white/10 text-foreground text-right font-mono"
                                         />
                                     </td>
                                     <td className="px-2 py-4">
@@ -290,10 +290,10 @@ export function QuoteBuilder({ catalogue }: QuoteBuilderProps) {
                                             step="0.1"
                                             value={line.tax_rate || ''}
                                             onChange={(e) => updateLine(line.id, "tax_rate", parseFloat(e.target.value) || 0)}
-                                            className="bg-black/20 border-white/10 text-white text-center"
+                                            className="bg-black/20 border-white/10 text-foreground text-center"
                                         />
                                     </td>
-                                    <td className="px-2 py-4 text-right font-mono font-medium text-white/90">
+                                    <td className="px-2 py-4 text-right font-mono font-medium text-foreground/90">
                                         {formatCurrency((line.quantity || 0) * (line.unit_price || 0))}
                                     </td>
                                     <td className="px-2 py-4 text-right">
@@ -318,16 +318,16 @@ export function QuoteBuilder({ catalogue }: QuoteBuilderProps) {
             {/* RÉSUMÉ ET SOUMISSION */}
             <div className="flex flex-col md:flex-row justify-end items-end gap-6 pt-6">
                 <div className="w-full md:w-80 space-y-3 p-6 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/5 shadow-inner">
-                    <div className="flex justify-between text-sm text-white/60">
+                    <div className="flex justify-between text-sm text-muted-foreground">
                         <span>Total HT</span>
                         <span className="font-mono">{formatCurrency(totals.ht)}</span>
                     </div>
-                    <div className="flex justify-between text-sm text-white/60">
+                    <div className="flex justify-between text-sm text-muted-foreground">
                         <span>TVA</span>
                         <span className="font-mono">{formatCurrency(totals.tva)}</span>
                     </div>
                     <div className="h-px w-full bg-white/10 my-2" />
-                    <div className="flex justify-between text-lg font-bold text-white">
+                    <div className="flex justify-between text-lg font-bold text-foreground">
                         <span>Total TTC</span>
                         <span className="font-mono text-emerald-400">{formatCurrency(totals.ttc)}</span>
                     </div>

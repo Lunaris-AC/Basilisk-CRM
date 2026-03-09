@@ -32,7 +32,7 @@ function ExpirationCell({ date }: { date: string | null }) {
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500/30">
                     <AlertTriangle className="w-3 h-3" /> EXPIRÉE
                 </span>
-                <div className="text-[10px] text-white/30 mt-0.5">{format(d, 'dd MMM yyyy', { locale: fr })}</div>
+                <div className="text-[10px] text-muted-foreground mt-0.5">{format(d, 'dd MMM yyyy', { locale: fr })}</div>
             </div>
         )
     }
@@ -43,15 +43,15 @@ function ExpirationCell({ date }: { date: string | null }) {
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 animate-pulse">
                     <AlertTriangle className="w-3 h-3" /> {daysLeft}j restants
                 </span>
-                <div className="text-[10px] text-white/30 mt-0.5">{format(d, 'dd MMM yyyy', { locale: fr })}</div>
+                <div className="text-[10px] text-muted-foreground mt-0.5">{format(d, 'dd MMM yyyy', { locale: fr })}</div>
             </div>
         )
     }
 
     return (
         <div>
-            <span className="text-sm text-white/60">{format(d, 'dd MMM yyyy', { locale: fr })}</span>
-            <div className="text-[10px] text-white/30 mt-0.5">{daysLeft} jours</div>
+            <span className="text-sm text-muted-foreground">{format(d, 'dd MMM yyyy', { locale: fr })}</span>
+            <div className="text-[10px] text-muted-foreground mt-0.5">{daysLeft} jours</div>
         </div>
     )
 }
@@ -83,10 +83,10 @@ export function LicenseTable({ licenses, stores }: LicenseTableProps) {
         return (
             <div className="flex flex-col items-center justify-center py-20 text-center">
                 <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-4">
-                    <Key className="w-6 h-6 text-white/20" />
+                    <Key className="w-6 h-6 text-foreground/20" />
                 </div>
-                <p className="text-white/40 font-medium">Aucune licence enregistrée</p>
-                <p className="text-white/25 text-sm mt-1">Cliquez sur « Ajouter une licence » pour commencer.</p>
+                <p className="text-muted-foreground font-medium">Aucune licence enregistrée</p>
+                <p className="text-foreground/25 text-sm mt-1">Cliquez sur « Ajouter une licence » pour commencer.</p>
             </div>
         )
     }
@@ -96,7 +96,7 @@ export function LicenseTable({ licenses, stores }: LicenseTableProps) {
             <div className="px-6 py-4 flex items-center justify-end border-b border-white/5 bg-white/[0.01]">
                 <div className="w-64">
                     <Select value={selectedStore} onValueChange={setSelectedStore}>
-                        <SelectTrigger className="bg-white/5 border-white/10 text-white/70">
+                        <SelectTrigger className="bg-white/5 border-white/10 text-foreground/70">
                             <SelectValue placeholder="Tous les magasins" />
                         </SelectTrigger>
                         <SelectContent>
@@ -115,18 +115,18 @@ export function LicenseTable({ licenses, stores }: LicenseTableProps) {
                 <table className="w-full text-sm">
                     <thead>
                         <tr className="border-b border-white/5">
-                            <th className="text-left text-white/40 font-medium text-xs tracking-widest uppercase px-6 py-4">Logiciel</th>
-                            <th className="text-left text-white/40 font-medium text-xs tracking-widest uppercase px-4 py-4">Clé de licence</th>
-                            <th className="text-left text-white/40 font-medium text-xs tracking-widest uppercase px-4 py-4">Magasin</th>
-                            <th className="text-left text-white/40 font-medium text-xs tracking-widest uppercase px-4 py-4">Sièges</th>
-                            <th className="text-left text-white/40 font-medium text-xs tracking-widest uppercase px-4 py-4">Expiration</th>
-                            <th className="text-left text-white/40 font-medium text-xs tracking-widest uppercase px-4 py-4">Statut</th>
+                            <th className="text-left text-muted-foreground font-medium text-xs tracking-widest uppercase px-6 py-4">Logiciel</th>
+                            <th className="text-left text-muted-foreground font-medium text-xs tracking-widest uppercase px-4 py-4">Clé de licence</th>
+                            <th className="text-left text-muted-foreground font-medium text-xs tracking-widest uppercase px-4 py-4">Magasin</th>
+                            <th className="text-left text-muted-foreground font-medium text-xs tracking-widest uppercase px-4 py-4">Sièges</th>
+                            <th className="text-left text-muted-foreground font-medium text-xs tracking-widest uppercase px-4 py-4">Expiration</th>
+                            <th className="text-left text-muted-foreground font-medium text-xs tracking-widest uppercase px-4 py-4">Statut</th>
                         </tr>
                     </thead>
                     <tbody>
                         {sorted.length === 0 ? (
                             <tr>
-                                <td colSpan={6} className="px-6 py-8 text-center text-white/40">
+                                <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
                                     Aucune licence pour ce magasin
                                 </td>
                             </tr>
@@ -148,22 +148,22 @@ export function LicenseTable({ licenses, stores }: LicenseTableProps) {
                                     className={`group border-b border-white/[0.03] transition-all duration-150 hover:bg-white/[0.04] ${rowClass}`}
                                 >
                                     <td className="px-6 py-3.5">
-                                        <div className="font-medium text-white/90">{lic.software_name}</div>
+                                        <div className="font-medium text-foreground/90">{lic.software_name}</div>
                                     </td>
                                     <td className="px-4 py-3.5">
-                                        <span className="font-mono text-xs text-white/40 bg-white/5 px-2.5 py-1 rounded-lg border border-white/10 select-all">
+                                        <span className="font-mono text-xs text-muted-foreground bg-white/5 px-2.5 py-1 rounded-lg border border-white/10 select-all">
                                             {lic.license_key.length > 28 ? lic.license_key.slice(0, 28) + '…' : lic.license_key}
                                         </span>
                                     </td>
                                     <td className="px-4 py-3.5">
-                                        <div className="text-white/70">{lic.store?.name}</div>
+                                        <div className="text-foreground/70">{lic.store?.name}</div>
                                         {lic.store?.client && (
-                                            <div className="text-white/40 text-xs">{lic.store.client.company}</div>
+                                            <div className="text-muted-foreground text-xs">{lic.store.client.company}</div>
                                         )}
                                     </td>
                                     <td className="px-4 py-3.5 text-center">
-                                        <span className="text-sm font-bold text-white/80">{lic.seat_count}</span>
-                                        <div className="text-[10px] text-white/30">siège{lic.seat_count > 1 ? 's' : ''}</div>
+                                        <span className="text-sm font-bold text-foreground/80">{lic.seat_count}</span>
+                                        <div className="text-[10px] text-muted-foreground">siège{lic.seat_count > 1 ? 's' : ''}</div>
                                     </td>
                                     <td className="px-4 py-3.5">
                                         <ExpirationCell date={lic.expiration_date} />

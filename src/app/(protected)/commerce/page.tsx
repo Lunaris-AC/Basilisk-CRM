@@ -38,7 +38,7 @@ export default async function CommercePage() {
                 <div className="p-6 lg:p-10 pb-0">
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
                         <div className="space-y-2">
-                            <h1 className="text-4xl lg:text-5xl font-bold tracking-tight text-white drop-shadow-md">
+                            <h1 className="text-4xl lg:text-5xl font-bold tracking-tight text-foreground drop-shadow-md">
                                 Espace Commerce
                             </h1>
                             <p className="text-rose-200/80 text-lg max-w-2xl leading-relaxed">
@@ -48,9 +48,9 @@ export default async function CommercePage() {
                         <div className="flex items-center gap-4">
                             <Link
                                 href="/commerce/nouveau"
-                                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-400 hover:to-orange-400 text-white rounded-xl shadow-lg shadow-rose-500/25 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-rose-500/40 font-semibold"
+                                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-400 hover:to-orange-400 text-foreground rounded-xl shadow-lg shadow-rose-500/25 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-rose-500/40 font-semibold"
                             >
-                                <Plus className="w-5 h-5 text-white" />
+                                <Plus className="w-5 h-5 text-foreground" />
                                 Nouveau Devis
                             </Link>
                         </div>
@@ -62,13 +62,13 @@ export default async function CommercePage() {
                         <TabsList className="bg-black/40 border border-white/10 w-fit p-1 rounded-xl mb-6">
                             <TabsTrigger
                                 value="devis"
-                                className="px-6 py-2 rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-500/20 data-[state=active]:to-orange-500/20 data-[state=active]:text-rose-300 text-white/60 transition-all font-semibold"
+                                className="px-6 py-2 rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-500/20 data-[state=active]:to-orange-500/20 data-[state=active]:text-rose-300 text-muted-foreground transition-all font-semibold"
                             >
                                 Devis
                             </TabsTrigger>
                             <TabsTrigger
                                 value="catalogue"
-                                className="px-6 py-2 rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500/20 data-[state=active]:to-purple-500/20 data-[state=active]:text-indigo-300 text-white/60 transition-all font-semibold"
+                                className="px-6 py-2 rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/20 data-[state=active]:to-primary/20 data-[state=active]:text-primary/80 text-muted-foreground transition-all font-semibold"
                             >
                                 Catalogue des Prix
                             </TabsTrigger>

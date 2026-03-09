@@ -22,7 +22,7 @@ export function AttachmentViewer({ attachments }: AttachmentViewerProps) {
     const [docPreviewTitle, setDocPreviewTitle] = useState<string | null>(null)
 
     if (!attachments || attachments.length === 0) {
-        return <p className="text-sm text-white/40 italic mb-6">Aucune pièce jointe sur ce ticket.</p>
+        return <p className="text-sm text-muted-foreground italic mb-6">Aucune pièce jointe sur ce ticket.</p>
     }
 
     const isImage = (type: string) => type.startsWith('image/')
@@ -72,11 +72,11 @@ export function AttachmentViewer({ attachments }: AttachmentViewerProps) {
                                     />
                                 </Zoom>
                                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-3 pointer-events-none">
-                                    <p className="text-xs font-semibold text-white truncate flex items-center gap-2">
-                                        <ImageIcon className="w-3 h-3 text-indigo-400" />
+                                    <p className="text-xs font-semibold text-foreground truncate flex items-center gap-2">
+                                        <ImageIcon className="w-3 h-3 text-primary/80" />
                                         {cleanName}
                                     </p>
-                                    <p className="text-[10px] text-white/60">{(file.file_size / 1024 / 1024).toFixed(2)} Mo</p>
+                                    <p className="text-[10px] text-muted-foreground">{(file.file_size / 1024 / 1024).toFixed(2)} Mo</p>
                                 </div>
                             </div>
                         )
@@ -100,12 +100,12 @@ export function AttachmentViewer({ attachments }: AttachmentViewerProps) {
                         return (
                             <div key={file.id}
                                 onClick={() => openDocPreview(file.file_url, cleanName)}
-                                className="flex items-center gap-3 p-3 rounded-xl bg-black/40 border border-white/10 hover:border-indigo-500/50 hover:bg-indigo-500/10 transition-all cursor-pointer group"
+                                className="flex items-center gap-3 p-3 rounded-xl bg-black/40 border border-white/10 hover:border-primary/50 hover:bg-primary/10 transition-all cursor-pointer group"
                             >
                                 <FileText className="w-10 h-10 text-emerald-400 p-2 bg-emerald-500/10 rounded-lg flex-shrink-0 group-hover:scale-110 transition-transform" />
                                 <div className="truncate">
-                                    <p className="text-sm font-medium text-white truncate">{cleanName}</p>
-                                    <p className="text-xs text-white/40 flex items-center gap-1">{(file.file_size / 1024 / 1024).toFixed(2)} Mo <Maximize2 className="w-3 h-3 inline ml-2" /> Aperçu</p>
+                                    <p className="text-sm font-medium text-foreground truncate">{cleanName}</p>
+                                    <p className="text-xs text-muted-foreground flex items-center gap-1">{(file.file_size / 1024 / 1024).toFixed(2)} Mo <Maximize2 className="w-3 h-3 inline ml-2" /> Aperçu</p>
                                 </div>
                             </div>
                         )
@@ -118,12 +118,12 @@ export function AttachmentViewer({ attachments }: AttachmentViewerProps) {
                             href={file.file_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-3 p-3 rounded-xl bg-black/40 border border-white/10 hover:border-indigo-500/50 hover:bg-indigo-500/10 transition-all group"
+                            className="flex items-center gap-3 p-3 rounded-xl bg-black/40 border border-white/10 hover:border-primary/50 hover:bg-primary/10 transition-all group"
                         >
-                            <File className="w-10 h-10 text-indigo-400 p-2 bg-indigo-500/10 rounded-lg flex-shrink-0 group-hover:scale-110 transition-transform" />
+                            <File className="w-10 h-10 text-primary/80 p-2 bg-primary/10 rounded-lg flex-shrink-0 group-hover:scale-110 transition-transform" />
                             <div className="truncate">
-                                <p className="text-sm font-medium text-white truncate">{cleanName}</p>
-                                <p className="text-xs text-white/40 flex items-center gap-1">{(file.file_size / 1024 / 1024).toFixed(2)} Mo <ExternalLink className="w-3 h-3 inline ml-2" /> Ouvrir</p>
+                                <p className="text-sm font-medium text-foreground truncate">{cleanName}</p>
+                                <p className="text-xs text-muted-foreground flex items-center gap-1">{(file.file_size / 1024 / 1024).toFixed(2)} Mo <ExternalLink className="w-3 h-3 inline ml-2" /> Ouvrir</p>
                             </div>
                         </a>
                     )
@@ -134,10 +134,10 @@ export function AttachmentViewer({ attachments }: AttachmentViewerProps) {
             <Dialog open={!!docPreviewUrl} onOpenChange={(open) => !open && setDocPreviewUrl(null)}>
                 <DialogContent className="max-w-5xl h-[85vh] p-0 bg-white border-0 flex flex-col overflow-hidden">
                     <DialogHeader className="p-4 bg-zinc-900 border-b border-white/10 shrink-0">
-                        <DialogTitle className="text-white flex items-center justify-between">
+                        <DialogTitle className="text-foreground flex items-center justify-between">
                             <span className="truncate">{docPreviewTitle}</span>
                         </DialogTitle>
-                        <DialogDescription className="text-white/50 text-xs">
+                        <DialogDescription className="text-muted-foreground text-xs">
                             Aperçu généré via Microsoft Office Viewer
                         </DialogDescription>
                     </DialogHeader>

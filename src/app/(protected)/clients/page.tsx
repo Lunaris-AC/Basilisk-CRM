@@ -75,7 +75,7 @@ export default function ClientsPage() {
     if (isLoading) {
         return (
             <div className="flex h-64 items-center justify-center">
-                <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
             </div>
         )
     }
@@ -85,12 +85,12 @@ export default function ClientsPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20">
-                        <Users className="w-6 h-6 text-indigo-400" />
+                    <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20">
+                        <Users className="w-6 h-6 text-primary/80" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-white tracking-tight">Gestion des Clients</h1>
-                        <p className="text-white/50 text-sm mt-1">Entreprises, magasins et interlocuteurs.</p>
+                        <h1 className="text-2xl font-bold text-foreground tracking-tight">Gestion des Clients</h1>
+                        <p className="text-muted-foreground text-sm mt-1">Entreprises, magasins et interlocuteurs.</p>
                     </div>
                 </div>
             </div>
@@ -120,23 +120,23 @@ export default function ClientsPage() {
                                         onClick={() => toggleExpand(client.id)}
                                     >
                                         <TableCell>
-                                            {isExpanded ? <ChevronDown className="w-4 h-4 text-indigo-400" /> : <ChevronRight className="w-4 h-4 text-white/30" />}
+                                            {isExpanded ? <ChevronDown className="w-4 h-4 text-primary/80" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
                                         </TableCell>
-                                        <TableCell className="font-bold text-white">{client.company}</TableCell>
+                                        <TableCell className="font-bold text-foreground">{client.company}</TableCell>
                                         <TableCell>
-                                            <div className="flex items-center gap-2 text-white/60">
+                                            <div className="flex items-center gap-2 text-muted-foreground">
                                                 <Mail className="w-3.5 h-3.5" />
                                                 {client.email}
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <div className="flex items-center gap-2 text-white/60">
+                                            <div className="flex items-center gap-2 text-muted-foreground">
                                                 <Phone className="w-3.5 h-3.5" />
                                                 {client.phone}
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <span className="px-2 py-1 rounded-full bg-indigo-500/10 text-indigo-300 text-[10px] font-bold border border-indigo-500/20">
+                                            <span className="px-2 py-1 rounded-full bg-primary/10 text-primary/80 text-[10px] font-bold border border-primary/20">
                                                 {client.stores?.length || 0}
                                             </span>
                                         </TableCell>
@@ -155,7 +155,7 @@ export default function ClientsPage() {
                                                     <div className="flex items-center gap-1 bg-white/5 rounded-xl p-1 w-fit">
                                                         <button
                                                             onClick={() => setActiveTab(prev => ({ ...prev, [client.id]: 'stores' }))}
-                                                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${tab === 'stores' ? 'bg-indigo-500 text-white shadow-lg' : 'text-white/50 hover:text-white'}`}
+                                                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${tab === 'stores' ? 'bg-primary text-foreground shadow-lg' : 'text-muted-foreground hover:text-foreground'}`}
                                                         >
                                                             <StoreIcon className="w-3.5 h-3.5 inline mr-1.5" />
                                                             Magasins ({client.stores?.length || 0})
@@ -175,18 +175,18 @@ export default function ClientsPage() {
                                                             {client.stores?.length ? client.stores.map(store => (
                                                                 <div key={store.id} className="p-3 rounded-xl bg-white/5 border border-white/5 flex items-center gap-3">
                                                                     <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
-                                                                        <StoreIcon className="w-4 h-4 text-white/50" />
+                                                                        <StoreIcon className="w-4 h-4 text-muted-foreground" />
                                                                     </div>
                                                                     <div className="overflow-hidden">
-                                                                        <p className="text-sm font-semibold text-white truncate">{store.name}</p>
-                                                                        <div className="flex items-center gap-1 text-[11px] text-white/40">
+                                                                        <p className="text-sm font-semibold text-foreground truncate">{store.name}</p>
+                                                                        <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
                                                                             <MapPin className="w-3 h-3" />
                                                                             {store.city}
                                                                         </div>
                                                                     </div>
                                                                 </div>
                                                             )) : (
-                                                                <p className="text-xs text-white/30 italic col-span-3">Aucun magasin enregistré.</p>
+                                                                <p className="text-xs text-muted-foreground italic col-span-3">Aucun magasin enregistré.</p>
                                                             )}
                                                         </div>
                                                     )}
@@ -201,14 +201,14 @@ export default function ClientsPage() {
                                                                             {contact.first_name[0]}{contact.last_name[0]}
                                                                         </div>
                                                                         <div className="overflow-hidden space-y-1">
-                                                                            <p className="text-sm font-bold text-white">{contact.first_name} {contact.last_name}</p>
+                                                                            <p className="text-sm font-bold text-foreground">{contact.first_name} {contact.last_name}</p>
                                                                             {contact.job_title && (
-                                                                                <div className="flex items-center gap-1.5 text-[11px] text-white/50">
+                                                                                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                                                                                     <Briefcase className="w-3 h-3" />
                                                                                     {contact.job_title}
                                                                                 </div>
                                                                             )}
-                                                                            <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-white/40">
+                                                                            <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
                                                                                 {contact.email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{contact.email}</span>}
                                                                                 {contact.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{contact.phone}</span>}
                                                                             </div>
@@ -216,7 +216,7 @@ export default function ClientsPage() {
                                                                     </div>
                                                                 ))}
                                                                 {(!client.contacts?.filter(c => c.is_active)?.length) && (
-                                                                    <p className="text-xs text-white/30 italic col-span-2">Aucun contact enregistré.</p>
+                                                                    <p className="text-xs text-muted-foreground italic col-span-2">Aucun contact enregistré.</p>
                                                                 )}
                                                             </div>
 
@@ -247,62 +247,62 @@ export default function ClientsPage() {
 
             {/* Add Contact Modal */}
             <Dialog open={contactModalOpen} onOpenChange={setContactModalOpen}>
-                <DialogContent className="bg-zinc-900 border-white/10 text-white sm:max-w-md">
+                <DialogContent className="bg-zinc-900 border-white/10 text-foreground sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle className="text-xl font-bold text-emerald-300 flex items-center gap-2">
                             <UserCircle className="w-5 h-5" />
                             Nouveau Contact
                         </DialogTitle>
-                        <DialogDescription className="text-white/60">
+                        <DialogDescription className="text-muted-foreground">
                             Ajoutez un interlocuteur pour cette entreprise.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label className="text-white/80">Prénom *</Label>
+                                <Label className="text-foreground/80">Prénom *</Label>
                                 <Input
                                     value={contactForm.first_name}
                                     onChange={e => setContactForm(f => ({ ...f, first_name: e.target.value }))}
-                                    className="bg-black/40 border-white/10 text-white"
+                                    className="bg-black/40 border-white/10 text-foreground"
                                     placeholder="Pierre"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-white/80">Nom *</Label>
+                                <Label className="text-foreground/80">Nom *</Label>
                                 <Input
                                     value={contactForm.last_name}
                                     onChange={e => setContactForm(f => ({ ...f, last_name: e.target.value }))}
-                                    className="bg-black/40 border-white/10 text-white"
+                                    className="bg-black/40 border-white/10 text-foreground"
                                     placeholder="Durand"
                                 />
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-white/80">Fonction</Label>
+                            <Label className="text-foreground/80">Fonction</Label>
                             <Input
                                 value={contactForm.job_title}
                                 onChange={e => setContactForm(f => ({ ...f, job_title: e.target.value }))}
-                                className="bg-black/40 border-white/10 text-white"
+                                className="bg-black/40 border-white/10 text-foreground"
                                 placeholder="Manager, DSI, Responsable..."
                             />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label className="text-white/80">Email</Label>
+                                <Label className="text-foreground/80">Email</Label>
                                 <Input
                                     value={contactForm.email}
                                     onChange={e => setContactForm(f => ({ ...f, email: e.target.value }))}
-                                    className="bg-black/40 border-white/10 text-white"
+                                    className="bg-black/40 border-white/10 text-foreground"
                                     placeholder="email@exemple.com"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-white/80">Téléphone</Label>
+                                <Label className="text-foreground/80">Téléphone</Label>
                                 <Input
                                     value={contactForm.phone}
                                     onChange={e => setContactForm(f => ({ ...f, phone: e.target.value }))}
-                                    className="bg-black/40 border-white/10 text-white"
+                                    className="bg-black/40 border-white/10 text-foreground"
                                     placeholder="0612345678"
                                 />
                             </div>
@@ -311,7 +311,7 @@ export default function ClientsPage() {
                     <DialogFooter>
                         <button
                             onClick={() => setContactModalOpen(false)}
-                            className="px-4 py-2 rounded-xl text-white/70 hover:bg-white/10 transition-colors"
+                            className="px-4 py-2 rounded-xl text-foreground/70 hover:bg-white/10 transition-colors"
                         >
                             Annuler
                         </button>

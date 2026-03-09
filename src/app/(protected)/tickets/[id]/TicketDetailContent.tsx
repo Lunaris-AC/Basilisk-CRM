@@ -173,13 +173,13 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
     if (isLoadingTicket) {
         return (
             <div className="flex justify-center items-center h-64">
-                <Loader2 className="w-8 h-8 animate-spin text-white/50" />
+                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
             </div>
         )
     }
 
     if (!ticket) {
-        return <div className="text-white text-center mt-10">Ticket introuvable.</div>
+        return <div className="text-foreground text-center mt-10">Ticket introuvable.</div>
     }
 
     const handleSendComment = async (e: React.FormEvent) => {
@@ -294,11 +294,11 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
     // Helpers pour l'audit log timeline
     const auditActionConfig: Record<string, { label: string, icon: React.ReactNode, color: string }> = {
         created: { label: 'Créé', icon: <Zap className="w-3 h-3" />, color: 'bg-sky-500' },
-        status_changed: { label: 'Statut modifié', icon: <ArrowRightLeft className="w-3 h-3" />, color: 'bg-indigo-500' },
+        status_changed: { label: 'Statut modifié', icon: <ArrowRightLeft className="w-3 h-3" />, color: 'bg-primary' },
         assigned: { label: 'Assigné', icon: <UserCheck className="w-3 h-3" />, color: 'bg-emerald-500' },
         escalated: { label: 'Escaladé', icon: <ArrowUpRight className="w-3 h-3" />, color: 'bg-rose-500' },
         resolved: { label: 'Résolu', icon: <CheckCircle2 className="w-3 h-3" />, color: 'bg-emerald-500' },
-        resolved_cascade: { label: 'Résolu (cascade)', icon: <Shield className="w-3 h-3" />, color: 'bg-purple-500' },
+        resolved_cascade: { label: 'Résolu (cascade)', icon: <Shield className="w-3 h-3" />, color: 'bg-primary' },
         comment_added: { label: 'Commentaire', icon: <MessageSquare className="w-3 h-3" />, color: 'bg-white/30' },
         transferred: { label: 'Transféré', icon: <ArrowRightLeft className="w-3 h-3" />, color: 'bg-amber-500' },
         priority_changed: { label: 'Priorité modifiée', icon: <AlertTriangle className="w-3 h-3" />, color: 'bg-orange-500' },
@@ -313,15 +313,15 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => router.back()}
-                        className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white transition-colors"
+                        className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-foreground transition-colors"
                     >
                         <ArrowLeft className="w-5 h-5" />
                     </button>
                     <div>
-                        <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
+                        <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
                             {ticket.title}
                         </h1>
-                        <p className="text-white/50 text-sm mt-1 flex items-center gap-2">
+                        <p className="text-muted-foreground text-sm mt-1 flex items-center gap-2">
                             Ticket #{ticket.id.split('-')[0]} • Créé le {new Date(ticket.created_at).toLocaleDateString('fr-FR')}
                         </p>
                     </div>
@@ -329,10 +329,10 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
 
                 <div className="flex flex-wrap gap-2 items-center">
                     <SlaTimer ticket={ticket} />
-                    <span className="px-3 py-1 bg-white/10 rounded-full text-xs font-medium text-white/80 border border-white/10">
+                    <span className="px-3 py-1 bg-white/10 rounded-full text-xs font-medium text-foreground/80 border border-white/10">
                         {ticket.status.replace('_', ' ').toUpperCase()}
                     </span>
-                    <span className="px-3 py-1 bg-white/10 rounded-full text-xs font-medium text-white/80 border border-white/10">
+                    <span className="px-3 py-1 bg-white/10 rounded-full text-xs font-medium text-foreground/80 border border-white/10">
                         PRIORITÉ {ticket.priority.toUpperCase()}
                     </span>
                     <span
@@ -357,15 +357,15 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                     {/* Description Initiale */}
                     <div className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl">
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-300 font-bold border border-indigo-500/30">
+                            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary/80 font-bold border border-primary/30">
                                 {ticket.creator?.first_name?.[0]}{ticket.creator?.last_name?.[0]}
                             </div>
                             <div>
-                                <p className="text-white font-medium">{ticket.creator?.first_name} {ticket.creator?.last_name}</p>
-                                <p className="text-white/40 text-xs">Auteur du ticket</p>
+                                <p className="text-foreground font-medium">{ticket.creator?.first_name} {ticket.creator?.last_name}</p>
+                                <p className="text-muted-foreground text-xs">Auteur du ticket</p>
                             </div>
                         </div>
-                        <p className="text-white/80 leading-relaxed whitespace-pre-wrap">
+                        <p className="text-foreground/80 leading-relaxed whitespace-pre-wrap">
                             {ticket.description}
                         </p>
                     </div>
@@ -389,26 +389,26 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                     {/* Section pour tickets HL : afficher le SD lié ou bouton de liaison */}
                     {ticket.category !== 'DEV' && (
                         <div className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl">
-                            <h3 className="text-lg font-bold text-white tracking-wide flex items-center gap-2 mb-4">
-                                <Code2 className="w-5 h-5 text-purple-400" />
+                            <h3 className="text-lg font-bold text-foreground tracking-wide flex items-center gap-2 mb-4">
+                                <Code2 className="w-5 h-5 text-primary/80" />
                                 Bug Logiciel Associé
                             </h3>
                             {ticket.linked_sd_id && linkedSD ? (() => {
                                 const sd = linkedSD
-                                const sColor: Record<string, string> = { nouveau: 'text-sky-300', assigne: 'text-indigo-300', en_cours: 'text-amber-300', resolu: 'text-emerald-300', ferme: 'text-white/30' }
+                                const sColor: Record<string, string> = { nouveau: 'text-sky-300', assigne: 'text-primary/80', en_cours: 'text-amber-300', resolu: 'text-emerald-300', ferme: 'text-muted-foreground' }
                                 return (
-                                    <div className="flex items-center gap-3 p-4 rounded-xl bg-purple-500/5 border border-purple-500/15">
-                                        <Link2 className="w-4 h-4 text-purple-400 shrink-0" />
+                                    <div className="flex items-center gap-3 p-4 rounded-xl bg-primary/5 border border-primary/15">
+                                        <Link2 className="w-4 h-4 text-primary/80 shrink-0" />
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-white font-semibold text-sm truncate">{sd.title}</p>
+                                            <p className="text-foreground font-semibold text-sm truncate">{sd.title}</p>
                                             <div className="flex items-center gap-2 mt-1">
-                                                <span className={`text-[10px] font-bold uppercase ${sColor[sd.status] || 'text-white/30'}`}>{sd.status}</span>
-                                                <span className="text-white/20">·</span>
-                                                <span className={`text-[10px] font-bold ${sd.priority === 'critique' ? 'text-rose-400' : sd.priority === 'haute' ? 'text-orange-400' : 'text-white/30'}`}>{sd.priority}</span>
+                                                <span className={`text-[10px] font-bold uppercase ${sColor[sd.status] || 'text-muted-foreground'}`}>{sd.status}</span>
+                                                <span className="text-foreground/20">·</span>
+                                                <span className={`text-[10px] font-bold ${sd.priority === 'critique' ? 'text-rose-400' : sd.priority === 'haute' ? 'text-orange-400' : 'text-muted-foreground'}`}>{sd.priority}</span>
                                             </div>
                                         </div>
                                         <a href={`/tickets/${sd.id}`} className="p-2 rounded-lg hover:bg-white/5 transition-colors" title="Ouvrir le SD">
-                                            <ExternalLink className="w-4 h-4 text-purple-400" />
+                                            <ExternalLink className="w-4 h-4 text-primary/80" />
                                         </a>
                                         {myProfile?.role && !['CLIENT', 'COM', 'SAV1', 'SAV2'].includes(myProfile.role) && (
                                             <button
@@ -428,36 +428,36 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                     {myProfile?.role && !['CLIENT', 'COM', 'SAV1', 'SAV2'].includes(myProfile.role) && (
                                         <Dialog open={sdLinkModalOpen} onOpenChange={setSdLinkModalOpen}>
                                             <DialogTrigger asChild>
-                                                <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-300 hover:bg-purple-500/20 transition-colors text-sm font-semibold">
+                                                <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary/10 border border-primary/20 text-primary/80 hover:bg-primary/20 transition-colors text-sm font-semibold">
                                                     <Link2 className="w-4 h-4" />
                                                     Lier à un SD
                                                 </button>
                                             </DialogTrigger>
-                                            <DialogContent className="sm:max-w-lg bg-[#0a0a1a] border border-white/10 text-white">
+                                            <DialogContent className="sm:max-w-lg bg-[#0a0a1a] border border-white/10 text-foreground">
                                                 <DialogHeader>
                                                     <DialogTitle>Lier à un Ticket SD</DialogTitle>
-                                                    <DialogDescription className="text-white/50">Sélectionnez un SD (Bug/Évolution) ouvert pour le rattacher à cet incident.</DialogDescription>
+                                                    <DialogDescription className="text-muted-foreground">Sélectionnez un SD (Bug/Évolution) ouvert pour le rattacher à cet incident.</DialogDescription>
                                                 </DialogHeader>
                                                 <div className="space-y-3 py-2">
                                                     <Input
                                                         placeholder="Rechercher un SD…"
                                                         value={sdSearchTerm}
                                                         onChange={(e) => setSdSearchTerm(e.target.value)}
-                                                        className="bg-white/5 border-white/10 text-white"
+                                                        className="bg-white/5 border-white/10 text-foreground"
                                                     />
                                                     <div className="max-h-60 overflow-y-auto space-y-1">
                                                         {(openSDs || []).filter(sd => !sdSearchTerm || sd.title.toLowerCase().includes(sdSearchTerm.toLowerCase())).map((sd: any) => (
                                                             <button
                                                                 key={sd.id}
                                                                 onClick={() => setSelectedSdId(sd.id)}
-                                                                className={`w-full text-left flex items-center gap-2 p-3 rounded-lg transition-colors ${selectedSdId === sd.id ? 'bg-purple-500/20 border border-purple-500/30' : 'bg-white/[0.02] hover:bg-white/[0.05] border border-transparent'}`}
+                                                                className={`w-full text-left flex items-center gap-2 p-3 rounded-lg transition-colors ${selectedSdId === sd.id ? 'bg-primary/20 border border-primary/30' : 'bg-white/[0.02] hover:bg-white/[0.05] border border-transparent'}`}
                                                             >
                                                                 <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${sd.priority === 'critique' ? 'bg-rose-500/20 text-rose-300' : sd.priority === 'haute' ? 'bg-orange-500/20 text-orange-300' : 'bg-white/5 text-white/40'}`}>{sd.priority}</span>
-                                                                <span className="text-white/70 text-xs truncate flex-1">{sd.title}</span>
-                                                                <span className="text-white/20 text-[9px]">{sd.status}</span>
+                                                                <span className="text-foreground/70 text-xs truncate flex-1">{sd.title}</span>
+                                                                <span className="text-foreground/20 text-[9px]">{sd.status}</span>
                                                             </button>
                                                         ))}
-                                                        {(openSDs || []).length === 0 && <p className="text-center text-white/20 text-sm py-4">Aucun SD ouvert.</p>}
+                                                        {(openSDs || []).length === 0 && <p className="text-center text-foreground/20 text-sm py-4">Aucun SD ouvert.</p>}
                                                     </div>
                                                 </div>
                                                 <DialogFooter>
@@ -472,7 +472,7 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                                                 setSdSearchTerm('')
                                                             }
                                                         })}
-                                                        className="px-4 py-2 rounded-xl bg-purple-500 text-white font-semibold hover:bg-purple-600 disabled:opacity-50 disabled:pointer-events-none transition-colors"
+                                                        className="px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary disabled:opacity-50 disabled:pointer-events-none transition-colors"
                                                     >
                                                         {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Lier'}
                                                     </button>
@@ -481,7 +481,7 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                         </Dialog>
                                     )}
                                     {(!myProfile?.role || ['CLIENT', 'COM', 'SAV1', 'SAV2'].includes(myProfile.role)) && (
-                                        <p className="text-white/20 text-sm">Aucun bug logiciel associé.</p>
+                                        <p className="text-foreground/20 text-sm">Aucun bug logiciel associé.</p>
                                     )}
                                 </div>
                             )}
@@ -491,10 +491,10 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                     {/* Section pour tickets SD : afficher les incidents HL rattachés */}
                     {ticket.category === 'DEV' && (linkedHLTickets || []).length > 0 && (
                         <div className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl">
-                            <h3 className="text-lg font-bold text-white tracking-wide flex items-center gap-2 mb-4">
+                            <h3 className="text-lg font-bold text-foreground tracking-wide flex items-center gap-2 mb-4">
                                 <Link2 className="w-5 h-5 text-cyan-400" />
                                 Incidents (HL) Rattachés
-                                <span className="ml-auto text-xs font-bold text-white/30 bg-white/5 px-2 py-0.5 rounded-lg">{(linkedHLTickets || []).length}</span>
+                                <span className="ml-auto text-xs font-bold text-muted-foreground bg-white/5 px-2 py-0.5 rounded-lg">{(linkedHLTickets || []).length}</span>
                             </h3>
                             <div className="space-y-2">
                                 {(linkedHLTickets || []).map((hl: any) => {
@@ -502,9 +502,9 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                     return (
                                         <a key={hl.id} href={`/tickets/${hl.id}`} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] transition-colors group">
                                             <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${hl.status === 'ferme' ? 'bg-white/5 text-white/30 border-white/10' : hl.status === 'resolu' ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' : 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30'}`}>{hl.status}</span>
-                                            <span className="text-white/60 text-xs truncate flex-1">{hl.title}</span>
-                                            {store?.name && <span className="text-white/20 text-[10px] shrink-0">{store.name}</span>}
-                                            <ExternalLink className="w-3 h-3 text-white/20 group-hover:text-cyan-400 transition-colors shrink-0" />
+                                            <span className="text-muted-foreground text-xs truncate flex-1">{hl.title}</span>
+                                            {store?.name && <span className="text-foreground/20 text-[10px] shrink-0">{store.name}</span>}
+                                            <ExternalLink className="w-3 h-3 text-foreground/20 group-hover:text-cyan-400 transition-colors shrink-0" />
                                         </a>
                                     )
                                 })}
@@ -514,13 +514,13 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
 
                     {/* Pièces jointes du ticket */}
                     <div className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl">
-                        <h3 className="text-lg font-bold text-white tracking-wide flex items-center gap-2 mb-4">
-                            <Paperclip className="w-5 h-5 text-indigo-400" />
+                        <h3 className="text-lg font-bold text-foreground tracking-wide flex items-center gap-2 mb-4">
+                            <Paperclip className="w-5 h-5 text-primary/80" />
                             Pièces jointes
                         </h3>
 
                         {isLoadingAttachments ? (
-                            <div className="flex justify-center p-4"><Loader2 className="w-6 h-6 animate-spin text-white/30" /></div>
+                            <div className="flex justify-center p-4"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
                         ) : (
                             <AttachmentViewer attachments={attachments || []} />
                         )}
@@ -541,16 +541,16 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                         disabled={isPending || ticket.status === 'ferme' || isUploading}
                                     />
                                     <div className="flex flex-col items-center justify-center p-6 text-center pointer-events-none">
-                                        <UploadCloud className="w-6 h-6 text-white/40 mb-2 group-hover:text-indigo-400 transition-colors" />
-                                        <p className="text-sm text-white/60">Ajouter de nouvelles pièces jointes</p>
-                                        <p className="text-xs text-white/30 mt-1">Glissez vos fichiers ou cliquez ici</p>
+                                        <UploadCloud className="w-6 h-6 text-muted-foreground mb-2 group-hover:text-primary/80 transition-colors" />
+                                        <p className="text-sm text-muted-foreground">Ajouter de nouvelles pièces jointes</p>
+                                        <p className="text-xs text-muted-foreground mt-1">Glissez vos fichiers ou cliquez ici</p>
                                     </div>
                                 </div>
                             ) : (
                                 <div className="space-y-4">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         {selectedFiles.map((file, idx) => (
-                                            <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/30">
+                                            <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-primary/10 border border-primary/30">
                                                 <div className="truncate text-sm text-indigo-200">{file.name}</div>
                                                 <button
                                                     onClick={() => setSelectedFiles(prev => prev.filter((_, i) => i !== idx))}
@@ -566,14 +566,14 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                         <button
                                             onClick={() => setSelectedFiles([])}
                                             disabled={isUploading}
-                                            className="px-4 py-2 text-sm text-white/60 hover:text-white transition-colors"
+                                            className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                                         >
                                             Annuler
                                         </button>
                                         <button
                                             onClick={handleUploadFiles}
                                             disabled={isUploading}
-                                            className="px-4 py-2 text-sm font-bold bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl flex items-center gap-2 transition-colors disabled:opacity-50"
+                                            className="px-4 py-2 text-sm font-bold bg-primary hover:bg-primary/20 text-primary-foreground rounded-xl flex items-center gap-2 transition-colors disabled:opacity-50"
                                         >
                                             {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4" />}
                                             Envoyer les fichiers
@@ -587,11 +587,11 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                     {/* ═══ SPRINT 22 : TABS Commentaires + Historique ═══ */}
                     <Tabs defaultValue="comments" className="w-full">
                         <TabsList className="bg-white/5 border border-white/10 rounded-xl p-1 w-fit">
-                            <TabsTrigger value="comments" className="data-[state=active]:bg-indigo-500/20 data-[state=active]:text-indigo-300 data-[state=active]:border-indigo-500/30 rounded-lg px-4 py-2 text-sm font-semibold text-white/50 border border-transparent transition-all gap-2">
+                            <TabsTrigger value="comments" className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary/80 data-[state=active]:border-primary/30 rounded-lg px-4 py-2 text-sm font-semibold text-muted-foreground border border-transparent transition-all gap-2">
                                 <MessageSquare className="w-4 h-4" />
                                 Commentaires & Chat
                             </TabsTrigger>
-                            <TabsTrigger value="history" className="data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-300 data-[state=active]:border-purple-500/30 rounded-lg px-4 py-2 text-sm font-semibold text-white/50 border border-transparent transition-all gap-2">
+                            <TabsTrigger value="history" className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary/80 data-[state=active]:border-primary/30 rounded-lg px-4 py-2 text-sm font-semibold text-muted-foreground border border-transparent transition-all gap-2">
                                 <History className="w-4 h-4" />
                                 Historique
                             </TabsTrigger>
@@ -602,9 +602,9 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                             {/* Fil de discussion */}
                             <div className="space-y-4">
                                 {isLoadingComments ? (
-                                    <div className="flex justify-center p-4"><Loader2 className="w-6 h-6 animate-spin text-white/30" /></div>
+                                    <div className="flex justify-center p-4"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
                                 ) : comments?.length === 0 ? (
-                                    <div className="p-8 text-center text-white/40 bg-white/5 rounded-2xl border border-white/10 border-dashed">
+                                    <div className="p-8 text-center text-muted-foreground bg-white/5 rounded-2xl border border-white/10 border-dashed">
                                         Aucun commentaire pour le moment.
                                     </div>
                                 ) : (
@@ -624,11 +624,11 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                                             {comment.author?.first_name?.[0]}{comment.author?.last_name?.[0]}
                                                         </div>
                                                         <div>
-                                                            <p className="text-sm font-medium text-white flex items-center gap-2">
+                                                            <p className="text-sm font-medium text-foreground flex items-center gap-2">
                                                                 {comment.author?.first_name} {comment.author?.last_name}
-                                                                <span className="text-[10px] px-1.5 py-0.5 bg-white/10 rounded-md text-white/50">{comment.author?.role}</span>
+                                                                <span className="text-[10px] px-1.5 py-0.5 bg-white/10 rounded-md text-muted-foreground">{comment.author?.role}</span>
                                                             </p>
-                                                            <p className="text-xs text-white/40">
+                                                            <p className="text-xs text-muted-foreground">
                                                                 il y a {formatDistanceToNow(new Date(comment.created_at), { addSuffix: false, locale: fr })}
                                                             </p>
                                                         </div>
@@ -639,7 +639,7 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                                         </div>
                                                     )}
                                                 </div>
-                                                <p className={`text-sm leading-relaxed whitespace-pre-wrap ${comment.is_internal ? 'text-amber-100/90' : 'text-white/80'}`}>
+                                                <p className={`text-sm leading-relaxed whitespace-pre-wrap ${comment.is_internal ? 'text-amber-100/90' : 'text-foreground/80'}`}>
                                                     {comment.content}
                                                 </p>
                                             </div>
@@ -654,7 +654,7 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                     value={commentContent}
                                     onChange={(e) => setCommentContent(e.target.value)}
                                     placeholder="Écrivez votre réponse..."
-                                    className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-y min-h-[120px]"
+                                    className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-foreground placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y min-h-[120px]"
                                     disabled={isPending}
                                 />
                                 <div className="flex items-center justify-between">
@@ -668,10 +668,10 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                                 disabled={isPending}
                                             />
                                             <div className="absolute inset-0 bg-amber-500 rounded opacity-0 peer-checked:opacity-100 transition-opacity flex items-center justify-center">
-                                                <CheckCircle2 className="w-3 h-3 text-white" />
+                                                <CheckCircle2 className="w-3 h-3 text-foreground" />
                                             </div>
                                         </div>
-                                        <span className={`text-sm font-medium transition-colors ${isInternal ? 'text-amber-400' : 'text-white/50'}`}>
+                                        <span className={`text-sm font-medium transition-colors ${isInternal ? 'text-amber-400' : 'text-muted-foreground'}`}>
                                             Note interne privée
                                         </span>
                                     </label>
@@ -679,7 +679,7 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                     <button
                                         type="submit"
                                         disabled={isPending || !commentContent.trim()}
-                                        className="px-6 py-2.5 bg-indigo-500 hover:bg-indigo-400 disabled:bg-indigo-500/50 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl transition-colors flex items-center gap-2 shadow-lg shadow-indigo-500/20"
+                                        className="px-6 py-2.5 bg-primary hover:bg-primary/20 disabled:bg-primary/50 disabled:cursor-not-allowed text-primary-foreground text-sm font-bold rounded-xl transition-colors flex items-center gap-2 shadow-lg shadow-primary/20"
                                     >
                                         {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                                         Envoyer
@@ -691,22 +691,22 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                         {/* Onglet Historique (Audit Logs) */}
                         <TabsContent value="history" className="mt-4">
                             <div className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl">
-                                <h3 className="text-sm font-bold tracking-wider text-purple-300/80 uppercase flex items-center gap-2 mb-6">
+                                <h3 className="text-sm font-bold tracking-wider text-primary/80 uppercase flex items-center gap-2 mb-6">
                                     <History className="w-4 h-4" />
                                     Chronologie du ticket
                                 </h3>
 
                                 {isLoadingAuditLogs ? (
-                                    <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-white/30" /></div>
+                                    <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
                                 ) : !auditLogs || auditLogs.length === 0 ? (
-                                    <div className="p-8 text-center text-white/30 border border-dashed border-white/10 rounded-xl">
-                                        <History className="w-8 h-8 mx-auto mb-3 text-white/10" />
+                                    <div className="p-8 text-center text-muted-foreground border border-dashed border-white/10 rounded-xl">
+                                        <History className="w-8 h-8 mx-auto mb-3 text-foreground/10" />
                                         Aucun événement enregistré pour ce ticket.
                                     </div>
                                 ) : (
                                     <div className="relative">
                                         {/* Ligne verticale */}
-                                        <div className="absolute left-[11px] top-2 bottom-2 w-px bg-gradient-to-b from-purple-500/30 via-white/10 to-transparent" />
+                                        <div className="absolute left-[11px] top-2 bottom-2 w-px bg-gradient-to-b from-primary/30 via-white/10 to-transparent" />
 
                                         <div className="space-y-4">
                                             {auditLogs.map((log) => {
@@ -714,34 +714,34 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                                 return (
                                                     <div key={log.id} className="flex items-start gap-4 group">
                                                         {/* Pastille */}
-                                                        <div className={`relative z-10 w-6 h-6 rounded-full ${config.color} flex items-center justify-center text-white shadow-lg shrink-0 ring-4 ring-[#0a0a1a] group-hover:scale-110 transition-transform`}>
+                                                        <div className={`relative z-10 w-6 h-6 rounded-full ${config.color} flex items-center justify-center text-foreground shadow-lg shrink-0 ring-4 ring-[#0a0a1a] group-hover:scale-110 transition-transform`}>
                                                             {config.icon}
                                                         </div>
 
                                                         {/* Contenu */}
                                                         <div className="flex-1 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-all min-w-0">
                                                             <div className="flex items-center justify-between gap-2">
-                                                                <p className="text-sm text-white/80 font-medium">
+                                                                <p className="text-sm text-foreground/80 font-medium">
                                                                     {config.label}
                                                                     {log.user && (
-                                                                        <span className="text-white/40 font-normal"> par {log.user.first_name} {log.user.last_name}</span>
+                                                                        <span className="text-muted-foreground font-normal"> par {log.user.first_name} {log.user.last_name}</span>
                                                                     )}
                                                                 </p>
-                                                                <span className="text-[10px] text-white/20 shrink-0">
+                                                                <span className="text-[10px] text-foreground/20 shrink-0">
                                                                     {formatDistanceToNow(new Date(log.created_at), { addSuffix: true, locale: fr })}
                                                                 </span>
                                                             </div>
                                                             {log.details && Object.keys(log.details).length > 0 && (
                                                                 <div className="mt-1.5 space-y-0.5">
                                                                     {log.details.from && log.details.to && (
-                                                                        <p className="text-xs text-white/30">
-                                                                            <span className="text-white/20">{log.details.from}</span>
+                                                                        <p className="text-xs text-muted-foreground">
+                                                                            <span className="text-foreground/20">{log.details.from}</span>
                                                                             <span className="mx-1.5">→</span>
-                                                                            <span className="text-white/50 font-medium">{log.details.to}</span>
+                                                                            <span className="text-muted-foreground font-medium">{log.details.to}</span>
                                                                         </p>
                                                                     )}
                                                                     {log.details.message && (
-                                                                        <p className="text-xs text-white/30 italic truncate">« {log.details.message} »</p>
+                                                                        <p className="text-xs text-muted-foreground italic truncate">« {log.details.message} »</p>
                                                                     )}
                                                                 </div>
                                                             )}
@@ -762,20 +762,20 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
 
                     {/* Carte Infos */}
                     <div className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl space-y-4">
-                        <h3 className="text-sm font-bold tracking-wider text-white/50 uppercase">Informations</h3>
+                        <h3 className="text-sm font-bold tracking-wider text-muted-foreground uppercase">Informations</h3>
 
                         <div className="space-y-3">
                             <div>
-                                <p className="text-xs text-white/40 mb-1">Client</p>
-                                <p className="text-sm font-medium text-white">{ticket.client?.company || 'Non renseigné'}</p>
+                                <p className="text-xs text-muted-foreground mb-1">Client</p>
+                                <p className="text-sm font-medium text-foreground">{ticket.client?.company || 'Non renseigné'}</p>
                             </div>
                             <div>
-                                <p className="text-xs text-white/40 mb-1">Magasin</p>
-                                <p className="text-sm font-medium text-white">{ticket.store?.name || 'Non renseigné'} <span className="text-white/30 truncate">({ticket.store?.city})</span></p>
+                                <p className="text-xs text-muted-foreground mb-1">Magasin</p>
+                                <p className="text-sm font-medium text-foreground">{ticket.store?.name || 'Non renseigné'} <span className="text-muted-foreground truncate">({ticket.store?.city})</span></p>
                             </div>
                             {ticket.assignee && (
                                 <div>
-                                    <p className="text-xs text-white/40 mb-1">Assigné à</p>
+                                    <p className="text-xs text-muted-foreground mb-1">Assigné à</p>
                                     <div className="flex items-center gap-2">
                                         <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center text-[10px] text-emerald-400 font-bold border border-emerald-500/30">
                                             {ticket.assignee.first_name[0]}{ticket.assignee.last_name[0]}
@@ -788,19 +788,19 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                     </div>
 
                     {/* Carte Interlocuteur */}
-                    <div className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl space-y-4 relative group overflow-hidden transition-all duration-300 hover:border-indigo-500/30">
+                    <div className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl space-y-4 relative group overflow-hidden transition-all duration-300 hover:border-primary/30">
                         {/* Accent subtil */}
-                        <div className="absolute -right-4 -top-4 w-16 h-16 bg-indigo-500/5 rounded-full blur-xl group-hover:bg-indigo-500/10 transition-colors" />
+                        <div className="absolute -right-4 -top-4 w-16 h-16 bg-primary/5 rounded-full blur-xl group-hover:bg-primary/10 transition-colors" />
 
                         <div className="flex items-center justify-between relative z-10">
-                            <h3 className="text-sm font-bold tracking-wider text-white/50 uppercase flex items-center gap-2">
-                                <UserCircle className="w-3.5 h-3.5 text-indigo-400" />
+                            <h3 className="text-sm font-bold tracking-wider text-muted-foreground uppercase flex items-center gap-2">
+                                <UserCircle className="w-3.5 h-3.5 text-primary/80" />
                                 Interlocuteur
                             </h3>
                             <button
                                 onClick={() => setChangeContactModalOpen(true)}
                                 disabled={isPending || ticket.status === 'ferme'}
-                                className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors border border-white/5"
+                                className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors border border-white/5"
                                 title="Modifier l'interlocuteur"
                             >
                                 <Pencil className="w-3.5 h-3.5" />
@@ -810,15 +810,15 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                         {ticket.contact ? (
                             <div className="space-y-3 relative z-10">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center text-sm font-bold text-indigo-300 border border-indigo-500/30 group-hover:scale-105 transition-transform duration-300">
+                                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary/80 border border-primary/30 group-hover:scale-105 transition-transform duration-300">
                                         {ticket.contact.first_name[0]}{ticket.contact.last_name[0]}
                                     </div>
                                     <div>
-                                        <p className="text-sm font-bold text-white leading-tight">
+                                        <p className="text-sm font-bold text-foreground leading-tight">
                                             {ticket.contact.first_name} {ticket.contact.last_name}
                                         </p>
                                         {ticket.contact.job_title && (
-                                            <p className="text-[11px] text-white/40 italic">{ticket.contact.job_title}</p>
+                                            <p className="text-[11px] text-muted-foreground italic">{ticket.contact.job_title}</p>
                                         )}
                                     </div>
                                 </div>
@@ -827,16 +827,16 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                     {ticket.contact.phone && (
                                         <a
                                             href={`tel:${ticket.contact.phone}`}
-                                            className="flex items-center gap-3 p-2 rounded-lg bg-white/5 hover:bg-indigo-500/20 border border-white/5 hover:border-indigo-500/30 text-white/80 transition-all group/link"
+                                            className="flex items-center gap-3 p-2 rounded-lg bg-white/5 hover:bg-primary/20 border border-white/5 hover:border-primary/30 text-foreground/80 transition-all group/link"
                                         >
-                                            <Phone className="w-4 h-4 text-indigo-400 group-hover/link:animate-bounce" />
+                                            <Phone className="w-4 h-4 text-primary/80 group-hover/link:animate-bounce" />
                                             <span className="text-xs font-medium">{ticket.contact.phone}</span>
                                         </a>
                                     )}
                                     {ticket.contact.email && (
                                         <a
                                             href={`mailto:${ticket.contact.email}`}
-                                            className="flex items-center gap-3 p-2 rounded-lg bg-white/5 hover:bg-emerald-500/20 border border-white/5 hover:border-emerald-500/30 text-white/80 transition-all group/link"
+                                            className="flex items-center gap-3 p-2 rounded-lg bg-white/5 hover:bg-emerald-500/20 border border-white/5 hover:border-emerald-500/30 text-foreground/80 transition-all group/link"
                                         >
                                             <Send className="w-4 h-4 text-emerald-400" />
                                             <span className="text-xs font-medium truncate">{ticket.contact.email}</span>
@@ -846,11 +846,11 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                             </div>
                         ) : (
                             <div className="p-4 rounded-xl border border-dashed border-white/10 text-center relative z-10 bg-black/20">
-                                <p className="text-sm text-white/40 mb-3">Aucun interlocuteur défini.</p>
+                                <p className="text-sm text-muted-foreground mb-3">Aucun interlocuteur défini.</p>
                                 <button
                                     onClick={() => setChangeContactModalOpen(true)}
                                     disabled={isPending || ticket.status === 'ferme'}
-                                    className="text-xs font-medium text-indigo-400 bg-indigo-500/10 px-3 py-1.5 rounded-lg border border-indigo-500/20 hover:bg-indigo-500/20 transition-colors"
+                                    className="text-xs font-medium text-primary/80 bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors"
                                 >
                                     Relier un contact
                                 </button>
@@ -859,13 +859,13 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
 
                         {/* Modale de changement d'interlocuteur */}
                         <Dialog open={changeContactModalOpen} onOpenChange={setChangeContactModalOpen}>
-                            <DialogContent className="bg-zinc-900 border-white/10 text-white sm:max-w-md">
+                            <DialogContent className="bg-zinc-900 border-white/10 text-foreground sm:max-w-md">
                                 <DialogHeader>
-                                    <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
-                                        <UserCircle className="w-5 h-5 text-indigo-400" />
+                                    <DialogTitle className="text-xl font-bold text-foreground flex items-center gap-2">
+                                        <UserCircle className="w-5 h-5 text-primary/80" />
                                         Modifier l'interlocuteur
                                     </DialogTitle>
-                                    <DialogDescription className="text-white/60">
+                                    <DialogDescription className="text-muted-foreground">
                                         Recherchez un contact existant par téléphone ou créez-en un nouveau.
                                     </DialogDescription>
                                 </DialogHeader>
@@ -880,14 +880,14 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                 <DialogFooter>
                                     <button
                                         onClick={() => setChangeContactModalOpen(false)}
-                                        className="px-4 py-2 rounded-xl text-white/70 hover:bg-white/10 transition-colors"
+                                        className="px-4 py-2 rounded-xl text-foreground/70 hover:bg-white/10 transition-colors"
                                     >
                                         Annuler
                                     </button>
                                     <button
                                         onClick={handleChangeContactSubmit}
                                         disabled={!selectedNewContactId || isPending}
-                                        className="px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-bold disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-indigo-500/20"
+                                        className="px-4 py-2 rounded-xl bg-primary hover:bg-primary/20 text-primary-foreground font-bold disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-primary/20"
                                     >
                                         {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                                         Mettre à jour
@@ -899,7 +899,7 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
 
                     {/* Carte Actions Métier (Dialogs) */}
                     <div className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl space-y-6">
-                        <h3 className="text-sm font-bold tracking-wider text-white/50 uppercase">Actions</h3>
+                        <h3 className="text-sm font-bold tracking-wider text-muted-foreground uppercase">Actions</h3>
 
                         <div className="space-y-3">
                             {ticket.status === 'ferme' ? (
@@ -913,29 +913,29 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                             Réactiver le ticket
                                         </button>
                                     </DialogTrigger>
-                                    <DialogContent className="bg-zinc-900 border-white/10 text-white sm:max-w-md">
+                                    <DialogContent className="bg-zinc-900 border-white/10 text-foreground sm:max-w-md">
                                         <DialogHeader>
                                             <DialogTitle className="text-xl font-bold text-fuchsia-300">Réactiver ce ticket</DialogTitle>
-                                            <DialogDescription className="text-white/60">
+                                            <DialogDescription className="text-muted-foreground">
                                                 Le ticket passera en statut "En cours". Vous devez justifier cette réouverture métier.
                                             </DialogDescription>
                                         </DialogHeader>
                                         <div className="space-y-4 py-4">
                                             <div className="space-y-2">
-                                                <Label htmlFor="reoJustif" className="text-sm font-medium text-white/80">Motif de réouverture (Requis)</Label>
+                                                <Label htmlFor="reoJustif" className="text-sm font-medium text-foreground/80">Motif de réouverture (Requis)</Label>
                                                 <Textarea
                                                     id="reoJustif"
                                                     placeholder="Pourquoi le problème est-il revenu ?"
                                                     value={actionJustification}
                                                     onChange={(e) => setActionJustification(e.target.value)}
-                                                    className="bg-black/40 border-white/10 text-white focus:ring-fuchsia-500/50 min-h-[100px]"
+                                                    className="bg-black/40 border-white/10 text-foreground focus:ring-fuchsia-500/50 min-h-[100px]"
                                                 />
                                             </div>
                                         </div>
                                         <DialogFooter>
                                             <button
                                                 onClick={() => setReopenModalOpen(false)}
-                                                className="px-4 py-2 rounded-xl text-white/70 hover:bg-white/10 transition-colors"
+                                                className="px-4 py-2 rounded-xl text-foreground/70 hover:bg-white/10 transition-colors"
                                             >
                                                 Annuler
                                             </button>
@@ -955,7 +955,7 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                 <>
                                     {/* Statut Simple (Pour changer rapidement entre Assigné/En cours/Attente client sans justification) */}
                                     <select
-                                        className="w-full bg-black/40 border border-white/10 text-white text-sm rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 appearance-none disabled:opacity-50"
+                                        className="w-full bg-black/40 border border-white/10 text-foreground text-sm rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none disabled:opacity-50"
                                         value={ticket.status}
                                         onChange={(e) => {
                                             if (e.target.value === 'resolu' && ticket.category === 'DEV') {
@@ -993,30 +993,30 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
 
                                     {/* Modale Résolution SD en cascade (Sprint 22) */}
                                     <Dialog open={resolveSDModalOpen} onOpenChange={setResolveSDModalOpen}>
-                                        <DialogContent className="bg-zinc-900 border-white/10 text-white sm:max-w-md">
+                                        <DialogContent className="bg-zinc-900 border-white/10 text-foreground sm:max-w-md">
                                             <DialogHeader>
                                                 <DialogTitle className="text-xl font-bold text-emerald-300 flex items-center gap-2">
                                                     <CheckCircle2 className="w-5 h-5" />
                                                     Résoudre ce SD
                                                 </DialogTitle>
-                                                <DialogDescription className="text-white/60">
+                                                <DialogDescription className="text-muted-foreground">
                                                     Marquez ce ticket SD comme résolu. Vous pouvez aussi clôturer automatiquement tous les incidents HL liés.
                                                 </DialogDescription>
                                             </DialogHeader>
                                             <div className="space-y-4 py-4">
                                                 <div className="space-y-2">
-                                                    <Label htmlFor="resolveSdMsg" className="text-sm font-medium text-white/80">Message de résolution (Requis)</Label>
+                                                    <Label htmlFor="resolveSdMsg" className="text-sm font-medium text-foreground/80">Message de résolution (Requis)</Label>
                                                     <Textarea
                                                         id="resolveSdMsg"
                                                         placeholder="Décrivez le correctif apporté…"
                                                         value={resolveSDMessage}
                                                         onChange={(e) => setResolveSDMessage(e.target.value)}
-                                                        className="bg-black/40 border-white/10 text-white focus:ring-emerald-500/50 min-h-[100px]"
+                                                        className="bg-black/40 border-white/10 text-foreground focus:ring-emerald-500/50 min-h-[100px]"
                                                     />
                                                 </div>
 
                                                 {hlCount > 0 && (
-                                                    <label className="flex items-start gap-3 p-3 rounded-xl bg-purple-500/5 border border-purple-500/15 cursor-pointer group">
+                                                    <label className="flex items-start gap-3 p-3 rounded-xl bg-primary/5 border border-primary/15 cursor-pointer group">
                                                         <div className="relative flex items-center justify-center w-5 h-5 mt-0.5 rounded border border-white/20 bg-black/20 group-hover:border-emerald-400/50 transition-colors shrink-0">
                                                             <input
                                                                 type="checkbox"
@@ -1025,14 +1025,14 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                                                 onChange={(e) => setResolveSDCloseLinked(e.target.checked)}
                                                             />
                                                             <div className="absolute inset-0 bg-emerald-500 rounded opacity-0 peer-checked:opacity-100 transition-opacity flex items-center justify-center">
-                                                                <CheckCircle2 className="w-3 h-3 text-white" />
+                                                                <CheckCircle2 className="w-3 h-3 text-foreground" />
                                                             </div>
                                                         </div>
                                                         <div>
-                                                            <p className="text-sm font-medium text-white">
+                                                            <p className="text-sm font-medium text-foreground">
                                                                 Clôturer automatiquement les <span className="text-emerald-400 font-bold">{hlCount}</span> ticket{hlCount > 1 ? 's' : ''} HL associé{hlCount > 1 ? 's' : ''}
                                                             </p>
-                                                            <p className="text-xs text-white/40 mt-0.5">
+                                                            <p className="text-xs text-muted-foreground mt-0.5">
                                                                 Un commentaire de résolution automatique sera ajouté dans chaque ticket HL.
                                                             </p>
                                                         </div>
@@ -1042,7 +1042,7 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                             <DialogFooter>
                                                 <button
                                                     onClick={() => setResolveSDModalOpen(false)}
-                                                    className="px-4 py-2 rounded-xl text-white/70 hover:bg-white/10 transition-colors"
+                                                    className="px-4 py-2 rounded-xl text-foreground/70 hover:bg-white/10 transition-colors"
                                                 >
                                                     Annuler
                                                 </button>
@@ -1072,16 +1072,16 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                                 Suspendre
                                             </button>
                                         </DialogTrigger>
-                                        <DialogContent className="bg-zinc-900 border-white/10 text-white sm:max-w-md">
+                                        <DialogContent className="bg-zinc-900 border-white/10 text-foreground sm:max-w-md">
                                             <DialogHeader>
                                                 <DialogTitle className="text-xl font-bold">Suspendre le ticket</DialogTitle>
-                                                <DialogDescription className="text-white/60">
+                                                <DialogDescription className="text-muted-foreground">
                                                     Le ticket sera mis en pause jusqu'à la date indiquée.
                                                 </DialogDescription>
                                             </DialogHeader>
                                             <div className="space-y-4 py-4">
                                                 <div className="space-y-2">
-                                                    <Label className="text-sm font-medium text-white/80">Date de reprise (Requis)</Label>
+                                                    <Label className="text-sm font-medium text-foreground/80">Date de reprise (Requis)</Label>
                                                     <DateTimePicker
                                                         value={resumeAtDate}
                                                         onChange={(val) => setResumeAtDate(val)}
@@ -1090,20 +1090,20 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <Label htmlFor="suspendJustif" className="text-sm font-medium text-white/80">Motif (Requis)</Label>
+                                                    <Label htmlFor="suspendJustif" className="text-sm font-medium text-foreground/80">Motif (Requis)</Label>
                                                     <Textarea
                                                         id="suspendJustif"
                                                         placeholder="Pourquoi ce ticket est-il suspendu ?"
                                                         value={actionJustification}
                                                         onChange={(e) => setActionJustification(e.target.value)}
-                                                        className="bg-black/40 border-white/10 text-white focus:ring-amber-500/50 min-h-[100px]"
+                                                        className="bg-black/40 border-white/10 text-foreground focus:ring-amber-500/50 min-h-[100px]"
                                                     />
                                                 </div>
                                             </div>
                                             <DialogFooter>
                                                 <button
                                                     onClick={() => setSuspendModalOpen(false)}
-                                                    className="px-4 py-2 rounded-xl text-white/70 hover:bg-white/10 transition-colors"
+                                                    className="px-4 py-2 rounded-xl text-foreground/70 hover:bg-white/10 transition-colors"
                                                 >
                                                     Annuler
                                                 </button>
@@ -1129,29 +1129,29 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                                 Clôturer
                                             </button>
                                         </DialogTrigger>
-                                        <DialogContent className="bg-zinc-900 border-white/10 text-white sm:max-w-md">
+                                        <DialogContent className="bg-zinc-900 border-white/10 text-foreground sm:max-w-md">
                                             <DialogHeader>
                                                 <DialogTitle className="text-xl font-bold">Clôturer le ticket</DialogTitle>
-                                                <DialogDescription className="text-white/60">
+                                                <DialogDescription className="text-muted-foreground">
                                                     Ce message de clôture sera visible dans le fil de discussion.
                                                 </DialogDescription>
                                             </DialogHeader>
                                             <div className="space-y-4 py-4">
                                                 <div className="space-y-2">
-                                                    <Label htmlFor="closeJustif" className="text-sm font-medium text-white/80">Message de clôture (Requis)</Label>
+                                                    <Label htmlFor="closeJustif" className="text-sm font-medium text-foreground/80">Message de clôture (Requis)</Label>
                                                     <Textarea
                                                         id="closeJustif"
                                                         placeholder="Comment le problème a-t-il été résolu ?"
                                                         value={actionJustification}
                                                         onChange={(e) => setActionJustification(e.target.value)}
-                                                        className="bg-black/40 border-white/10 text-white focus:ring-emerald-500/50 min-h-[100px]"
+                                                        className="bg-black/40 border-white/10 text-foreground focus:ring-emerald-500/50 min-h-[100px]"
                                                     />
                                                 </div>
                                             </div>
                                             <DialogFooter>
                                                 <button
                                                     onClick={() => setCloseModalOpen(false)}
-                                                    className="px-4 py-2 rounded-xl text-white/70 hover:bg-white/10 transition-colors"
+                                                    className="px-4 py-2 rounded-xl text-foreground/70 hover:bg-white/10 transition-colors"
                                                 >
                                                     Annuler
                                                 </button>
@@ -1183,29 +1183,29 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                                         Escalader (Niveau Supérieur)
                                                     </button>
                                                 </DialogTrigger>
-                                                <DialogContent className="bg-zinc-900 border-white/10 text-white sm:max-w-md">
+                                                <DialogContent className="bg-zinc-900 border-white/10 text-foreground sm:max-w-md">
                                                     <DialogHeader>
                                                         <DialogTitle className="text-xl font-bold text-rose-300 flex items-center gap-2"><ArrowUpRight className="w-5 h-5" />Escalader ce ticket</DialogTitle>
-                                                        <DialogDescription className="text-white/60">
+                                                        <DialogDescription className="text-muted-foreground">
                                                             Le ticket sera ré-assigné au grade supérieur. Expliquez pourquoi le niveau actuel ne peut pas le traiter.
                                                         </DialogDescription>
                                                     </DialogHeader>
                                                     <div className="space-y-4 py-4">
                                                         <div className="space-y-2">
-                                                            <Label htmlFor="escUpJustif" className="text-sm font-medium text-white/80">Motif (Requis)</Label>
+                                                            <Label htmlFor="escUpJustif" className="text-sm font-medium text-foreground/80">Motif (Requis)</Label>
                                                             <Textarea
                                                                 id="escUpJustif"
                                                                 placeholder="Pourquoi escalader ?"
                                                                 value={actionJustification}
                                                                 onChange={(e) => setActionJustification(e.target.value)}
-                                                                className="bg-black/40 border-white/10 text-white focus:ring-rose-500/50 min-h-[100px]"
+                                                                className="bg-black/40 border-white/10 text-foreground focus:ring-rose-500/50 min-h-[100px]"
                                                             />
                                                         </div>
                                                     </div>
                                                     <DialogFooter>
                                                         <button
                                                             onClick={() => setEscalateUpModalOpen(false)}
-                                                            className="px-4 py-2 rounded-xl text-white/70 hover:bg-white/10 transition-colors"
+                                                            className="px-4 py-2 rounded-xl text-foreground/70 hover:bg-white/10 transition-colors"
                                                         >
                                                             Annuler
                                                         </button>
@@ -1226,35 +1226,35 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                                 <DialogTrigger asChild>
                                                     <button
                                                         disabled={isPending || ticket.escalation_level <= 1}
-                                                        className="w-full rounded-xl p-3 border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                        className="w-full rounded-xl p-3 border border-white/10 bg-white/5 hover:bg-white/10 text-foreground/70 text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                                     >
                                                         <ArrowDownRight className="w-4 h-4" />
                                                         Renvoyer (Niveau Inférieur)
                                                     </button>
                                                 </DialogTrigger>
-                                                <DialogContent className="bg-zinc-900 border-white/10 text-white sm:max-w-md">
+                                                <DialogContent className="bg-zinc-900 border-white/10 text-foreground sm:max-w-md">
                                                     <DialogHeader>
                                                         <DialogTitle className="text-xl font-bold flex items-center gap-2"><ArrowDownRight className="w-5 h-5" />Renvoyer ce ticket</DialogTitle>
-                                                        <DialogDescription className="text-white/60">
+                                                        <DialogDescription className="text-muted-foreground">
                                                             Le ticket retournera au grade inférieur.
                                                         </DialogDescription>
                                                     </DialogHeader>
                                                     <div className="space-y-4 py-4">
                                                         <div className="space-y-2">
-                                                            <Label htmlFor="escDownJustif" className="text-sm font-medium text-white/80">Motif (Requis)</Label>
+                                                            <Label htmlFor="escDownJustif" className="text-sm font-medium text-foreground/80">Motif (Requis)</Label>
                                                             <Textarea
                                                                 id="escDownJustif"
                                                                 placeholder="Pourquoi renvoyer ?"
                                                                 value={actionJustification}
                                                                 onChange={(e) => setActionJustification(e.target.value)}
-                                                                className="bg-black/40 border-white/10 text-white focus:ring-white/50 min-h-[100px]"
+                                                                className="bg-black/40 border-white/10 text-foreground focus:ring-white/50 min-h-[100px]"
                                                             />
                                                         </div>
                                                     </div>
                                                     <DialogFooter>
                                                         <button
                                                             onClick={() => setEscalateDownModalOpen(false)}
-                                                            className="px-4 py-2 rounded-xl text-white/70 hover:bg-white/10 transition-colors"
+                                                            className="px-4 py-2 rounded-xl text-foreground/70 hover:bg-white/10 transition-colors"
                                                         >
                                                             Annuler
                                                         </button>

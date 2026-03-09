@@ -25,7 +25,7 @@ const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
     },
     RMA_FOURNISSEUR: {
         label: 'RMA Fournisseur',
-        className: 'bg-violet-500/15 text-violet-300 border border-violet-500/30 shadow-[0_0_8px_rgba(167,139,250,0.25)]',
+        className: 'bg-primary/15 text-primary/80 border border-primary/30 shadow-[0_0_8px_rgba(167,139,250,0.25)]',
     },
     REBUT: {
         label: 'Rebut',
@@ -34,10 +34,10 @@ const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
 }
 
 function StatusBadge({ status }: { status: string }) {
-    const cfg = STATUS_CONFIG[status] ?? { label: status, className: 'bg-white/10 text-white/50 border border-white/10' }
+    const cfg = STATUS_CONFIG[status] ?? { label: status, className: 'bg-white/10 text-muted-foreground border border-white/10' }
     return (
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-wide ${cfg.className}`}>
-            {status === 'RMA_FOURNISSEUR' && <span className="w-1.5 h-1.5 rounded-full bg-violet-400 mr-1.5 animate-pulse" />}
+            {status === 'RMA_FOURNISSEUR' && <span className="w-1.5 h-1.5 rounded-full bg-primary/20 mr-1.5 animate-pulse" />}
             {status === 'EN_SERVICE' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5" />}
             {cfg.label}
         </span>
@@ -45,12 +45,12 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function WarrantyCell({ date }: { date: string | null }) {
-    if (!date) return <span className="text-white/30 text-sm">—</span>
+    if (!date) return <span className="text-muted-foreground text-sm">—</span>
     const d = new Date(date)
     const daysLeft = differenceInDays(d, new Date())
     const expired = isPast(d)
     return (
-        <span className={`text-sm font-medium ${expired ? 'text-red-400' : daysLeft < 60 ? 'text-amber-400' : 'text-white/60'}`}>
+        <span className={`text-sm font-medium ${expired ? 'text-red-400' : daysLeft < 60 ? 'text-amber-400' : 'text-muted-foreground'}`}>
             {expired ? '⚠ Expirée' : formatDistanceToNow(d, { addSuffix: true, locale: fr })}
         </span>
     )
@@ -145,8 +145,8 @@ export function EquipmentTable({ equipments, stores }: EquipmentTableProps) {
                 <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-4">
                     <span className="text-2xl">🖥️</span>
                 </div>
-                <p className="text-white/40 font-medium">Aucun équipement enregistré</p>
-                <p className="text-white/25 text-sm mt-1">Cliquez sur « Ajouter un équipement » pour commencer.</p>
+                <p className="text-muted-foreground font-medium">Aucun équipement enregistré</p>
+                <p className="text-foreground/25 text-sm mt-1">Cliquez sur « Ajouter un équipement » pour commencer.</p>
             </div>
         )
     }
@@ -158,13 +158,13 @@ export function EquipmentTable({ equipments, stores }: EquipmentTableProps) {
                 {/* SIDEBAR FILTRES */}
                 <aside className="md:col-span-1 space-y-6 bg-white/[0.02] border border-white/5 rounded-2xl p-5 h-fit backdrop-blur-xl shrink-0">
                     <div className="flex items-center justify-between mb-2">
-                        <h2 className="text-white/90 font-semibold flex items-center gap-2">
+                        <h2 className="text-foreground/90 font-semibold flex items-center gap-2">
                             Filtres
                         </h2>
                         {(selectedBrands.length > 0 || selectedCategories.length > 0 || selectedStatuses.length > 0 || searchTerm) && (
                             <button
                                 onClick={resetFilters}
-                                className="text-white/40 hover:text-white/80 transition-colors"
+                                className="text-muted-foreground hover:text-foreground/80 transition-colors"
                                 title="Réinitialiser les filtres"
                             >
                                 <RotateCcw className="w-4 h-4" />
@@ -174,7 +174,7 @@ export function EquipmentTable({ equipments, stores }: EquipmentTableProps) {
 
                     {/* Statut */}
                     <div className="space-y-3">
-                        <h3 className="text-sm font-medium text-white/70">Statut</h3>
+                        <h3 className="text-sm font-medium text-foreground/70">Statut</h3>
                         <div className="space-y-2">
                             {uniqueStatuses.map(status => (
                                 <div key={status} className="flex items-center space-x-2">
@@ -184,7 +184,7 @@ export function EquipmentTable({ equipments, stores }: EquipmentTableProps) {
                                         onCheckedChange={() => toggleArrayItem(selectedStatuses, status, setSelectedStatuses)}
                                         className="border-white/20 data-[state=checked]:bg-cyan-500 data-[state=checked]:border-cyan-500"
                                     />
-                                    <label htmlFor={`status-${status}`} className="text-sm font-medium leading-none text-white/70 peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
+                                    <label htmlFor={`status-${status}`} className="text-sm font-medium leading-none text-foreground/70 peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
                                         {STATUS_CONFIG[status]?.label || status}
                                     </label>
                                 </div>
@@ -195,7 +195,7 @@ export function EquipmentTable({ equipments, stores }: EquipmentTableProps) {
                     {/* Catégorie */}
                     {uniqueCategories.length > 0 && (
                         <div className="space-y-3">
-                            <h3 className="text-sm font-medium text-white/70">Catégorie</h3>
+                            <h3 className="text-sm font-medium text-foreground/70">Catégorie</h3>
                             <div className="space-y-2">
                                 {uniqueCategories.map(cat => (
                                     <div key={cat} className="flex items-center space-x-2">
@@ -205,7 +205,7 @@ export function EquipmentTable({ equipments, stores }: EquipmentTableProps) {
                                             onCheckedChange={() => toggleArrayItem(selectedCategories, cat, setSelectedCategories)}
                                             className="border-white/20 data-[state=checked]:bg-cyan-500 data-[state=checked]:border-cyan-500"
                                         />
-                                        <label htmlFor={`cat-${cat}`} className="text-sm font-medium leading-none text-white/70 peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
+                                        <label htmlFor={`cat-${cat}`} className="text-sm font-medium leading-none text-foreground/70 peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
                                             {cat}
                                         </label>
                                     </div>
@@ -217,7 +217,7 @@ export function EquipmentTable({ equipments, stores }: EquipmentTableProps) {
                     {/* Marque */}
                     {uniqueBrands.length > 0 && (
                         <div className="space-y-3">
-                            <h3 className="text-sm font-medium text-white/70">Marque</h3>
+                            <h3 className="text-sm font-medium text-foreground/70">Marque</h3>
                             <div className="space-y-2">
                                 {uniqueBrands.map(brand => (
                                     <div key={brand} className="flex items-center space-x-2">
@@ -227,7 +227,7 @@ export function EquipmentTable({ equipments, stores }: EquipmentTableProps) {
                                             onCheckedChange={() => toggleArrayItem(selectedBrands, brand, setSelectedBrands)}
                                             className="border-white/20 data-[state=checked]:bg-cyan-500 data-[state=checked]:border-cyan-500"
                                         />
-                                        <label htmlFor={`brand-${brand}`} className="text-sm font-medium leading-none text-white/70 peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
+                                        <label htmlFor={`brand-${brand}`} className="text-sm font-medium leading-none text-foreground/70 peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
                                             {brand}
                                         </label>
                                     </div>
@@ -238,7 +238,7 @@ export function EquipmentTable({ equipments, stores }: EquipmentTableProps) {
 
                     <button
                         onClick={resetFilters}
-                        className="w-full mt-4 py-2 bg-white/5 hover:bg-white/10 text-white/70 text-sm font-medium rounded-lg transition-colors border border-white/5 flex items-center justify-center gap-2"
+                        className="w-full mt-4 py-2 bg-white/5 hover:bg-white/10 text-foreground/70 text-sm font-medium rounded-lg transition-colors border border-white/5 flex items-center justify-center gap-2"
                     >
                         Réinitialiser
                     </button>
@@ -249,17 +249,17 @@ export function EquipmentTable({ equipments, stores }: EquipmentTableProps) {
                     {/* Top Actions: Search + Store Select */}
                     <div className="flex flex-col sm:flex-row items-center gap-4 bg-white/[0.01] p-4 rounded-2xl border border-white/5">
                         <div className="relative flex-1 w-full">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                             <Input
                                 placeholder="Rechercher par N° série, modèle, marque..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/30 h-10 w-full"
+                                className="pl-10 bg-white/5 border-white/10 text-foreground placeholder:text-muted-foreground h-10 w-full"
                             />
                         </div>
                         <div className="w-full sm:w-64">
                             <Select value={selectedStore} onValueChange={setSelectedStore}>
-                                <SelectTrigger className="bg-white/5 border-white/10 text-white/70 h-10">
+                                <SelectTrigger className="bg-white/5 border-white/10 text-foreground/70 h-10">
                                     <SelectValue placeholder="Tous les magasins" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -279,19 +279,19 @@ export function EquipmentTable({ equipments, stores }: EquipmentTableProps) {
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="border-b border-white/5 bg-white/[0.02]">
-                                    <th className="text-left text-white/40 font-medium text-xs tracking-widest uppercase px-6 py-4">N° Série</th>
-                                    <th className="text-left text-white/40 font-medium text-xs tracking-widest uppercase px-4 py-4">Modèle</th>
-                                    <th className="text-left text-white/40 font-medium text-xs tracking-widest uppercase px-4 py-4">Catégorie</th>
-                                    <th className="text-left text-white/40 font-medium text-xs tracking-widest uppercase px-4 py-4">Magasin</th>
-                                    <th className="text-left text-white/40 font-medium text-xs tracking-widest uppercase px-4 py-4">Statut</th>
-                                    <th className="text-left text-white/40 font-medium text-xs tracking-widest uppercase px-4 py-4">Garantie</th>
+                                    <th className="text-left text-muted-foreground font-medium text-xs tracking-widest uppercase px-6 py-4">N° Série</th>
+                                    <th className="text-left text-muted-foreground font-medium text-xs tracking-widest uppercase px-4 py-4">Modèle</th>
+                                    <th className="text-left text-muted-foreground font-medium text-xs tracking-widest uppercase px-4 py-4">Catégorie</th>
+                                    <th className="text-left text-muted-foreground font-medium text-xs tracking-widest uppercase px-4 py-4">Magasin</th>
+                                    <th className="text-left text-muted-foreground font-medium text-xs tracking-widest uppercase px-4 py-4">Statut</th>
+                                    <th className="text-left text-muted-foreground font-medium text-xs tracking-widest uppercase px-4 py-4">Garantie</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filteredEquipments.length === 0 ? (
                                     <tr>
                                         <td colSpan={6} className="px-6 py-12 text-center">
-                                            <div className="text-white/40 mb-1">Aucun équipement ne correspond à vos critères</div>
+                                            <div className="text-muted-foreground mb-1">Aucun équipement ne correspond à vos critères</div>
                                             <button onClick={resetFilters} className="text-cyan-400 hover:text-cyan-300 text-sm">
                                                 Effacer les filtres
                                             </button>
@@ -307,17 +307,17 @@ export function EquipmentTable({ equipments, stores }: EquipmentTableProps) {
                                             {eq.serial_number}
                                         </td>
                                         <td className="px-4 py-3.5">
-                                            <div className="font-medium text-white/90">{eq.catalogue?.brand} {eq.catalogue?.model_name}</div>
+                                            <div className="font-medium text-foreground/90">{eq.catalogue?.brand} {eq.catalogue?.model_name}</div>
                                         </td>
                                         <td className="px-4 py-3.5">
-                                            <span className="text-white/50 text-xs px-2 py-1 rounded-lg bg-white/5 border border-white/10">
+                                            <span className="text-muted-foreground text-xs px-2 py-1 rounded-lg bg-white/5 border border-white/10">
                                                 {eq.catalogue?.category}
                                             </span>
                                         </td>
                                         <td className="px-4 py-3.5">
-                                            <div className="text-white/70">{eq.store?.name}</div>
+                                            <div className="text-foreground/70">{eq.store?.name}</div>
                                             {eq.store?.client && (
-                                                <div className="text-white/40 text-xs">{eq.store.client.company}</div>
+                                                <div className="text-muted-foreground text-xs">{eq.store.client.company}</div>
                                             )}
                                         </td>
                                         <td className="px-4 py-3.5">

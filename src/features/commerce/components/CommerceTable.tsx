@@ -10,7 +10,7 @@ const STATUS_COLORS: Record<string, { bg: string, text: string, border: string, 
     'EN_ATTENTE': { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20', icon: Clock, label: 'En attente' },
     'ACCEPTE': { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20', icon: CheckCircle2, label: 'Accepté' },
     'REFUSE': { bg: 'bg-rose-500/10', text: 'text-rose-400', border: 'border-rose-500/20', icon: XCircle, label: 'Refusé' },
-    'FACTURE': { bg: 'bg-indigo-500/10', text: 'text-indigo-400', border: 'border-indigo-500/20', icon: FileCheck, label: 'Facturé' }
+    'FACTURE': { bg: 'bg-primary/10', text: 'text-primary/80', border: 'border-primary/20', icon: FileCheck, label: 'Facturé' }
 }
 
 export function CommerceTable({ quotes }: { quotes: Quote[] }) {
@@ -25,24 +25,24 @@ export function CommerceTable({ quotes }: { quotes: Quote[] }) {
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
                 <div className="relative w-full md:w-96">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <input
                         type="text"
                         placeholder="Rechercher un devis (numéro, magasin)..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-rose-500/50 focus:border-transparent transition-all"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-rose-500/50 focus:border-transparent transition-all"
                     />
                 </div>
-                <div className="flex items-center gap-2 text-sm text-white/50">
-                    <span className="font-semibold text-white/90">{filteredQuotes.length}</span> devis trouvé(s)
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span className="font-semibold text-foreground/90">{filteredQuotes.length}</span> devis trouvé(s)
                 </div>
             </div>
 
             <div className="rounded-xl border border-white/10 overflow-hidden relative">
                 <div className="overflow-x-auto custom-scrollbar">
-                    <table className="w-full text-sm text-left align-middle text-white/80">
-                        <thead className="text-xs uppercase bg-white/5 text-white/60">
+                    <table className="w-full text-sm text-left align-middle text-foreground/80">
+                        <thead className="text-xs uppercase bg-white/5 text-muted-foreground">
                             <tr>
                                 <th className="px-6 py-4 font-semibold">Numéro</th>
                                 <th className="px-6 py-4 font-semibold">Magasin / Client</th>
@@ -56,7 +56,7 @@ export function CommerceTable({ quotes }: { quotes: Quote[] }) {
                         <tbody className="divide-y divide-white/5">
                             {filteredQuotes.length === 0 ? (
                                 <tr>
-                                    <td colSpan={7} className="px-6 py-12 text-center text-white/40">
+                                    <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
                                         <div className="flex flex-col items-center gap-2">
                                             <FileText className="w-8 h-8 opacity-50" />
                                             <p>Aucun devis trouvé.</p>
@@ -70,24 +70,24 @@ export function CommerceTable({ quotes }: { quotes: Quote[] }) {
 
                                     return (
                                         <tr key={quote.id} className="hover:bg-white/5 transition-colors group">
-                                            <td className="px-6 py-4 whitespace-nowrap font-medium text-white group-hover:text-rose-200 transition-colors">
+                                            <td className="px-6 py-4 whitespace-nowrap font-medium text-foreground group-hover:text-rose-200 transition-colors">
                                                 {quote.quote_number}
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex flex-col">
-                                                    <span className="font-medium text-white/90">{quote.store?.name || 'Magasin Inconnu'}</span>
-                                                    <span className="text-xs text-white/40 font-mono">{quote.client_id.substring(0, 8)}...</span>
+                                                    <span className="font-medium text-foreground/90">{quote.store?.name || 'Magasin Inconnu'}</span>
+                                                    <span className="text-xs text-muted-foreground font-mono">{quote.client_id.substring(0, 8)}...</span>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-white/60">
+                                            <td className="px-6 py-4 whitespace-nowrap text-muted-foreground">
                                                 {new Date(quote.created_at).toLocaleDateString('fr-FR', {
                                                     day: '2-digit', month: 'short', year: 'numeric'
                                                 })}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap font-mono text-white/80">
+                                            <td className="px-6 py-4 whitespace-nowrap font-mono text-foreground/80">
                                                 {quote.total_ht.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap font-mono font-bold text-white">
+                                            <td className="px-6 py-4 whitespace-nowrap font-mono font-bold text-foreground">
                                                 {quote.total_ttc.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
@@ -99,7 +99,7 @@ export function CommerceTable({ quotes }: { quotes: Quote[] }) {
                                             <td className="px-6 py-4 whitespace-nowrap text-right">
                                                 <Link
                                                     href={`/commerce/${quote.id}`}
-                                                    className="inline-block p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-colors"
+                                                    className="inline-block p-2 rounded-lg bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors"
                                                 >
                                                     <ArrowRight className="w-4 h-4" />
                                                 </Link>

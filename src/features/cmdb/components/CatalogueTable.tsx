@@ -33,10 +33,10 @@ export function CatalogueTable({ catalogues }: CatalogueTableProps) {
         return (
             <div className="flex flex-col items-center justify-center py-20 text-center">
                 <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-4">
-                    <HardDrive className="w-6 h-6 text-white/20" />
+                    <HardDrive className="w-6 h-6 text-foreground/20" />
                 </div>
-                <p className="text-white/40 font-medium">Aucun modèle dans le catalogue</p>
-                <p className="text-white/25 text-sm mt-1">Cliquez sur « Nouveau Modèle » pour commencer.</p>
+                <p className="text-muted-foreground font-medium">Aucun modèle dans le catalogue</p>
+                <p className="text-foreground/25 text-sm mt-1">Cliquez sur « Nouveau Modèle » pour commencer.</p>
             </div>
         )
     }
@@ -46,11 +46,11 @@ export function CatalogueTable({ catalogues }: CatalogueTableProps) {
             <table className="w-full text-sm">
                 <thead>
                     <tr className="border-b border-white/5">
-                        <th className="text-left text-white/40 font-medium text-xs tracking-widest uppercase px-6 py-4">Catégorie</th>
-                        <th className="text-left text-white/40 font-medium text-xs tracking-widest uppercase px-4 py-4">Marque</th>
-                        <th className="text-left text-white/40 font-medium text-xs tracking-widest uppercase px-4 py-4">Modèle</th>
-                        <th className="text-left text-white/40 font-medium text-xs tracking-widest uppercase px-4 py-4">Schéma (Aperçu)</th>
-                        <th className="text-right text-white/40 font-medium text-xs tracking-widest uppercase px-6 py-4">Actions</th>
+                        <th className="text-left text-muted-foreground font-medium text-xs tracking-widest uppercase px-6 py-4">Catégorie</th>
+                        <th className="text-left text-muted-foreground font-medium text-xs tracking-widest uppercase px-4 py-4">Marque</th>
+                        <th className="text-left text-muted-foreground font-medium text-xs tracking-widest uppercase px-4 py-4">Modèle</th>
+                        <th className="text-left text-muted-foreground font-medium text-xs tracking-widest uppercase px-4 py-4">Schéma (Aperçu)</th>
+                        <th className="text-right text-muted-foreground font-medium text-xs tracking-widest uppercase px-6 py-4">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -60,18 +60,18 @@ export function CatalogueTable({ catalogues }: CatalogueTableProps) {
                             className={`group border-b border-white/[0.03] transition-all duration-150 hover:bg-white/[0.04] ${i % 2 === 0 ? '' : 'bg-white/[0.01]'}`}
                         >
                             <td className="px-6 py-3.5">
-                                <span className="text-white/50 text-xs px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 font-medium">
+                                <span className="text-muted-foreground text-xs px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 font-medium">
                                     {cat.category}
                                 </span>
                             </td>
-                            <td className="px-4 py-3.5 font-medium text-white/90">
+                            <td className="px-4 py-3.5 font-medium text-foreground/90">
                                 {cat.brand}
                             </td>
-                            <td className="px-4 py-3.5 text-white/70">
+                            <td className="px-4 py-3.5 text-foreground/70">
                                 {cat.model_name}
                             </td>
                             <td className="px-4 py-3.5">
-                                <div className="font-mono text-[10px] text-white/40 bg-white/5 p-2 rounded border border-white/10 max-w-xs truncate">
+                                <div className="font-mono text-[10px] text-muted-foreground bg-white/5 p-2 rounded border border-white/10 max-w-xs truncate">
                                     {JSON.stringify(cat.custom_fields_schema)}
                                 </div>
                             </td>

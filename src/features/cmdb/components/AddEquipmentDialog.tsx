@@ -97,15 +97,15 @@ export function AddEquipmentDialog({ open, onOpenChange, catalogues, stores }: A
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
-            <DialogContent className="bg-zinc-950 border border-white/10 text-white max-w-lg max-h-[90vh] overflow-y-auto">
+            <DialogContent className="bg-zinc-950 border border-white/10 text-foreground max-w-lg max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
                             <Server className="w-5 h-5 text-cyan-400" />
                         </div>
                         <div>
-                            <DialogTitle className="text-white">Ajouter un équipement</DialogTitle>
-                            <DialogDescription className="text-white/40">Enregistrer une nouvelle machine dans le parc matériel.</DialogDescription>
+                            <DialogTitle className="text-foreground">Ajouter un équipement</DialogTitle>
+                            <DialogDescription className="text-muted-foreground">Enregistrer une nouvelle machine dans le parc matériel.</DialogDescription>
                         </div>
                     </div>
                 </DialogHeader>
@@ -119,15 +119,15 @@ export function AddEquipmentDialog({ open, onOpenChange, catalogues, stores }: A
 
                     {/* Modèle */}
                     <div className="space-y-1.5">
-                        <Label className="text-white/60 text-xs uppercase tracking-wider">Modèle *</Label>
+                        <Label className="text-muted-foreground text-xs uppercase tracking-wider">Modèle *</Label>
                         <Select value={catalogueId} onValueChange={val => { setCatalogueId(val); setCustomFields({}) }}>
-                            <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                            <SelectTrigger className="bg-white/5 border-white/10 text-foreground">
                                 <SelectValue placeholder="Sélectionner un modèle..." />
                             </SelectTrigger>
                             <SelectContent className="bg-zinc-900 border-white/10">
                                 {catalogues.map(cat => (
-                                    <SelectItem key={cat.id} value={cat.id} className="text-white/80 focus:bg-white/10 focus:text-white">
-                                        <span className="text-white/40 text-xs mr-1">[{cat.category}]</span> {cat.brand} {cat.model_name}
+                                    <SelectItem key={cat.id} value={cat.id} className="text-foreground/80 focus:bg-white/10 focus:text-foreground">
+                                        <span className="text-muted-foreground text-xs mr-1">[{cat.category}]</span> {cat.brand} {cat.model_name}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -136,16 +136,16 @@ export function AddEquipmentDialog({ open, onOpenChange, catalogues, stores }: A
 
                     {/* Magasin */}
                     <div className="space-y-1.5">
-                        <Label className="text-white/60 text-xs uppercase tracking-wider">Magasin *</Label>
+                        <Label className="text-muted-foreground text-xs uppercase tracking-wider">Magasin *</Label>
                         <Select value={storeId} onValueChange={setStoreId}>
-                            <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                            <SelectTrigger className="bg-white/5 border-white/10 text-foreground">
                                 <SelectValue placeholder="Sélectionner un magasin..." />
                             </SelectTrigger>
                             <SelectContent className="bg-zinc-900 border-white/10">
                                 {stores.map(store => (
-                                    <SelectItem key={store.id} value={store.id} className="text-white/80 focus:bg-white/10 focus:text-white">
+                                    <SelectItem key={store.id} value={store.id} className="text-foreground/80 focus:bg-white/10 focus:text-foreground">
                                         {store.name}
-                                        {store.client && <span className="text-white/40 ml-1 text-xs">({store.client.company})</span>}
+                                        {store.client && <span className="text-muted-foreground ml-1 text-xs">({store.client.company})</span>}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -154,33 +154,33 @@ export function AddEquipmentDialog({ open, onOpenChange, catalogues, stores }: A
 
                     {/* Numéro de série */}
                     <div className="space-y-1.5">
-                        <Label className="text-white/60 text-xs uppercase tracking-wider">Numéro de série *</Label>
+                        <Label className="text-muted-foreground text-xs uppercase tracking-wider">Numéro de série *</Label>
                         <Input
                             value={serialNumber}
                             onChange={e => setSerialNumber(e.target.value)}
                             placeholder="ex: ABC123XYZ456"
-                            className="bg-white/5 border-white/10 text-white placeholder:text-white/30 font-mono"
+                            className="bg-white/5 border-white/10 text-foreground placeholder:text-muted-foreground font-mono"
                         />
                     </div>
 
                     {/* Dates */}
                     <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1.5">
-                            <Label className="text-white/60 text-xs uppercase tracking-wider">Date d'achat</Label>
+                            <Label className="text-muted-foreground text-xs uppercase tracking-wider">Date d'achat</Label>
                             <Input
                                 type="date"
                                 value={purchaseDate}
                                 onChange={e => setPurchaseDate(e.target.value)}
-                                className="bg-white/5 border-white/10 text-white"
+                                className="bg-white/5 border-white/10 text-foreground"
                             />
                         </div>
                         <div className="space-y-1.5">
-                            <Label className="text-white/60 text-xs uppercase tracking-wider">Fin de garantie</Label>
+                            <Label className="text-muted-foreground text-xs uppercase tracking-wider">Fin de garantie</Label>
                             <Input
                                 type="date"
                                 value={warrantyEndDate}
                                 onChange={e => setWarrantyEndDate(e.target.value)}
-                                className="bg-white/5 border-white/10 text-white"
+                                className="bg-white/5 border-white/10 text-foreground"
                             />
                         </div>
                     </div>
@@ -188,18 +188,18 @@ export function AddEquipmentDialog({ open, onOpenChange, catalogues, stores }: A
                     {/* Champs dynamiques du catalogue */}
                     {selectedCatalogue && Object.keys(selectedCatalogue.custom_fields_schema).length > 0 && (
                         <div className="space-y-3 p-4 rounded-xl bg-white/[0.03] border border-white/5">
-                            <p className="text-xs font-semibold text-white/40 uppercase tracking-wider">Spécifications ({selectedCatalogue.model_name})</p>
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Spécifications ({selectedCatalogue.model_name})</p>
                             {Object.entries(selectedCatalogue.custom_fields_schema).map(([key, type]) => (
                                 <div key={key} className="space-y-1.5">
-                                    <Label className="text-white/60 text-xs capitalize">{key.replace(/_/g, ' ')}</Label>
+                                    <Label className="text-muted-foreground text-xs capitalize">{key.replace(/_/g, ' ')}</Label>
                                     {type === 'boolean' ? (
                                         <Select value={customFields[key] ?? ''} onValueChange={val => setCustomFields(prev => ({ ...prev, [key]: val }))}>
-                                            <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                                            <SelectTrigger className="bg-white/5 border-white/10 text-foreground">
                                                 <SelectValue placeholder="Sélectionner..." />
                                             </SelectTrigger>
                                             <SelectContent className="bg-zinc-900 border-white/10">
-                                                <SelectItem value="true" className="text-white/80 focus:bg-white/10 focus:text-white">✅ Oui</SelectItem>
-                                                <SelectItem value="false" className="text-white/80 focus:bg-white/10 focus:text-white">❌ Non</SelectItem>
+                                                <SelectItem value="true" className="text-foreground/80 focus:bg-white/10 focus:text-foreground">✅ Oui</SelectItem>
+                                                <SelectItem value="false" className="text-foreground/80 focus:bg-white/10 focus:text-foreground">❌ Non</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     ) : (
@@ -208,7 +208,7 @@ export function AddEquipmentDialog({ open, onOpenChange, catalogues, stores }: A
                                             value={customFields[key] ?? ''}
                                             onChange={e => setCustomFields(prev => ({ ...prev, [key]: e.target.value }))}
                                             placeholder={type === 'number' ? '0' : '...'}
-                                            className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+                                            className="bg-white/5 border-white/10 text-foreground placeholder:text-muted-foreground"
                                         />
                                     )}
                                 </div>
@@ -218,12 +218,12 @@ export function AddEquipmentDialog({ open, onOpenChange, catalogues, stores }: A
 
                     {/* Notes */}
                     <div className="space-y-1.5">
-                        <Label className="text-white/60 text-xs uppercase tracking-wider">Notes (optionnel)</Label>
+                        <Label className="text-muted-foreground text-xs uppercase tracking-wider">Notes (optionnel)</Label>
                         <Textarea
                             value={notes}
                             onChange={e => setNotes(e.target.value)}
                             placeholder="Remarques, état d'arrivée, historique..."
-                            className="bg-white/5 border-white/10 text-white placeholder:text-white/30 resize-none"
+                            className="bg-white/5 border-white/10 text-foreground placeholder:text-muted-foreground resize-none"
                             rows={3}
                         />
                     </div>
@@ -233,7 +233,7 @@ export function AddEquipmentDialog({ open, onOpenChange, catalogues, stores }: A
                         <Button
                             variant="ghost"
                             onClick={() => handleClose(false)}
-                            className="flex-1 text-white/50 hover:text-white/80 border border-white/10 hover:border-white/20"
+                            className="flex-1 text-muted-foreground hover:text-foreground/80 border border-white/10 hover:border-white/20"
                         >
                             Annuler
                         </Button>
