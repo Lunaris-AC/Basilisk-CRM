@@ -45,7 +45,7 @@ export function CMDBPageContent({ initialEquipments, initialLicenses, catalogues
             {/* Header */}
             <div className="flex items-start justify-between">
                 <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500/30 to-blue-600/30 border border-cyan-500/20 flex items-center justify-center shadow-lg shadow-cyan-500/10">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500/30 to-primary/30 border border-cyan-500/20 flex items-center justify-center shadow-lg shadow-cyan-500/10">
                         <HardDrive className="w-6 h-6 text-cyan-400" />
                     </div>
                     <div>
@@ -87,7 +87,7 @@ export function CMDBPageContent({ initialEquipments, initialLicenses, catalogues
                             </TabsTrigger>
                             <TabsTrigger
                                 value="catalogue"
-                                className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-300 data-[state=active]:border-blue-500/30 data-[state=active]:shadow-none rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-all gap-2"
+                                className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary/80 data-[state=active]:border-primary/30 data-[state=active]:shadow-none rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-all gap-2"
                             >
                                 <HardDrive className="w-4 h-4" />
                                 Catalogue
@@ -119,7 +119,7 @@ export function CMDBPageContent({ initialEquipments, initialLicenses, catalogues
                         {activeTab === 'catalogue' && (
                             <button
                                 onClick={() => setAddCatalogueOpen(true)}
-                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 hover:border-blue-500/40 text-blue-300 text-sm font-medium transition-all duration-200"
+                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 hover:bg-primary/20 border border-primary/20 hover:border-primary/40 text-primary/80 text-sm font-medium transition-all duration-200"
                             >
                                 <Plus className="w-4 h-4" />
                                 Nouveau Modèle

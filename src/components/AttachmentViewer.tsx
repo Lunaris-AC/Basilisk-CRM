@@ -133,7 +133,7 @@ export function AttachmentViewer({ attachments }: AttachmentViewerProps) {
             {/* Modal Iframe pour DOCX/XLSX */}
             <Dialog open={!!docPreviewUrl} onOpenChange={(open) => !open && setDocPreviewUrl(null)}>
                 <DialogContent className="max-w-5xl h-[85vh] p-0 bg-white border-0 flex flex-col overflow-hidden">
-                    <DialogHeader className="p-4 bg-zinc-900 border-b border-white/10 shrink-0">
+                    <DialogHeader className="p-4 bg-primary border-b border-white/10 shrink-0">
                         <DialogTitle className="text-foreground flex items-center justify-between">
                             <span className="truncate">{docPreviewTitle}</span>
                         </DialogTitle>
@@ -142,7 +142,7 @@ export function AttachmentViewer({ attachments }: AttachmentViewerProps) {
                         </DialogDescription>
                     </DialogHeader>
                     {/* Conteneur iframe qui prend tout l'espace restant */}
-                    <div className="flex-1 w-full bg-zinc-100">
+                    <div className="flex-1 w-full bg-primary">
                         {docPreviewUrl && (
                             <iframe
                                 src={docPreviewUrl}

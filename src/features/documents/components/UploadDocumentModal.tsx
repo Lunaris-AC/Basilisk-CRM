@@ -55,7 +55,7 @@ export function UploadDocumentModal({ open, onOpenChange, category }: UploadDocu
 
     return (
         <Dialog open={open} onOpenChange={(val) => { if (!val) resetForm(); onOpenChange(val) }}>
-            <DialogContent className="bg-zinc-900 border-white/10 text-foreground sm:max-w-md">
+            <DialogContent className="bg-primary border-white/10 text-foreground sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle className="text-xl font-bold text-foreground flex items-center gap-2">
                         <FileUp className="w-5 h-5 text-primary/80" />
@@ -112,7 +112,7 @@ export function UploadDocumentModal({ open, onOpenChange, category }: UploadDocu
                                 <div className="flex items-center gap-3 min-w-0">
                                     <FileUp className="w-5 h-5 text-primary/80 shrink-0" />
                                     <div className="min-w-0">
-                                        <p className="text-sm text-indigo-200 font-medium truncate">{selectedFile.name}</p>
+                                        <p className="text-sm text-primary font-medium truncate">{selectedFile.name}</p>
                                         <p className="text-xs text-muted-foreground">{(selectedFile.size / 1024).toFixed(1)} KB</p>
                                     </div>
                                 </div>

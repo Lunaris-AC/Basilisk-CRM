@@ -238,7 +238,7 @@ export function RoutingRuleForm({ initialData, clients = [], stores = [] }: { in
                                         <SelectTrigger className="bg-white/5 border-white/10 text-foreground font-bold h-10 w-full">
                                             <SelectValue placeholder="Opérateur" />
                                         </SelectTrigger>
-                                        <SelectContent position="popper" className="bg-zinc-900 border-white/10 text-foreground z-[9999] shadow-2xl">
+                                        <SelectContent position="popper" className="bg-primary border-white/10 text-foreground z-[9999] shadow-2xl">
                                             <SelectItem value="AND" className="font-bold focus:bg-white/10">ET (Toutes vraies)</SelectItem>
                                             <SelectItem value="OR" className="font-bold focus:bg-white/10">OU (Au moins une)</SelectItem>
                                         </SelectContent>
@@ -277,7 +277,7 @@ export function RoutingRuleForm({ initialData, clients = [], stores = [] }: { in
                                             <SelectTrigger className="bg-black/40 border-white/10 text-foreground h-12 rounded-xl">
                                                 <SelectValue placeholder="Choisir un champ..." />
                                             </SelectTrigger>
-                                            <SelectContent position="popper" className="bg-zinc-900 border-white/10 text-foreground">
+                                            <SelectContent position="popper" className="bg-primary border-white/10 text-foreground">
                                                 {FIELDS.map(f => (
                                                     <SelectItem key={f.value} value={f.value} className="focus:bg-white/10">{f.label}</SelectItem>
                                                 ))}
@@ -297,7 +297,7 @@ export function RoutingRuleForm({ initialData, clients = [], stores = [] }: { in
                                             <SelectTrigger className="bg-black/40 border-white/10 text-amber-400 font-bold h-12 rounded-xl">
                                                 <SelectValue placeholder="Opérateur..." />
                                             </SelectTrigger>
-                                            <SelectContent position="popper" className="bg-zinc-900 border-white/10 text-foreground">
+                                            <SelectContent position="popper" className="bg-primary border-white/10 text-foreground">
                                                 {OPERATORS.map(o => (
                                                     <SelectItem key={o.value} value={o.value} className="focus:bg-white/10 font-medium">
                                                         {o.label}
@@ -325,7 +325,7 @@ export function RoutingRuleForm({ initialData, clients = [], stores = [] }: { in
                                                             <SelectTrigger className="bg-black/40 border-white/10 text-primary/80 font-medium h-12 rounded-xl focus-visible:ring-amber-500">
                                                                 <SelectValue placeholder="Sélectionner un client..." />
                                                             </SelectTrigger>
-                                                            <SelectContent position="popper" className="bg-zinc-900 border-white/10 text-foreground max-h-60 z-[9999] shadow-2xl">
+                                                            <SelectContent position="popper" className="bg-primary border-white/10 text-foreground max-h-60 z-[9999] shadow-2xl">
                                                                 {clients.length === 0 ? (
                                                                     <SelectItem value="no_clients_found" disabled className="text-muted-foreground italic">Aucun client trouvé</SelectItem>
                                                                 ) : (
@@ -352,7 +352,7 @@ export function RoutingRuleForm({ initialData, clients = [], stores = [] }: { in
                                                             <SelectTrigger className="bg-black/40 border-white/10 text-primary/80 font-medium h-12 rounded-xl focus-visible:ring-amber-500">
                                                                 <SelectValue placeholder="Sélectionner un magasin..." />
                                                             </SelectTrigger>
-                                                            <SelectContent position="popper" className="bg-zinc-900 border-white/10 text-foreground max-h-60 z-[9999] shadow-2xl">
+                                                            <SelectContent position="popper" className="bg-primary border-white/10 text-foreground max-h-60 z-[9999] shadow-2xl">
                                                                 {stores.length === 0 ? (
                                                                     <SelectItem value="no_stores_found" disabled className="text-muted-foreground italic">Aucun magasin trouvé</SelectItem>
                                                                 ) : (
@@ -379,8 +379,8 @@ export function RoutingRuleForm({ initialData, clients = [], stores = [] }: { in
                                                             <SelectTrigger className="bg-black/40 border-white/10 text-primary/80 font-medium h-12 rounded-xl focus-visible:ring-amber-500">
                                                                 <SelectValue placeholder="Priorité..." />
                                                             </SelectTrigger>
-                                                            <SelectContent position="popper" className="bg-zinc-900 border-white/10 text-foreground z-[9999] shadow-2xl">
-                                                                <SelectItem value="BASSE" className="focus:bg-white/10 text-slate-400 font-bold">Basse</SelectItem>
+                                                            <SelectContent position="popper" className="bg-primary border-white/10 text-foreground z-[9999] shadow-2xl">
+                                                                <SelectItem value="BASSE" className="focus:bg-white/10 text-primary/80 font-bold">Basse</SelectItem>
                                                                 <SelectItem value="NORMALE" className="focus:bg-white/10 text-sky-400 font-bold">Normale</SelectItem>
                                                                 <SelectItem value="HAUTE" className="focus:bg-white/10 text-amber-400 font-bold">Haute</SelectItem>
                                                                 <SelectItem value="URGENTE" className="focus:bg-white/10 text-rose-500 font-bold">Urgente</SelectItem>
@@ -401,12 +401,12 @@ export function RoutingRuleForm({ initialData, clients = [], stores = [] }: { in
                                                             <SelectTrigger className="bg-black/40 border-white/10 text-primary/80 font-medium h-12 rounded-xl focus-visible:ring-amber-500">
                                                                 <SelectValue placeholder="Statut..." />
                                                             </SelectTrigger>
-                                                            <SelectContent position="popper" className="bg-zinc-900 border-white/10 text-foreground z-[9999] shadow-2xl">
+                                                            <SelectContent position="popper" className="bg-primary border-white/10 text-foreground z-[9999] shadow-2xl">
                                                                 <SelectItem value="NOUVEAU" className="focus:bg-white/10 font-bold">Nouveau</SelectItem>
                                                                 <SelectItem value="EN_COURS" className="focus:bg-white/10 text-sky-400 font-bold">En cours</SelectItem>
                                                                 <SelectItem value="ATTENTE_CLIENT" className="focus:bg-white/10 text-amber-500 font-bold">Attente client</SelectItem>
                                                                 <SelectItem value="RESOLU" className="focus:bg-white/10 text-emerald-500 font-bold">Résolu</SelectItem>
-                                                                <SelectItem value="FERME" className="focus:bg-white/10 text-zinc-500 font-bold">Fermé</SelectItem>
+                                                                <SelectItem value="FERME" className="focus:bg-white/10 text-primary font-bold">Fermé</SelectItem>
                                                             </SelectContent>
                                                         </Select>
                                                     )}
@@ -453,7 +453,7 @@ export function RoutingRuleForm({ initialData, clients = [], stores = [] }: { in
 
             {/* Cible de routage */}
             <div className="p-8 rounded-[2rem] border border-white/10 bg-zinc-950/40 backdrop-blur-xl shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-blue-500 opacity-50" />
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-primary opacity-50" />
                 <h2 className="text-xl font-bold text-foreground mb-2 flex items-center gap-2">
                     <span>3. Cible d'assignation</span>
                 </h2>
@@ -468,7 +468,7 @@ export function RoutingRuleForm({ initialData, clients = [], stores = [] }: { in
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center relative">
 
-                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex items-center justify-center w-10 h-10 rounded-full bg-zinc-900 border border-white/10 text-muted-foreground font-black text-xs z-10">
+                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex items-center justify-center w-10 h-10 rounded-full bg-primary border border-white/10 text-muted-foreground font-black text-xs z-10">
                         OU
                     </div>
 
@@ -488,7 +488,7 @@ export function RoutingRuleForm({ initialData, clients = [], stores = [] }: { in
                                     <SelectTrigger className="bg-black/50 border-white/10 text-foreground h-14 rounded-xl text-lg">
                                         <SelectValue placeholder="Sélectionner un grade..." />
                                     </SelectTrigger>
-                                    <SelectContent position="popper" className="bg-zinc-900 border-white/10 text-foreground z-[9999] shadow-2xl">
+                                    <SelectContent position="popper" className="bg-primary border-white/10 text-foreground z-[9999] shadow-2xl">
                                         <SelectItem value="none" className="text-muted-foreground italic focus:bg-white/5">-- Aucun grade --</SelectItem>
                                         {supportLevels.map(level => (
                                             <SelectItem key={level.id} value={level.id} className="font-bold focus:bg-white/10">
@@ -517,7 +517,7 @@ export function RoutingRuleForm({ initialData, clients = [], stores = [] }: { in
                                     <SelectTrigger className="bg-black/50 border-white/10 text-foreground h-14 rounded-xl text-lg">
                                         <SelectValue placeholder="Sélectionner un agent..." />
                                     </SelectTrigger>
-                                    <SelectContent position="popper" className="bg-zinc-900 border-white/10 text-foreground z-[9999] shadow-2xl">
+                                    <SelectContent position="popper" className="bg-primary border-white/10 text-foreground z-[9999] shadow-2xl">
                                         <SelectItem value="none" className="text-muted-foreground italic focus:bg-white/5">-- Aucun utilisateur --</SelectItem>
                                         {profiles.map(p => (
                                             <SelectItem key={p.id} value={p.id} className="font-bold focus:bg-white/10">

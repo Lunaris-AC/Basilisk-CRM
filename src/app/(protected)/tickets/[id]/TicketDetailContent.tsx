@@ -551,7 +551,7 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         {selectedFiles.map((file, idx) => (
                                             <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-primary/10 border border-primary/30">
-                                                <div className="truncate text-sm text-indigo-200">{file.name}</div>
+                                                <div className="truncate text-sm text-primary">{file.name}</div>
                                                 <button
                                                     onClick={() => setSelectedFiles(prev => prev.filter((_, i) => i !== idx))}
                                                     className="p-1 text-rose-400 hover:bg-rose-500/20 rounded ml-2"
@@ -859,7 +859,7 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
 
                         {/* Modale de changement d'interlocuteur */}
                         <Dialog open={changeContactModalOpen} onOpenChange={setChangeContactModalOpen}>
-                            <DialogContent className="bg-zinc-900 border-white/10 text-foreground sm:max-w-md">
+                            <DialogContent className="bg-primary border-white/10 text-foreground sm:max-w-md">
                                 <DialogHeader>
                                     <DialogTitle className="text-xl font-bold text-foreground flex items-center gap-2">
                                         <UserCircle className="w-5 h-5 text-primary/80" />
@@ -913,7 +913,7 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                             Réactiver le ticket
                                         </button>
                                     </DialogTrigger>
-                                    <DialogContent className="bg-zinc-900 border-white/10 text-foreground sm:max-w-md">
+                                    <DialogContent className="bg-primary border-white/10 text-foreground sm:max-w-md">
                                         <DialogHeader>
                                             <DialogTitle className="text-xl font-bold text-fuchsia-300">Réactiver ce ticket</DialogTitle>
                                             <DialogDescription className="text-muted-foreground">
@@ -993,7 +993,7 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
 
                                     {/* Modale Résolution SD en cascade (Sprint 22) */}
                                     <Dialog open={resolveSDModalOpen} onOpenChange={setResolveSDModalOpen}>
-                                        <DialogContent className="bg-zinc-900 border-white/10 text-foreground sm:max-w-md">
+                                        <DialogContent className="bg-primary border-white/10 text-foreground sm:max-w-md">
                                             <DialogHeader>
                                                 <DialogTitle className="text-xl font-bold text-emerald-300 flex items-center gap-2">
                                                     <CheckCircle2 className="w-5 h-5" />
@@ -1072,7 +1072,7 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                                 Suspendre
                                             </button>
                                         </DialogTrigger>
-                                        <DialogContent className="bg-zinc-900 border-white/10 text-foreground sm:max-w-md">
+                                        <DialogContent className="bg-primary border-white/10 text-foreground sm:max-w-md">
                                             <DialogHeader>
                                                 <DialogTitle className="text-xl font-bold">Suspendre le ticket</DialogTitle>
                                                 <DialogDescription className="text-muted-foreground">
@@ -1129,7 +1129,7 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                                 Clôturer
                                             </button>
                                         </DialogTrigger>
-                                        <DialogContent className="bg-zinc-900 border-white/10 text-foreground sm:max-w-md">
+                                        <DialogContent className="bg-primary border-white/10 text-foreground sm:max-w-md">
                                             <DialogHeader>
                                                 <DialogTitle className="text-xl font-bold">Clôturer le ticket</DialogTitle>
                                                 <DialogDescription className="text-muted-foreground">
@@ -1183,7 +1183,7 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                                         Escalader (Niveau Supérieur)
                                                     </button>
                                                 </DialogTrigger>
-                                                <DialogContent className="bg-zinc-900 border-white/10 text-foreground sm:max-w-md">
+                                                <DialogContent className="bg-primary border-white/10 text-foreground sm:max-w-md">
                                                     <DialogHeader>
                                                         <DialogTitle className="text-xl font-bold text-rose-300 flex items-center gap-2"><ArrowUpRight className="w-5 h-5" />Escalader ce ticket</DialogTitle>
                                                         <DialogDescription className="text-muted-foreground">
@@ -1232,7 +1232,7 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                                         Renvoyer (Niveau Inférieur)
                                                     </button>
                                                 </DialogTrigger>
-                                                <DialogContent className="bg-zinc-900 border-white/10 text-foreground sm:max-w-md">
+                                                <DialogContent className="bg-primary border-white/10 text-foreground sm:max-w-md">
                                                     <DialogHeader>
                                                         <DialogTitle className="text-xl font-bold flex items-center gap-2"><ArrowDownRight className="w-5 h-5" />Renvoyer ce ticket</DialogTitle>
                                                         <DialogDescription className="text-muted-foreground">

@@ -88,7 +88,7 @@ export function DocumentGrid({ documents, isLoading, category, canManage }: Docu
                             {getFileIcon(doc.file_url)}
                         </div>
                         <div className="flex-1 min-w-0">
-                            <h3 className="text-sm font-bold text-foreground truncate group-hover:text-indigo-200 transition-colors">{doc.title}</h3>
+                            <h3 className="text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors">{doc.title}</h3>
                             <span className="text-[10px] px-2 py-0.5 rounded-md bg-white/10 text-muted-foreground font-semibold tracking-wider">
                                 {getFileExtension(doc.file_url)}
                             </span>

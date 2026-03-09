@@ -16,22 +16,22 @@ import { SlaTimer } from '@/components/SlaTimer'
 const getStatusConfig = (status: string) => {
     switch (status) {
         case 'nouveau': return { color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', icon: Plus, label: 'Nouveau' }
-        case 'assigne': return { color: 'bg-blue-500/10 text-blue-400 border-blue-500/20', icon: Clock, label: 'Assigné' }
+        case 'assigne': return { color: 'bg-primary/10 text-primary/80 border-primary/20', icon: Clock, label: 'Assigné' }
         case 'en_cours': return { color: 'bg-primary/10 text-primary/80 border-primary/20', icon: Clock, label: 'En cours' }
         case 'attente_client': return { color: 'bg-amber-500/10 text-amber-400 border-amber-500/20', icon: AlertCircle, label: 'Attente Client' }
         case 'resolu': return { color: 'bg-primary/10 text-primary/80 border-primary/20', icon: CheckCircle2, label: 'Résolu' }
-        case 'ferme': return { color: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20', icon: CheckCircle2, label: 'Fermé' }
-        default: return { color: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20', icon: MoreHorizontal, label: status }
+        case 'ferme': return { color: 'bg-primary/10 text-primary/80 border-primary/20', icon: CheckCircle2, label: 'Fermé' }
+        default: return { color: 'bg-primary/10 text-primary/80 border-primary/20', icon: MoreHorizontal, label: status }
     }
 }
 
 const getPriorityConfig = (priority: string) => {
     switch (priority) {
-        case 'basse': return 'bg-zinc-500/10 text-zinc-400'
-        case 'normale': return 'bg-blue-500/10 text-blue-400'
+        case 'basse': return 'bg-primary/10 text-primary/80'
+        case 'normale': return 'bg-primary/10 text-primary/80'
         case 'haute': return 'bg-orange-500/10 text-orange-400'
         case 'critique': return 'bg-red-500/10 text-red-500 animate-pulse'
-        default: return 'bg-zinc-500/10 text-zinc-400'
+        default: return 'bg-primary/10 text-primary/80'
     }
 }
 

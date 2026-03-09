@@ -29,7 +29,7 @@ const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
     },
     REBUT: {
         label: 'Rebut',
-        className: 'bg-zinc-500/15 text-zinc-400 border border-zinc-500/30',
+        className: 'bg-primary/15 text-primary/80 border border-primary/30',
     },
 }
 

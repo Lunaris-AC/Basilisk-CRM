@@ -13,14 +13,9 @@ export async function addContact(formData: {
 }) {
     const supabase = await createClient()
 
-    // Vérification du rôle (COM, N4, ADMIN)
+    // Vérification de l'utilisateur
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Non authentifié' }
-
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-    if (!profile || !['COM', 'N4', 'ADMIN'].includes(profile.role)) {
-        return { error: 'Accès non autorisé : seuls les rôles COM, N4 et ADMIN peuvent ajouter des contacts.' }
-    }
 
     const { error } = await supabase
         .from('contacts')

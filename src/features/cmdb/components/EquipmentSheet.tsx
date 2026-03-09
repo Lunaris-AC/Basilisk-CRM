@@ -27,7 +27,7 @@ const STATUS_COLORS: Record<string, string> = {
     EN_PANNE: 'bg-red-500/15 text-red-300 border-red-500/30',
     EN_REPARATION_INTERNE: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
     RMA_FOURNISSEUR: 'bg-primary/15 text-primary/80 border-primary/30',
-    REBUT: 'bg-zinc-500/15 text-zinc-400 border-zinc-500/30',
+    REBUT: 'bg-primary/15 text-primary/80 border-primary/30',
 }
 
 interface LinkedTicket {
@@ -208,7 +208,7 @@ export function EquipmentSheet({ equipment, open, onOpenChange }: EquipmentSheet
                             <SelectTrigger className="bg-white/5 border-white/10 text-foreground">
                                 <SelectValue />
                             </SelectTrigger>
-                            <SelectContent className="bg-zinc-900 border-white/10">
+                            <SelectContent className="bg-primary border-white/10">
                                 {STATUS_OPTIONS.map(opt => (
                                     <SelectItem key={opt.value} value={opt.value} className="text-foreground/80 focus:bg-white/10 focus:text-foreground">
                                         {opt.label}

@@ -175,7 +175,7 @@ export function LicenseTable({ licenses, stores }: LicenseTableProps) {
                                                 Active
                                             </span>
                                         ) : (
-                                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-zinc-500/15 text-zinc-400 border border-zinc-500/30">
+                                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-primary/15 text-primary/80 border border-primary/30">
                                                 Inactive
                                             </span>
                                         )}

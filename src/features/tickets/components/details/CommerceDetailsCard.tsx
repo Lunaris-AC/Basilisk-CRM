@@ -80,7 +80,7 @@ export function CommerceDetailsCard({ ticketId, details, isClosed }: { ticketId:
 
             {/* Modale d'édition */}
             <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-                <DialogContent className="bg-zinc-900 border-primary/20 text-foreground sm:max-w-md">
+                <DialogContent className="bg-primary border-primary/20 text-foreground sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle className="text-xl font-bold text-primary/80 flex items-center gap-2">
                             <Briefcase className="w-5 h-5" />

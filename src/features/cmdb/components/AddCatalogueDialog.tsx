@@ -92,8 +92,8 @@ export function AddCatalogueDialog({ open, onOpenChange }: AddCatalogueDialogPro
             <DialogContent className="bg-zinc-950 border border-white/10 text-foreground max-w-lg max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                            <HardDrive className="w-5 h-5 text-blue-400" />
+                        <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                            <HardDrive className="w-5 h-5 text-primary/80" />
                         </div>
                         <div>
                             <DialogTitle className="text-foreground">Nouveau Modèle</DialogTitle>
@@ -115,7 +115,7 @@ export function AddCatalogueDialog({ open, onOpenChange }: AddCatalogueDialogPro
                             <SelectTrigger className="bg-white/5 border-white/10 text-foreground">
                                 <SelectValue placeholder="Sélectionner une catégorie..." />
                             </SelectTrigger>
-                            <SelectContent className="bg-zinc-900 border-white/10">
+                            <SelectContent className="bg-primary border-white/10">
                                 {CATEGORIES.map(cat => (
                                     <SelectItem key={cat} value={cat} className="text-foreground/80 focus:bg-white/10 focus:text-foreground">
                                         {cat}
@@ -170,7 +170,7 @@ export function AddCatalogueDialog({ open, onOpenChange }: AddCatalogueDialogPro
                         <Button
                             onClick={handleSubmit}
                             disabled={isPending}
-                            className="flex-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30 hover:border-blue-500/50"
+                            className="flex-1 bg-primary/20 hover:bg-primary/30 text-primary/80 border border-primary/30 hover:border-primary/50"
                         >
                             {isPending ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
                             Ajouter au catalogue

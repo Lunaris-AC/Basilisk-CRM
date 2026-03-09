@@ -84,7 +84,7 @@ export function SAVDetailsCard({ ticketId, details, isClosed }: { ticketId: stri
 
             {/* Modale d'édition */}
             <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-                <DialogContent className="bg-zinc-900 border-rose-500/20 text-foreground sm:max-w-md">
+                <DialogContent className="bg-primary border-rose-500/20 text-foreground sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle className="text-xl font-bold text-rose-300 flex items-center gap-2">
                             <Wrench className="w-5 h-5" />

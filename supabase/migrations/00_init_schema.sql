@@ -312,7 +312,30 @@ ALTER TABLE public.quotes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.quote_lines ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.documents ENABLE ROW LEVEL SECURITY;
 
--- 4. FUNCTIONS & TRIGGERS
+-- 4. FUNCTIONS$$ language 'plpgsql';
+
+-- ==========================================
+-- RLS UTILITY FUNCTIONS
+-- ==========================================
+
+CREATE OR REPLACE FUNCTION public.get_my_role()
+RETURNS user_role AS $$
+  SELECT role
+  FROM profiles
+  WHERE id = auth.uid()
+    AND is_active = TRUE;
+$$ LANGUAGE sql STABLE SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION public.is_active_user()
+RETURNS BOOLEAN AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM profiles
+    WHERE id = auth.uid()
+      AND is_active = TRUE
+  );
+$$ LANGUAGE sql STABLE SECURITY DEFINER;
+
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -391,3 +414,75 @@ BEGIN
     END IF;
 END;
 $$;
+
+-- ==========================================
+-- RLS POLICIES
+-- ==========================================
+
+-- 1. PROFILES
+CREATE POLICY "profiles_select" ON public.profiles
+  FOR SELECT USING (public.is_active_user());
+
+CREATE POLICY "profiles_update_own" ON public.profiles
+  FOR UPDATE USING (public.is_active_user() AND id = auth.uid())
+  WITH CHECK (role = (SELECT role FROM profiles WHERE id = auth.uid()));
+
+CREATE POLICY "profiles_update_admin" ON public.profiles
+  FOR UPDATE USING (public.get_my_role() = 'ADMIN')
+  WITH CHECK (TRUE);
+
+-- 2. CLIENTS
+CREATE POLICY "clients_select" ON public.clients
+  FOR SELECT USING (public.is_active_user());
+
+CREATE POLICY "clients_insert" ON public.clients
+  FOR INSERT WITH CHECK (public.is_active_user());
+
+CREATE POLICY "clients_update" ON public.clients
+  FOR UPDATE USING (public.get_my_role() IN ('COM', 'N4', 'ADMIN'))
+  WITH CHECK (public.get_my_role() IN ('COM', 'N4', 'ADMIN'));
+
+-- 3. STORES
+CREATE POLICY "stores_select" ON public.stores
+  FOR SELECT USING (public.is_active_user());
+
+CREATE POLICY "stores_insert" ON public.stores
+  FOR INSERT WITH CHECK (public.is_active_user());
+
+CREATE POLICY "stores_update" ON public.stores
+  FOR UPDATE USING (public.get_my_role() IN ('COM', 'N4', 'ADMIN'))
+  WITH CHECK (public.get_my_role() IN ('COM', 'N4', 'ADMIN'));
+
+-- 4. CONTACTS (FIXED: relaxed for all active users)
+CREATE POLICY "contacts_select" ON public.contacts
+  FOR SELECT USING (public.is_active_user());
+
+CREATE POLICY "contacts_insert" ON public.contacts
+  FOR INSERT WITH CHECK (public.is_active_user());
+
+CREATE POLICY "contacts_update" ON public.contacts
+  FOR UPDATE USING (public.is_active_user());
+
+-- 5. TICKETS
+CREATE POLICY "tickets_select" ON public.tickets
+  FOR SELECT USING (public.is_active_user());
+
+CREATE POLICY "tickets_insert" ON public.tickets
+  FOR INSERT WITH CHECK (public.is_active_user() AND creator_id = auth.uid());
+
+CREATE POLICY "tickets_update_admin_n4" ON public.tickets
+  FOR UPDATE USING (public.get_my_role() IN ('ADMIN', 'N4'))
+  WITH CHECK (TRUE);
+
+CREATE POLICY "tickets_update_creator" ON public.tickets
+  FOR UPDATE USING (public.is_active_user() AND creator_id = auth.uid())
+  WITH CHECK (creator_id = auth.uid());
+
+CREATE POLICY "tickets_update_assignee" ON public.tickets
+  FOR UPDATE USING (public.is_active_user() AND assignee_id = auth.uid())
+  WITH CHECK (TRUE);
+
+CREATE POLICY "tickets_update_pick" ON public.tickets
+  FOR UPDATE USING (public.is_active_user() AND assignee_id IS NULL AND is_active = TRUE)
+  WITH CHECK (assignee_id = auth.uid());
+

@@ -116,7 +116,7 @@ export function AddLicenseDialog({ open, onOpenChange, stores }: AddLicenseDialo
                             <SelectTrigger className="bg-white/5 border-white/10 text-foreground">
                                 <SelectValue placeholder="Sélectionner un magasin..." />
                             </SelectTrigger>
-                            <SelectContent className="bg-zinc-900 border-white/10">
+                            <SelectContent className="bg-primary border-white/10">
                                 {stores.map(store => (
                                     <SelectItem key={store.id} value={store.id} className="text-foreground/80 focus:bg-white/10 focus:text-foreground">
                                         {store.name}

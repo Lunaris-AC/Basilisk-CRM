@@ -124,7 +124,7 @@ export function AddEquipmentDialog({ open, onOpenChange, catalogues, stores }: A
                             <SelectTrigger className="bg-white/5 border-white/10 text-foreground">
                                 <SelectValue placeholder="Sélectionner un modèle..." />
                             </SelectTrigger>
-                            <SelectContent className="bg-zinc-900 border-white/10">
+                            <SelectContent className="bg-primary border-white/10">
                                 {catalogues.map(cat => (
                                     <SelectItem key={cat.id} value={cat.id} className="text-foreground/80 focus:bg-white/10 focus:text-foreground">
                                         <span className="text-muted-foreground text-xs mr-1">[{cat.category}]</span> {cat.brand} {cat.model_name}
@@ -141,7 +141,7 @@ export function AddEquipmentDialog({ open, onOpenChange, catalogues, stores }: A
                             <SelectTrigger className="bg-white/5 border-white/10 text-foreground">
                                 <SelectValue placeholder="Sélectionner un magasin..." />
                             </SelectTrigger>
-                            <SelectContent className="bg-zinc-900 border-white/10">
+                            <SelectContent className="bg-primary border-white/10">
                                 {stores.map(store => (
                                     <SelectItem key={store.id} value={store.id} className="text-foreground/80 focus:bg-white/10 focus:text-foreground">
                                         {store.name}
@@ -197,7 +197,7 @@ export function AddEquipmentDialog({ open, onOpenChange, catalogues, stores }: A
                                             <SelectTrigger className="bg-white/5 border-white/10 text-foreground">
                                                 <SelectValue placeholder="Sélectionner..." />
                                             </SelectTrigger>
-                                            <SelectContent className="bg-zinc-900 border-white/10">
+                                            <SelectContent className="bg-primary border-white/10">
                                                 <SelectItem value="true" className="text-foreground/80 focus:bg-white/10 focus:text-foreground">✅ Oui</SelectItem>
                                                 <SelectItem value="false" className="text-foreground/80 focus:bg-white/10 focus:text-foreground">❌ Non</SelectItem>
                                             </SelectContent>

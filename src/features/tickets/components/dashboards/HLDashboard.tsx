@@ -99,7 +99,7 @@ export function HLDashboard() {
                     disabled={isPicking || hasActiveTickets}
                     title={hasActiveTickets ? "Terminez votre ticket en cours." : "Piocher le ticket le plus ancien"}
                     className={`group relative px-8 py-4 rounded-2xl overflow-hidden transition-all shadow-xl border 
-                        ${hasActiveTickets ? 'bg-zinc-800/50 border-white/5 opacity-60 cursor-not-allowed shadow-none' : 'hover:scale-105 active:scale-95 shadow-primary/20 border-primary/30'} disabled:opacity-50`}
+                        ${hasActiveTickets ? 'bg-primary/50 border-white/5 opacity-60 cursor-not-allowed shadow-none' : 'hover:scale-105 active:scale-95 shadow-primary/20 border-primary/30'} disabled:opacity-50`}
                 >
                     {!hasActiveTickets && (
                         <>
@@ -229,7 +229,7 @@ export function HLDashboard() {
                             {format(statsDate, 'EEEE d MMMM yyyy', { locale: fr })}
                         </button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 bg-zinc-900/95 backdrop-blur-xl border-white/10 shadow-2xl" align="end">
+                    <PopoverContent className="w-auto p-0 bg-primary/95 backdrop-blur-xl border-white/10 shadow-2xl" align="end">
                         <Calendar
                             mode="single"
                             selected={statsDate}

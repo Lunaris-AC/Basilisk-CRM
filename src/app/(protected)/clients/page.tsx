@@ -174,7 +174,7 @@ export default function ClientsPage() {
                                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                                             {client.stores?.length ? client.stores.map(store => (
                                                                 <div key={store.id} className="p-3 rounded-xl bg-white/5 border border-white/5 flex items-center gap-3">
-                                                                    <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
+                                                                    <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
                                                                         <StoreIcon className="w-4 h-4 text-muted-foreground" />
                                                                     </div>
                                                                     <div className="overflow-hidden">
@@ -247,7 +247,7 @@ export default function ClientsPage() {
 
             {/* Add Contact Modal */}
             <Dialog open={contactModalOpen} onOpenChange={setContactModalOpen}>
-                <DialogContent className="bg-zinc-900 border-white/10 text-foreground sm:max-w-md">
+                <DialogContent className="bg-primary border-white/10 text-foreground sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle className="text-xl font-bold text-emerald-300 flex items-center gap-2">
                             <UserCircle className="w-5 h-5" />

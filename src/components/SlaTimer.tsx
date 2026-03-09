@@ -33,7 +33,7 @@ export function SlaTimer({ ticket }: SlaTimerProps) {
     // 2. SLA en PAUSE (attente client)
     if (ticket.sla_paused_at !== null) {
         return (
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-800/50 border border-amber-500/30 text-amber-400/70 text-[11px] font-medium backdrop-blur-sm">
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/50 border border-amber-500/30 text-amber-400/70 text-[11px] font-medium backdrop-blur-sm">
                 <PauseCircle className="w-3.5 h-3.5" />
                 <span className="tracking-wide uppercase">SLA EN PAUSE</span>
             </div>

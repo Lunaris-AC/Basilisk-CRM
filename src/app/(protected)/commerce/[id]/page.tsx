@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table"
 
 const STATUS_COLORS: Record<QuoteStatus, { bg: string, text: string, border: string, icon: any, label: string }> = {
-    'BROUILLON': { bg: 'bg-slate-500/10', text: 'text-slate-400', border: 'border-slate-500/20', icon: FileText, label: 'Brouillon' },
+    'BROUILLON': { bg: 'bg-primary/10', text: 'text-primary/80', border: 'border-primary/20', icon: FileText, label: 'Brouillon' },
     'EN_ATTENTE': { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20', icon: Clock, label: 'En attente' },
     'ACCEPTE': { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20', icon: CheckCircle2, label: 'Accepté' },
     'REFUSE': { bg: 'bg-rose-500/10', text: 'text-rose-400', border: 'border-rose-500/20', icon: XCircle, label: 'Refusé' },
@@ -40,7 +40,7 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
 
     if (!quote) {
         return (
-            <div className="flex-1 overflow-y-auto custom-scrollbar bg-gradient-to-br from-slate-900 to-black relative flex items-center justify-center h-full">
+            <div className="flex-1 overflow-y-auto custom-scrollbar bg-gradient-to-br from-primary to-black relative flex items-center justify-center h-full">
                 <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-0" />
                 <div className="relative z-10 text-center space-y-4">
                     <FileText className="w-16 h-16 text-foreground/20 mx-auto" />
@@ -66,7 +66,7 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
     }
 
     return (
-        <div className="flex-1 overflow-y-auto custom-scrollbar bg-gradient-to-br from-slate-900 to-black relative">
+        <div className="flex-1 overflow-y-auto custom-scrollbar bg-gradient-to-br from-primary to-black relative">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-0" />
 
             <div className="relative z-10 p-6 lg:p-10 flex flex-col min-h-full space-y-8 max-w-6xl mx-auto">

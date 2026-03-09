@@ -30,7 +30,7 @@ export default async function CommercePage() {
     // const catalogue = ... (conservé, log retiré)
 
     return (
-        <div className="flex-1 overflow-y-auto custom-scrollbar bg-gradient-to-br from-slate-900 to-black relative">
+        <div className="flex-1 overflow-y-auto custom-scrollbar bg-gradient-to-br from-primary to-black relative">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-0" />
 
             <div className="relative z-10 flex flex-col h-full">

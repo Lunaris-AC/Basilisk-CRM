@@ -16,7 +16,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
     en_cours: { label: 'En cours', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
     attente_client: { label: 'Attente', color: 'bg-orange-500/20 text-orange-300 border-orange-500/30' },
     resolu: { label: 'Résolu', color: 'bg-primary/20 text-primary/80 border-primary/30' },
-    ferme: { label: 'Fermé', color: 'bg-zinc-500/20 text-zinc-400 border-zinc-500/30' },
+    ferme: { label: 'Fermé', color: 'bg-primary/20 text-primary/80 border-primary/30' },
 }
 
 const COMPLEXITY_LABELS: Record<string, { label: string; color: string }> = {

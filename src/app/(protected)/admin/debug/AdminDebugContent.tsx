@@ -270,7 +270,7 @@ function ProfilesExplorerTab() {
                                                     {['STANDARD', 'COM', 'SAV1', 'SAV2', 'ADMIN', 'FORMATEUR', 'DEV', 'CLIENT'].map(r => <option key={r} value={r}>{r}</option>)}
                                                 </select>
                                                 {editForm.role === 'CLIENT' && (
-                                                    <select value={editForm.store_id || ''} onChange={e => setEditForm({ ...editForm, store_id: e.target.value || null })} className="px-2 py-1 bg-white/5 border border-blue-500/50 rounded-lg text-foreground text-xs">
+                                                    <select value={editForm.store_id || ''} onChange={e => setEditForm({ ...editForm, store_id: e.target.value || null })} className="px-2 py-1 bg-white/5 border border-primary/50 rounded-lg text-foreground text-xs">
                                                         <option value="">Aucun magasin lié</option>
                                                         {(stores || []).map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}
                                                     </select>
@@ -425,7 +425,7 @@ function TicketsExplorerTab() {
 
             {/* Force Edit Modal */}
             <Dialog open={!!editTicketId} onOpenChange={(open) => { if (!open) setEditTicketId(null) }}>
-                <DialogContent className="bg-zinc-900/95 backdrop-blur-xl border-white/10 text-foreground max-w-lg">
+                <DialogContent className="bg-primary/95 backdrop-blur-xl border-white/10 text-foreground max-w-lg">
                     <DialogHeader>
                         <DialogTitle className="text-lg font-bold flex items-center gap-2">
                             <Pencil className="w-4 h-4 text-primary/80" /> Force Edit — Ticket

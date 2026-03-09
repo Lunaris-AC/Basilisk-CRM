@@ -111,7 +111,7 @@ export default function ApparencePage() {
 
                     <button
                         onClick={() => handleThemeSelect('default')}
-                        className="text-[10px] font-black uppercase tracking-tighter text-muted-foreground hover:text-white transition-colors underline underline-offset-4"
+                        className="text-[10px] font-black uppercase tracking-tighter text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
                     >
                         Réinitialiser par défaut
                     </button>
