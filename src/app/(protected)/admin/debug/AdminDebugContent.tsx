@@ -16,6 +16,8 @@ type UserProfile = {
     last_name: string
     role: string
     is_active?: boolean
+    support_level_id?: string | null
+    store_id?: string | null
 }
 
 type TicketRow = {
@@ -250,6 +252,7 @@ function ProfilesExplorerTab() {
                             <th className="pb-3 px-3">Nom</th>
                             <th className="pb-3 px-3">Prénom</th>
                             <th className="pb-3 px-3">Rôle</th>
+                            <th className="pb-3 px-3">Niveau Support</th>
                             <th className="pb-3 px-3 text-center">Actif</th>
                             <th className="pb-3 px-3 text-center">Actions</th>
                         </tr>
@@ -272,14 +275,17 @@ function ProfilesExplorerTab() {
                                                         {(stores || []).map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}
                                                     </select>
                                                 )}
-                                                {['SAV1', 'SAV2', 'DEV', 'ADMIN'].includes(editForm.role) && (
+                                                {/* HOTFIX 32.1 : Inclure les rôles N1/N2/N3/N4 dans le filtre technique */}
+                                                {['N1', 'N2', 'N3', 'N4', 'SAV1', 'SAV2', 'DEV', 'ADMIN'].includes(editForm.role) && (
                                                     <select value={editForm.support_level_id || ''} onChange={e => setEditForm({ ...editForm, support_level_id: e.target.value || null })} className="px-2 py-1 bg-white/5 border border-amber-500/50 rounded-lg text-white text-xs">
-                                                        <option value="">Aucun grade lié</option>
+                                                        <option value="">Aucun niveau lié</option>
                                                         {(levels || []).map((l: any) => <option key={l.id} value={l.id}>{l.name}</option>)}
                                                     </select>
                                                 )}
                                             </div>
                                         </td>
+                                        {/* Spacer : aligne avec la colonne "Niveau Support" du thead */}
+                                        <td className="py-2 px-3" />
                                         <td className="py-2 px-3 text-center">
                                             <button onClick={() => setEditForm({ ...editForm, is_active: !editForm.is_active })} className={`px-2 py-1 rounded-lg text-xs font-bold ${editForm.is_active ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'}`}>
                                                 {editForm.is_active ? 'Oui' : 'Non'}
@@ -297,6 +303,12 @@ function ProfilesExplorerTab() {
                                         <td className="py-3 px-3 text-white font-medium">{p.last_name}</td>
                                         <td className="py-3 px-3 text-white/70">{p.first_name}</td>
                                         <td className="py-3 px-3"><span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-[10px] font-bold tracking-wider text-white/50">{p.role}</span></td>
+                                        <td className="py-3 px-3">
+                                            {p.support_level_id
+                                                ? <span className="px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/30 text-[10px] font-bold text-amber-300">{(levels || []).find((l: any) => l.id === p.support_level_id)?.name ?? '—'}</span>
+                                                : <span className="text-white/20 text-xs">—</span>
+                                            }
+                                        </td>
                                         <td className="py-3 px-3 text-center">{p.is_active ? <CheckCircle className="w-4 h-4 text-emerald-400 inline" /> : <XCircle className="w-4 h-4 text-rose-400 inline" />}</td>
                                         <td className="py-3 px-3 text-center">
                                             <button onClick={() => startEdit(p)} className="p-1.5 rounded-lg bg-white/5 text-white/40 hover:text-indigo-300 hover:bg-indigo-500/10 transition-colors"><Pencil className="w-3.5 h-3.5" /></button>

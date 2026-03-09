@@ -210,7 +210,7 @@ export async function createQuote(
     data: { store_id: string; client_id: string; valid_until?: string | null },
     lines: { catalogue_item_id?: string | null; designation: string; quantity: number; unit_price: number; tax_rate?: number }[]
 ) {
-    console.log("PAYLOAD CRÉATION DEVIS :", data);
+    // Suppression du log de debug
     const supabase = await createClient()
 
     // Retrieve a valid profile_id for this store or company

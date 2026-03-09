@@ -25,6 +25,11 @@ export interface TicketWithRelations {
     resume_at: string | null
     created_at: string
     category: 'HL' | 'COMMERCE' | 'SAV' | 'FORMATION' | 'DEV'
+    // SPRINT 32 : Champs SLA
+    sla_start_at: string | null
+    sla_deadline_at: string | null
+    sla_paused_at: string | null
+    sla_elapsed_minutes: number | null
     client: { id: string; company: string; first_name?: string; last_name?: string; email?: string; phone?: string } | null
     store: { id: string; name: string; city: string } | null
     assignee: { id: string; first_name: string; last_name: string } | null
@@ -350,6 +355,7 @@ export async function getTicketById(id: string): Promise<TicketWithRelations | n
         .select(`
             id, title, description, status, priority, escalation_level, created_at, category,
             linked_sd_id, support_level_id,
+            sla_start_at, sla_deadline_at, sla_paused_at, sla_elapsed_minutes,
             support_level:support_levels (id, name, color, rank),
             client:clients (
                 id,

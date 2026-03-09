@@ -3,6 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { evaluateTicketRouting } from './actions/routing'
+import { SLA_HOURS, addHours, addMinutes, diffInMinutes } from './sla'
 
 /**
  * Server Action : Piocher un ticket aléatoire selon le niveau du technicien.
@@ -18,35 +19,37 @@ export async function pickRandomTicket() {
     }
 
     // 1.5 VÉRIFICATION SPRINT 6.1 : Flux tendu (1 ticket max)
+    // HOTFIX 32.1 : Correction de la syntaxe du filtre Supabase "not in"
     const { count: activeTicketsCount, error: countError } = await supabase
         .from('tickets')
         .select('*', { count: 'exact', head: true })
         .eq('assignee_id', user.id)
-        .not('status', 'in', '("resolu","ferme","suspendu")')
+        .not('status', 'in', '(resolu,ferme,suspendu)')
 
     if (countError) {
         return { error: 'Erreur lors de la vérification de vos tickets actifs.' }
     }
 
     if (activeTicketsCount && activeTicketsCount > 0) {
-        return { error: 'Terminez d\'abord votre ticket en cours.' }
+        return { error: 'Vous avez déjà un ticket actif. Terminez-le avant de piocher.' }
     }
 
-    // 3. Appeler la fonction RPC transactionnelle repensée (Sprint 28)
+    // 2. Appeler la fonction RPC transactionnelle (HOTFIX 32.1 : version corrigée)
     const { data: ticketId, error: rpcError } = await supabase.rpc('pick_ticket', {
         p_user_id: user.id
     })
 
     if (rpcError) {
         console.error("Erreur RPC pick_ticket:", rpcError)
-        return { error: 'Erreur lors de l\'assignation du ticket.' }
+        return { error: `Erreur technique lors de la pioche : ${rpcError.message}` }
     }
 
+    // HOTFIX 32.1 : Retourner une vraie propriété 'error' pour que l'UI affiche le toast
     if (!ticketId) {
-        return { success: false, message: 'La file d\'attente est vide pour votre niveau.' }
+        return { success: false, error: 'Aucun ticket disponible pour votre niveau de support.' }
     }
 
-    // 4. Revalider les chemins pour mettre à jour l'UI en temps réel
+    // 3. Revalider les chemins pour mettre à jour l'UI en temps réel
     revalidatePath('/dashboard')
     revalidatePath('/incidents')
 
@@ -133,9 +136,42 @@ export async function addComment(ticketId: string, content: string, isInternal: 
 export async function updateTicketStatus(ticketId: string, newStatus: string) {
     const supabase = await createClient()
 
+    // SPRINT 32 : Fetch du ticket actuel pour la logique SLA
+    const { data: currentTicket } = await supabase
+        .from('tickets')
+        .select('status, sla_paused_at, sla_deadline_at, sla_elapsed_minutes')
+        .eq('id', ticketId)
+        .single()
+
+    const now = new Date()
+    const slaUpdates: Record<string, unknown> = {}
+
+    if (currentTicket) {
+        const wasPaused = currentTicket.sla_paused_at !== null
+
+        if (newStatus === 'attente_client' && !wasPaused) {
+            // Mise en PAUSE du SLA
+            slaUpdates.sla_paused_at = now.toISOString()
+        } else if (wasPaused && newStatus !== 'attente_client') {
+            // REPRISE du SLA : on rattrape le temps d'attente client
+            const pausedAt = new Date(currentTicket.sla_paused_at as string)
+            const deltaMinutes = diffInMinutes(pausedAt, now)
+            const previousElapsed = currentTicket.sla_elapsed_minutes ?? 0
+            const previousDeadline = currentTicket.sla_deadline_at
+                ? new Date(currentTicket.sla_deadline_at)
+                : null
+
+            slaUpdates.sla_paused_at = null
+            slaUpdates.sla_elapsed_minutes = previousElapsed + deltaMinutes
+            if (previousDeadline) {
+                slaUpdates.sla_deadline_at = addMinutes(previousDeadline, deltaMinutes).toISOString()
+            }
+        }
+    }
+
     const { error } = await supabase
         .from('tickets')
-        .update({ status: newStatus })
+        .update({ status: newStatus, ...slaUpdates })
         .eq('id', ticketId)
 
     if (error) {
@@ -379,6 +415,10 @@ export async function createTicket(formData: FormData, assignToMe: boolean = fal
         .limit(1)
         .single()
 
+    const nowInsert = new Date()
+    const effectivePriority = priority || 'normale'
+    const slaHours = SLA_HOURS[effectivePriority] ?? SLA_HOURS['normale']
+
     const { data: ticket, error: ticketError } = await supabase
         .from('tickets')
         .insert({
@@ -393,6 +433,10 @@ export async function createTicket(formData: FormData, assignToMe: boolean = fal
             escalation_level: 1, // Compatibilité
             support_level_id: firstLevel?.id || null, // Dynamique
             category,
+            // SPRINT 32 : Initialisation du SLA selon la priorité
+            sla_start_at: nowInsert.toISOString(),
+            sla_deadline_at: addHours(nowInsert, slaHours).toISOString(),
+            sla_elapsed_minutes: 0,
             ...(category !== 'DEV' ? { client_id: clientId, store_id: storeId } : {}),
             ...(equipmentId ? { equipment_id: equipmentId } : {}),
         })

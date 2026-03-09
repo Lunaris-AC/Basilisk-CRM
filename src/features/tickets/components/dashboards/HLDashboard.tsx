@@ -4,6 +4,7 @@ import { useMyTickets, useMyStatsByDate, useGlobalStats } from '@/features/ticke
 import { TicketTable } from '@/features/tickets/components/TicketTable'
 import { Plus, Loader2, ChevronDown, ChevronUp, Pause, AlertTriangle, Clock, CalendarDays, Inbox, Activity, Shield, Zap } from 'lucide-react'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { pickRandomTicket } from '@/features/tickets/actions'
 import { TicketFilters } from '@/components/TicketFilters'
 import { TicketFilters as Filters } from '@/features/tickets/api/getTickets'
@@ -12,6 +13,7 @@ import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { toast } from 'sonner'
 
 // Barre de répartition inline
 function DistributionBar({ label, value, total, color }: { label: string; value: number; total: number; color: string }) {
@@ -44,6 +46,7 @@ export function HLDashboard() {
     const { data: globalStats } = useGlobalStats()
     const [isPicking, setIsPicking] = useState(false)
     const [showSuspended, setShowSuspended] = useState(false)
+    const router = useRouter()
     const queryClient = useQueryClient()
 
     // DatePicker pour feuille de temps personnelle
@@ -75,12 +78,22 @@ export function HLDashboard() {
                     onClick={async () => {
                         setIsPicking(true)
                         const res = await pickRandomTicket()
-                        if (res?.success) {
+                        if (res?.success && res.ticketId) {
+                            toast.success('Ticket pioché avec succès !', {
+                                description: `Vous pouvez maintenant travailler sur ce ticket.`,
+                                duration: 4000,
+                            })
                             queryClient.invalidateQueries({ queryKey: ['myTickets'] })
                             queryClient.invalidateQueries({ queryKey: ['myStatsByDate'] })
                             queryClient.invalidateQueries({ queryKey: ['globalStats'] })
                             queryClient.invalidateQueries({ queryKey: ['unassignedTickets'] })
-                        } else if (res?.error) { alert(res.error) }
+                            router.refresh()
+                        } else if (res?.error) {
+                            toast.error('Pioche impossible', {
+                                description: res.error,
+                                duration: 6000,
+                            })
+                        }
                         setIsPicking(false)
                     }}
                     disabled={isPicking || hasActiveTickets}

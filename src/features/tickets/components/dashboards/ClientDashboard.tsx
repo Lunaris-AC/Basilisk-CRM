@@ -38,7 +38,7 @@ export function ClientDashboard() {
             }
 
             // Tickets du magasin (filtrage direct via le store_id du profil)
-            let ticketQuery = supabase
+            const ticketQuery = supabase
                 .from('tickets')
                 .select('id, title, status, priority, category, created_at, updated_at')
                 .eq('store_id', profile.store_id)

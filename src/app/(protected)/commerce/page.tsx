@@ -27,7 +27,7 @@ export default async function CommercePage() {
         getCommercialCatalogue()
     ])
 
-    console.log("CATALOGUE DATA:", catalogue)
+    // const catalogue = ... (conservé, log retiré)
 
     return (
         <div className="flex-1 overflow-y-auto custom-scrollbar bg-gradient-to-br from-slate-900 to-black relative">

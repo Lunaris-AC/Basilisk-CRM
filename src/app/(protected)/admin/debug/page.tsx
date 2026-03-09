@@ -19,11 +19,8 @@ export default async function AdminDebugPage() {
     }
 
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-    console.log("God Mode Access Check - User ID:", user.id)
-    console.log("God Mode Access Check - Fetched Profile:", profile)
 
     if (profile?.role !== 'N4' && profile?.role !== 'ADMIN') {
-        console.log("God Mode Access Denied. Redirecting to dashboard.")
         // Renvoi brutal vers le dashboard si c'est pas un admin
         redirect('/dashboard')
     }
