@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Basilisk ERP — Hors ligne</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0a0a1a; color: #e2e8f0; font-family: system-ui, -apple-system, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+    .container { text-align: center; padding: 2rem; }
+    h1 { font-size: 2rem; margin-bottom: 1rem; }
+    p { color: #94a3b8; margin-bottom: 2rem; }
+    button { padding: 0.75rem 2rem; border-radius: 0.75rem; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #e2e8f0; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    button:hover { background: rgba(255,255,255,0.1); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Vous êtes hors ligne</h1>
+    <p>Basilisk ERP nécessite une connexion internet. Vérifiez votre réseau et réessayez.</p>
+    <button onclick="window.location.reload()">Réessayer</button>
+  </div>
+</body>
+</html>

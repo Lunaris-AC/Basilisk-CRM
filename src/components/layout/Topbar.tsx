@@ -4,7 +4,9 @@ import { LogOut, User, Menu } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { GlobalSearch } from '@/components/GlobalSearch'
 import { WorldClock } from '@/components/layout/WorldClock'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { NotificationBell } from '@/components/layout/NotificationBell'
+import { NetworkStatusIndicator } from '@/components/layout/NetworkStatusIndicator'
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { createClient } from '@/utils/supabase/client'
 
@@ -56,7 +58,8 @@ export function Topbar() {
                         </button>
                     </SheetTrigger>
                     <SheetContent side="left" className="p-0 border-none w-64 bg-transparent outline-none">
-                        <Sidebar />
+                        <SheetTitle className="sr-only">Menu de navigation</SheetTitle>
+                        <Sidebar mobile />
                     </SheetContent>
                 </Sheet>
 
@@ -70,6 +73,8 @@ export function Topbar() {
             </div>
 
             <div className="flex items-center gap-6">
+                <NetworkStatusIndicator />
+                <NotificationBell />
 
                 {profile ? (
                     <div className="flex items-center gap-3">

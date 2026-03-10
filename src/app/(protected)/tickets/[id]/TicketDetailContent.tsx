@@ -3,8 +3,8 @@
 import { useTicket, useTicketComments, useTicketAuditLogs, useSupportLevels } from '@/features/tickets/api/useTickets'
 import { useTicketAttachments } from '@/features/tickets/api/useTicketAttachments'
 import { useQueryClient, useQuery } from '@tanstack/react-query'
-import { addComment, updateTicketStatus, escalateTicket, uploadAttachments, linkContactToTicket, linkTicketToSD, resolveSD } from '@/features/tickets/actions'
-import { useState, useTransition } from 'react'
+import { addComment, updateTicketStatus, escalateTicket, uploadAttachments, linkContactToTicket, linkTicketToSD, resolveSD, assignTicketManually } from '@/features/tickets/actions'
+import { useState, useTransition, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Send, CheckCircle2, AlertTriangle, ArrowUpRight, ArrowDownRight, Loader2, Lock, Paperclip, X, File, UploadCloud, UserCircle, Phone, Pencil, Link2, Code2, ExternalLink, Unlink, History, MessageSquare, Zap, UserCheck, ArrowRightLeft, Shield } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
@@ -18,6 +18,8 @@ import { SAVDetailsCard, SAVDetails } from '@/features/tickets/components/detail
 import { FormateurDetailsCard, FormateurDetails } from '@/features/tickets/components/details/FormateurDetailsCard'
 import { DevDetailsCard, DevDetails } from '@/features/tickets/components/details/DevDetailsCard'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { toast } from 'sonner'
+import { useOfflineStore } from '@/hooks/useOfflineStore'
 
 import {
     Dialog,
@@ -83,6 +85,9 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
     const [resolveSDMessage, setResolveSDMessage] = useState('')
     const [resolveSDCloseLinked, setResolveSDCloseLinked] = useState(true)
 
+    // Ref pour le champ commentaire (raccourci "C")
+    const commentRef = useRef<HTMLTextAreaElement>(null)
+
     // Audit Logs (Sprint 22)
     const { data: auditLogs, isLoading: isLoadingAuditLogs } = useTicketAuditLogs(ticketId)
 
@@ -142,6 +147,50 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
         staleTime: 30_000,
     })
 
+    // ═══ SPRINT 40 : RACCOURCIS CLAVIER POWER USER ═══
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => {
+            // Ne rien faire si l'utilisateur tape dans un input/textarea/select/contenteditable
+            const tag = (e.target as HTMLElement)?.tagName?.toLowerCase()
+            if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target as HTMLElement)?.isContentEditable) return
+            // Ne rien faire si une modale est ouverte
+            if (suspendModalOpen || closeModalOpen || escalateUpModalOpen || escalateDownModalOpen || reopenModalOpen || changeContactModalOpen || sdLinkModalOpen || resolveSDModalOpen) return
+
+            if (e.key === 'a' || e.key === 'A') {
+                // A : Assigner à moi-même
+                e.preventDefault()
+                if (ticket && !ticket.assignee) {
+                    startTransition(async () => {
+                        const res = await assignTicketManually(ticketId)
+                        if (res.error) {
+                            alert(res.error)
+                        } else {
+                            queryClient.invalidateQueries({ queryKey: ['ticket', ticketId] })
+                        }
+                    })
+                }
+            } else if (e.key === 'r' || e.key === 'R') {
+                // R : Passer en Résolu
+                e.preventDefault()
+                if (ticket && ticket.status !== 'resolu' && ticket.status !== 'ferme') {
+                    if (ticket.category === 'DEV') {
+                        setResolveSDModalOpen(true)
+                    } else {
+                        handleChangeStatus('resolu')
+                    }
+                }
+            } else if (e.key === 'c' || e.key === 'C') {
+                // C : Focus sur le champ commentaire
+                e.preventDefault()
+                commentRef.current?.focus()
+                commentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            }
+        }
+
+        document.addEventListener('keydown', handler)
+        return () => document.removeEventListener('keydown', handler)
+    }, [ticket, ticketId, suspendModalOpen, closeModalOpen, escalateUpModalOpen, escalateDownModalOpen, reopenModalOpen, changeContactModalOpen, sdLinkModalOpen, resolveSDModalOpen, queryClient, startTransition])
+
     // Helpers pour reset les champs quand on ferme/ouvre une modale
     const resetModalForms = () => {
         setActionJustification('')
@@ -186,6 +235,24 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
         e.preventDefault()
         if (!commentContent.trim()) return
 
+        // MODE CAVE : si offline, on queue et on fait un optimistic update
+        if (!navigator.onLine) {
+            const { createClient } = await import('@/utils/supabase/client')
+            const supabase = createClient()
+            const { data: { user } } = await supabase.auth.getUser()
+
+            useOfflineStore.getState().addToQueue({
+                type: 'ADD_COMMENT',
+                payload: { ticketId, content: commentContent, isInternal, authorId: user?.id ?? '' },
+            })
+
+            // Optimistic UI : on vide le champ et on notifie
+            setCommentContent('')
+            setIsInternal(false)
+            toast.warning('📡 Réseau perdu. Commentaire sauvegardé en local et synchronisé au retour du réseau.', { duration: 5000 })
+            return
+        }
+
         startTransition(async () => {
             const res = await addComment(ticketId, commentContent, isInternal)
             if (res.error) {
@@ -200,6 +267,21 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
     }
 
     const handleChangeStatus = async (newStatus: string) => {
+        // MODE CAVE : si offline, on queue et on fait un optimistic update
+        if (!navigator.onLine) {
+            useOfflineStore.getState().addToQueue({
+                type: 'UPDATE_TICKET',
+                payload: { ticketId, newStatus },
+            })
+
+            // Optimistic UI : invalider le cache pour forcer le re-render
+            queryClient.setQueryData(['ticket', ticketId], (old: any) =>
+                old ? { ...old, status: newStatus } : old
+            )
+            toast.warning('📡 Réseau perdu. Changement de statut sauvegardé en local et synchronisé au retour du réseau.', { duration: 5000 })
+            return
+        }
+
         startTransition(async () => {
             await updateTicketStatus(ticketId, newStatus)
             queryClient.invalidateQueries({ queryKey: ['ticket', ticketId] })
@@ -651,9 +733,10 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                             {/* Formulaire de réponse */}
                             <form onSubmit={handleSendComment} className="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl flex flex-col gap-3">
                                 <textarea
+                                    ref={commentRef}
                                     value={commentContent}
                                     onChange={(e) => setCommentContent(e.target.value)}
-                                    placeholder="Écrivez votre réponse..."
+                                    placeholder="Écrivez votre réponse... (appuyez C pour focus)"
                                     className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-foreground placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y min-h-[120px]"
                                     disabled={isPending}
                                 />

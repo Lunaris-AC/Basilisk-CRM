@@ -1,13 +1,21 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
-import { getGlobalMetrics, getAgentPerformance, getClientDistribution, getTicketsTrend, GlobalMetrics, AgentPerformance, ClientDistribution, TrendPoint } from '@/features/admin/analytics'
+import {
+    getGlobalMetrics, getAgentPerformance, getClientDistribution, getTicketsTrend,
+    getBacklogAging, getTopOffendersStores, getTopOffendersEquipments, getAgentSparklines, getCategoryStatusMatrix,
+    GlobalMetrics, AgentPerformance, ClientDistribution, TrendPoint,
+    BacklogAgingPoint, TopOffenderItem, CategoryStatusItem,
+} from '@/features/admin/analytics'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, Legend } from 'recharts'
 import { Clock, ShieldCheck, Activity, CheckCircle, Loader2, Eye, Crown, Flame } from 'lucide-react'
 import { AgentAnalyticsDrawer } from '@/features/admin/components/AgentAnalyticsDrawer'
+import { BacklogAgingChart } from '@/features/admin/components/BacklogAgingChart'
+import { TopOffendersChart } from '@/features/admin/components/TopOffendersChart'
+import { TicketsByPriorityAndStatus } from '@/features/admin/components/TicketsByPriorityAndStatus'
 
 const NEON_COLORS = ['#6366f1', '#06b6d4', '#f59e0b', '#a855f7', '#10b981']
 
@@ -27,10 +35,26 @@ export default function AdminAnalyticsPage() {
         })()
     }, [router])
 
+    // ═══ Existing queries ═══
     const { data: metrics, isLoading: l1 } = useQuery<GlobalMetrics>({ queryKey: ['admin-metrics'], queryFn: getGlobalMetrics, enabled: authorized === true, staleTime: 60_000 })
     const { data: agents, isLoading: l2 } = useQuery<AgentPerformance[]>({ queryKey: ['admin-agents'], queryFn: getAgentPerformance, enabled: authorized === true, staleTime: 60_000 })
     const { data: clients, isLoading: l3 } = useQuery<ClientDistribution[]>({ queryKey: ['admin-clients'], queryFn: getClientDistribution, enabled: authorized === true, staleTime: 60_000 })
     const { data: trend, isLoading: l4 } = useQuery<TrendPoint[]>({ queryKey: ['admin-trend'], queryFn: getTicketsTrend, enabled: authorized === true, staleTime: 60_000 })
+
+    // ═══ Sprint 39 queries ═══
+    const { data: backlogAging, isLoading: l5 } = useQuery<BacklogAgingPoint[]>({ queryKey: ['admin-backlog-aging'], queryFn: getBacklogAging, enabled: authorized === true, staleTime: 60_000 })
+    const { data: topStores, isLoading: l6 } = useQuery<TopOffenderItem[]>({ queryKey: ['admin-top-stores'], queryFn: getTopOffendersStores, enabled: authorized === true, staleTime: 60_000 })
+    const { data: topEquipments, isLoading: l7 } = useQuery<TopOffenderItem[]>({ queryKey: ['admin-top-equipments'], queryFn: getTopOffendersEquipments, enabled: authorized === true, staleTime: 60_000 })
+    const { data: catStatusMatrix, isLoading: l8 } = useQuery<CategoryStatusItem[]>({ queryKey: ['admin-cat-status'], queryFn: getCategoryStatusMatrix, enabled: authorized === true, staleTime: 60_000 })
+
+    // Sparklines — fetched once agents are loaded
+    const agentIds = useMemo(() => (agents || []).map(a => a.id), [agents])
+    const { data: sparklines } = useQuery<Record<string, number[]>>({
+        queryKey: ['admin-sparklines', agentIds],
+        queryFn: () => getAgentSparklines(agentIds),
+        enabled: authorized === true && agentIds.length > 0,
+        staleTime: 60_000,
+    })
 
     // Agent drawer
     const [selectedAgent, setSelectedAgent] = useState<AgentPerformance | null>(null)
@@ -41,8 +65,6 @@ export default function AdminAnalyticsPage() {
             <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
         </div>
     )
-
-    const isLoading = l1 || l2 || l3 || l4
 
     return (
         <div className="space-y-8 pb-10 max-w-[1600px] mx-auto">
@@ -63,7 +85,7 @@ export default function AdminAnalyticsPage() {
                 <KpiHero label="Clôturés (30j)" value={metrics?.closedLast30d ?? '—'} icon={CheckCircle} color="purple" subtitle="tickets fermés" />
             </div>
 
-            {/* ═══ LIGNE 2 : GRAPHIQUES ═══ */}
+            {/* ═══ LIGNE 2 : GRAPHIQUES EXISTANTS ═══ */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {/* LineChart — 2/3 */}
                 <div className="lg:col-span-2 p-6 rounded-2xl bg-white/[0.03] border border-white/[0.07] backdrop-blur-md">
@@ -112,7 +134,17 @@ export default function AdminAnalyticsPage() {
                 </div>
             </div>
 
-            {/* ═══ LIGNE 3 : LEADERBOARD AGENTS ═══ */}
+            {/* ═══ LIGNE 3 : BACKLOG AGING + TREEMAP ═══ */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="lg:col-span-2">
+                    <BacklogAgingChart data={backlogAging} isLoading={l5} />
+                </div>
+                <div>
+                    <TicketsByPriorityAndStatus data={catStatusMatrix} isLoading={l8} />
+                </div>
+            </div>
+
+            {/* ═══ LIGNE 4 : LEADERBOARD AGENTS (avec Sparklines) ═══ */}
             <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/[0.07] backdrop-blur-md">
                 <h3 className="text-xs font-bold tracking-widest text-muted-foreground uppercase mb-5 flex items-center gap-2">
                     <Crown className="w-3.5 h-3.5 text-amber-400" />
@@ -128,6 +160,7 @@ export default function AdminAnalyticsPage() {
                                     <th className="pb-3 px-3">Rôle</th>
                                     <th className="pb-3 px-3 text-center">En Cours</th>
                                     <th className="pb-3 px-3 text-center">Résolus</th>
+                                    <th className="pb-3 px-3 text-center">Tendance (7j)</th>
                                     <th className="pb-3 px-3 text-center">Temps Moy.</th>
                                     <th className="pb-3 px-3 text-center">SLA</th>
                                 </tr>
@@ -147,6 +180,9 @@ export default function AdminAnalyticsPage() {
                                         </td>
                                         <td className="py-3 px-3 text-center text-foreground/70">{a.ticketsInProgress}</td>
                                         <td className="py-3 px-3 text-center font-bold text-foreground">{a.resolvedThisMonth}</td>
+                                        <td className="py-3 px-3">
+                                            <AgentSparkline data={sparklines?.[a.id]} />
+                                        </td>
                                         <td className="py-3 px-3 text-center text-muted-foreground">{a.avgResolutionHours != null ? `${a.avgResolutionHours}h` : '—'}</td>
                                         <td className="py-3 px-3 text-center">
                                             <span className={`px-2.5 py-1 rounded-lg text-xs font-black border ${a.slaRate >= 90
@@ -161,7 +197,7 @@ export default function AdminAnalyticsPage() {
                                     </tr>
                                 ))}
                                 {(!agents || agents.length === 0) && (
-                                    <tr><td colSpan={7} className="py-8 text-center text-foreground/20">Aucune donnée disponible.</td></tr>
+                                    <tr><td colSpan={8} className="py-8 text-center text-foreground/20">Aucune donnée disponible.</td></tr>
                                 )}
                             </tbody>
                         </table>
@@ -169,7 +205,15 @@ export default function AdminAnalyticsPage() {
                 )}
             </div>
 
-            {/* ═══ LIGNE 4 : TOP CLIENTS ═══ */}
+            {/* ═══ LIGNE 5 : TOP OFFENDERS ═══ */}
+            <TopOffendersChart
+                storeData={topStores}
+                equipmentData={topEquipments}
+                isLoadingStores={l6}
+                isLoadingEquipments={l7}
+            />
+
+            {/* ═══ LIGNE 6 : TOP CLIENTS (existant) ═══ */}
             <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/[0.07] backdrop-blur-md">
                 <h3 className="text-xs font-bold tracking-widest text-muted-foreground uppercase mb-5 flex items-center gap-2">
                     <Flame className="w-3.5 h-3.5 text-orange-400" />
@@ -191,6 +235,7 @@ export default function AdminAnalyticsPage() {
                     </ResponsiveContainer>
                 )}
             </div>
+
             {/* Agent Drawer */}
             <AgentAnalyticsDrawer agent={selectedAgent} open={drawerOpen} onOpenChange={setDrawerOpen} />
         </div>
@@ -198,6 +243,30 @@ export default function AdminAnalyticsPage() {
 }
 
 // ═══ Sub-Components ═══
+
+function AgentSparkline({ data }: { data?: number[] }) {
+    if (!data) return <div className="w-20 h-6" />
+    const chartData = data.map((v, i) => ({ i, v }))
+    const hasData = data.some(v => v > 0)
+
+    return (
+        <div className="flex justify-center">
+            <div className="w-20 h-7">
+                <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartData} margin={{ top: 2, right: 2, bottom: 2, left: 2 }}>
+                        <Line
+                            type="monotone"
+                            dataKey="v"
+                            stroke={hasData ? '#6366f1' : 'rgba(255,255,255,0.1)'}
+                            strokeWidth={2}
+                            dot={false}
+                        />
+                    </LineChart>
+                </ResponsiveContainer>
+            </div>
+        </div>
+    )
+}
 
 function KpiHero({ label, value, icon: Icon, color, subtitle }: { label: string; value: string | number; icon: any; color: string; subtitle: string }) {
     const colorMap: Record<string, { border: string; icon: string; glow: string }> = {

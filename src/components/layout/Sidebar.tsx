@@ -11,7 +11,7 @@ const navigation = [
     { name: 'Dashboard Personnel', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Incidents (File)', href: '/incidents', icon: Inbox, hideForClient: true },
     { name: 'Portail SD', href: '/sd', icon: Code2, hideForClient: true },
-    { name: 'Parc Matériel', href: '/cmdb', icon: HardDrive, hideForClient: true, hideForStandard: true },
+    { name: 'Parc Matériel', href: '/cmdb', icon: HardDrive, allowedRoles: ['ADMIN', 'SAV1', 'SAV2', 'COM'] },
     { name: 'Documentation', href: '/documentation', icon: FileText, hideForClient: true },
     { name: 'Commerce & Ventes', href: '/commerce', icon: FileText, onlyFor: ['ADMIN'], lockedForOthers: true },
     { name: 'Patch Notes', href: '/patch-notes', icon: FileCode, hideForClient: true },
@@ -26,7 +26,7 @@ const adminNav = [
     { name: 'Analytics (God\'s Eye)', href: '/admin/analytics', icon: BarChart3 },
 ]
 
-export function Sidebar() {
+export function Sidebar({ mobile = false }: { mobile?: boolean }) {
     const pathname = usePathname()
     const [createModalOpen, setCreateModalOpen] = useState(false)
     const [adminOpen, setAdminOpen] = useState(true)
@@ -44,7 +44,7 @@ export function Sidebar() {
     })
 
     return (
-        <div className="hidden md:flex flex-col w-64 h-full bg-black/40 backdrop-blur-xl border-r border-white/10 text-foreground shrink-0 z-50">
+        <div className={`${mobile ? 'flex' : 'hidden md:flex'} flex-col w-64 h-full bg-black/40 backdrop-blur-xl border-r border-white/10 text-foreground shrink-0 z-50`}>
             <div className="flex items-center justify-center h-20 border-b border-white/5">
                 <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary shadow-lg shadow-primary/20 flex items-center justify-center">
@@ -69,9 +69,10 @@ export function Sidebar() {
                 )}
 
                 {navigation.filter(item => {
-                    if (item.hideForClient && profile?.role === 'CLIENT') return false
-                    if (item.hideForStandard && profile?.role === 'STANDARD') return false
-                    if (item.onlyFor && (!profile?.role || !item.onlyFor.includes(profile.role as any))) return false
+                    if ((item as any).hideForClient && profile?.role === 'CLIENT') return false
+                    if ((item as any).hideForStandard && profile?.role === 'STANDARD') return false
+                    if ((item as any).onlyFor && (!profile?.role || !(item as any).onlyFor.includes(profile.role as any))) return false
+                    if ((item as any).allowedRoles && (!profile?.role || !(item as any).allowedRoles.includes(profile.role))) return false
                     return true
                 }).map((item) => {
                     const isActive = pathname === item.href

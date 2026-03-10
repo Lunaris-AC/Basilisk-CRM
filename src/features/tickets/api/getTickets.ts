@@ -11,6 +11,10 @@ export interface TicketFilters {
     support_level_id?: string | 'all' // SPRINT 26.1
     assignee_id?: string | 'all'
     category?: string | 'all'
+    // SPRINT 40 : Filtres multi-sélection (facettes)
+    statuses?: string[]
+    priorities?: string[]
+    support_level_ids?: string[]
 }
 
 export interface TicketWithRelations {
@@ -89,14 +93,25 @@ export const getMyTickets = async (userId: string, filters?: TicketFilters): Pro
         }
     }
 
-    if (filters?.status && filters.status !== 'all') {
+    // SPRINT 40 : Filtres multi-sélection (facettes)
+    if (filters?.statuses && filters.statuses.length > 0) {
+        query = query.in('status', filters.statuses)
+    } else if (filters?.status && filters.status !== 'all') {
         query = query.eq('status', filters.status)
     } else {
         query = query.neq('status', 'ferme')
     }
 
-    if (filters?.priority && filters.priority !== 'all') {
+    if (filters?.priorities && filters.priorities.length > 0) {
+        query = query.in('priority', filters.priorities)
+    } else if (filters?.priority && filters.priority !== 'all') {
         query = query.eq('priority', filters.priority)
+    }
+
+    if (filters?.support_level_ids && filters.support_level_ids.length > 0) {
+        query = query.in('support_level_id', filters.support_level_ids)
+    } else if (filters?.support_level_id && filters.support_level_id !== 'all') {
+        query = query.eq('support_level_id', filters.support_level_id)
     }
 
     if (filters?.search) {
@@ -129,14 +144,25 @@ export const getUnassignedTickets = async (filters?: TicketFilters): Promise<Tic
         .is('assignee_id', null)
         .neq('category', 'DEV') // Exclure les SD de la file d'attente
 
-    if (filters?.status && filters.status !== 'all') {
+    // SPRINT 40 : Filtres multi-sélection (facettes)
+    if (filters?.statuses && filters.statuses.length > 0) {
+        query = query.in('status', filters.statuses)
+    } else if (filters?.status && filters.status !== 'all') {
         query = query.eq('status', filters.status)
     } else {
         query = query.neq('status', 'ferme')
     }
 
-    if (filters?.priority && filters.priority !== 'all') {
+    if (filters?.priorities && filters.priorities.length > 0) {
+        query = query.in('priority', filters.priorities)
+    } else if (filters?.priority && filters.priority !== 'all') {
         query = query.eq('priority', filters.priority)
+    }
+
+    if (filters?.support_level_ids && filters.support_level_ids.length > 0) {
+        query = query.in('support_level_id', filters.support_level_ids)
+    } else if (filters?.support_level_id && filters.support_level_id !== 'all') {
+        query = query.eq('support_level_id', filters.support_level_id)
     }
 
     if (filters?.search) {
@@ -145,10 +171,6 @@ export const getUnassignedTickets = async (filters?: TicketFilters): Promise<Tic
 
     if (filters?.escalation_level && filters.escalation_level !== 'all') {
         query = query.eq('escalation_level', parseInt(filters.escalation_level, 10))
-    }
-
-    if (filters?.support_level_id && filters.support_level_id !== 'all') {
-        query = query.eq('support_level_id', filters.support_level_id)
     }
 
     if (filters?.category && filters.category !== 'all') {

@@ -32,6 +32,27 @@ export interface TrendPoint {
     closed: number
 }
 
+// Sprint 39 types
+export interface BacklogAgingPoint {
+    bucket: string
+    Basse: number
+    Normale: number
+    Haute: number
+    Critique: number
+}
+
+export interface TopOffenderItem {
+    name: string
+    count: number
+}
+
+export interface CategoryStatusItem {
+    name: string       // "HL · nouveau"
+    category: string
+    status: string
+    size: number       // ticket count
+}
+
 // ======================== HELPERS ========================
 
 function diffHours(start: string, end: string): number {
@@ -235,6 +256,186 @@ export async function getTicketsTrend(): Promise<TrendPoint[]> {
     }
 
     return points
+}
+
+// ======================== SPRINT 39 : ADVANCED VISUALIZATIONS ========================
+
+/**
+ * 5. Backlog Aging — tickets ouverts groupés par tranche d'ancienneté × priorité
+ */
+export async function getBacklogAging(): Promise<BacklogAgingPoint[]> {
+    const supabase = createClient()
+
+    const { data: tickets } = await supabase
+        .from('tickets')
+        .select('created_at, priority')
+        .not('status', 'in', '("resolu","ferme")')
+
+    const buckets: Record<string, BacklogAgingPoint> = {
+        '0-24h': { bucket: '0-24h', Basse: 0, Normale: 0, Haute: 0, Critique: 0 },
+        '1-3j': { bucket: '1-3j', Basse: 0, Normale: 0, Haute: 0, Critique: 0 },
+        '3-7j': { bucket: '3-7j', Basse: 0, Normale: 0, Haute: 0, Critique: 0 },
+        '+7j': { bucket: '+7j', Basse: 0, Normale: 0, Haute: 0, Critique: 0 },
+    }
+
+    const now = Date.now()
+    const priorityMap: Record<string, keyof BacklogAgingPoint> = {
+        basse: 'Basse', normale: 'Normale', haute: 'Haute', critique: 'Critique',
+    }
+
+    for (const t of tickets || []) {
+        const ageDays = (now - new Date(t.created_at).getTime()) / (1000 * 60 * 60 * 24)
+        const key = ageDays < 1 ? '0-24h' : ageDays < 3 ? '1-3j' : ageDays < 7 ? '3-7j' : '+7j'
+        const prio = priorityMap[t.priority] || 'Normale'
+            ; (buckets[key] as any)[prio]++
+    }
+
+    return Object.values(buckets)
+}
+
+/**
+ * 6. Top Offenders — Magasins (Top 5 ce mois-ci)
+ */
+export async function getTopOffendersStores(): Promise<TopOffenderItem[]> {
+    const supabase = createClient()
+    const monthStart = new Date()
+    monthStart.setDate(1)
+    monthStart.setHours(0, 0, 0, 0)
+
+    const { data: tickets } = await supabase
+        .from('tickets')
+        .select('store_id, stores (name)')
+        .not('store_id', 'is', null)
+        .gte('created_at', monthStart.toISOString())
+
+    if (!tickets) return []
+
+    const map: Record<string, { name: string; count: number }> = {}
+    for (const t of tickets as any[]) {
+        const sid = t.store_id
+        const name = t.stores?.name || 'Inconnu'
+        if (!map[sid]) map[sid] = { name, count: 0 }
+        map[sid].count++
+    }
+
+    return Object.values(map)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5)
+        .map(s => ({ name: s.name, count: s.count }))
+}
+
+/**
+ * 7. Top Offenders — Équipements (Top 5 ce mois-ci)
+ */
+export async function getTopOffendersEquipments(): Promise<TopOffenderItem[]> {
+    const supabase = createClient()
+    const monthStart = new Date()
+    monthStart.setDate(1)
+    monthStart.setHours(0, 0, 0, 0)
+
+    const { data: tickets } = await supabase
+        .from('tickets')
+        .select('equipment_id, equipments (catalogue_id, equipment_catalogue (brand, model_name))')
+        .not('equipment_id', 'is', null)
+        .gte('created_at', monthStart.toISOString())
+
+    if (!tickets) return []
+
+    const map: Record<string, { name: string; count: number }> = {}
+    for (const t of tickets as any[]) {
+        const eid = t.equipment_id
+        const cat = t.equipments?.equipment_catalogue
+        const name = cat ? `${cat.brand} ${cat.model_name}` : 'Inconnu'
+        if (!map[eid]) map[eid] = { name, count: 0 }
+        map[eid].count++
+    }
+
+    return Object.values(map)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5)
+        .map(e => ({ name: e.name, count: e.count }))
+}
+
+/**
+ * 8. Agent Sparklines — nb tickets résolus/jour sur les 7 derniers jours pour chaque agent
+ */
+export async function getAgentSparklines(agentIds: string[]): Promise<Record<string, number[]>> {
+    const supabase = createClient()
+    const now = new Date()
+    const result: Record<string, number[]> = {}
+
+    // Fetch all closed tickets from last 7 days assigned to any of the agents
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+
+    const { data: tickets } = await supabase
+        .from('tickets')
+        .select('assignee_id, updated_at')
+        .eq('status', 'ferme')
+        .gte('updated_at', sevenDaysAgo.toISOString())
+        .in('assignee_id', agentIds)
+
+    // Build day boundaries
+    const days: { start: Date; end: Date }[] = []
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date(now)
+        d.setDate(d.getDate() - i)
+        const start = new Date(d.getFullYear(), d.getMonth(), d.getDate())
+        const end = new Date(start.getTime() + 24 * 60 * 60 * 1000 - 1)
+        days.push({ start, end })
+    }
+
+    // Initialize result
+    for (const aid of agentIds) {
+        result[aid] = new Array(7).fill(0)
+    }
+
+    // Count tickets per agent per day
+    for (const t of tickets || []) {
+        const closedAt = new Date(t.updated_at).getTime()
+        for (let d = 0; d < days.length; d++) {
+            if (closedAt >= days[d].start.getTime() && closedAt <= days[d].end.getTime()) {
+                if (result[t.assignee_id]) {
+                    result[t.assignee_id][d]++
+                }
+                break
+            }
+        }
+    }
+
+    return result
+}
+
+/**
+ * 9. Matrice Catégorie × Statut pour le Treemap
+ */
+export async function getCategoryStatusMatrix(): Promise<CategoryStatusItem[]> {
+    const supabase = createClient()
+
+    const categories = ['HL', 'COMMERCE', 'SAV', 'FORMATION', 'DEV'] as const
+    const statuses = ['nouveau', 'assigne', 'en_cours', 'attente_client', 'resolu', 'ferme'] as const
+
+    const items: CategoryStatusItem[] = []
+
+    for (const cat of categories) {
+        for (const st of statuses) {
+            const { count } = await supabase
+                .from('tickets')
+                .select('*', { count: 'exact', head: true })
+                .eq('category', cat)
+                .eq('status', st)
+
+            if ((count || 0) > 0) {
+                items.push({
+                    name: `${cat} · ${st}`,
+                    category: cat,
+                    status: st,
+                    size: count || 0,
+                })
+            }
+        }
+    }
+
+    return items
 }
 
 // ======================== SPRINT 20 : AGENT DRILL-DOWN ========================

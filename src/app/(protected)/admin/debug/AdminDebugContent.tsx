@@ -37,11 +37,11 @@ export function AdminDebugContent({ users }: { users: UserProfile[] }) {
     const queryClient = useQueryClient()
 
     return (
-        <div className="space-y-8 pb-10">
+        <div id="god-mode-content" className="space-y-8 pb-10 bg-background">
             {/* EN-TÊTE DANGER */}
-            <div className="p-8 rounded-3xl bg-rose-500/10 border-2 border-rose-500/50 backdrop-blur-xl shadow-[0_0_50px_rgba(244,63,94,0.15)] relative overflow-hidden">
-                <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-rose-500 to-transparent opacity-50" />
-                <div className="flex items-start gap-6 relative z-10">
+            <div className="p-8 rounded-3xl bg-rose-500/10 border-2 border-rose-500/50 backdrop-blur-xl shadow-[0_0_50px_rgba(244,63,94,0.15)] relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-rose-500 to-transparent opacity-50 pointer-events-none" />
+                <div className="flex items-start gap-6 relative z-10 flex-1">
                     <div className="w-16 h-16 rounded-2xl bg-rose-500/20 flex flex-shrink-0 items-center justify-center border border-rose-500/50 shadow-inner">
                         <ShieldAlert className="w-8 h-8 text-rose-400" />
                     </div>
