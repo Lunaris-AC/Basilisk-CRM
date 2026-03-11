@@ -46,6 +46,7 @@ export function NotificationBell() {
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
                 <button
+                    id="notification-bell"
                     className="relative p-2 text-muted-foreground hover:text-foreground hover:bg-white/10 rounded-lg transition-all"
                     title="Notifications"
                 >

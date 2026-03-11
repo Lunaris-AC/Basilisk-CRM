@@ -3,19 +3,22 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Ticket, Users, Settings, Inbox, Plus, Code2, FileText, FileCode, Eye, ShieldAlert, ChevronDown, BarChart3, HardDrive, Lock, Award, GitMerge } from 'lucide-react'
+import { LayoutDashboard, Ticket, Users, Settings, Inbox, Plus, Code2, FileText, FileCode, Eye, ShieldAlert, ChevronDown, BarChart3, HardDrive, Lock, Award, GitMerge, BookOpen, MessageSquare } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { CreateTicketModal } from '@/features/tickets/components/CreateTicketModal'
+import { useRiftStore } from '@/hooks/useRiftStore'
 
 const navigation = [
     { name: 'Dashboard Personnel', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Incidents (File)', href: '/incidents', icon: Inbox, hideForClient: true },
+    { name: 'Incidents (File)', href: '/incidents', icon: Inbox, hideForClient: true, htmlId: 'sidebar-queue' },
     { name: 'Portail SD', href: '/sd', icon: Code2, hideForClient: true },
     { name: 'Parc Matériel', href: '/cmdb', icon: HardDrive, allowedRoles: ['ADMIN', 'SAV1', 'SAV2', 'COM'] },
     { name: 'Documentation', href: '/documentation', icon: FileText, hideForClient: true },
     { name: 'Commerce & Ventes', href: '/commerce', icon: FileText, onlyFor: ['ADMIN'], lockedForOthers: true },
     { name: 'Patch Notes', href: '/patch-notes', icon: FileCode, hideForClient: true },
+    { name: 'Wiki', href: '/wiki', icon: BookOpen, hideForClient: true },
     { name: 'Clients', href: '/clients', icon: Users, hideForClient: true },
+    { name: 'Rift', href: '/rift', icon: MessageSquare, hideForClient: true },
     { name: 'Paramètres', href: '/parametres', icon: Settings },
 ]
 
@@ -23,13 +26,14 @@ const adminNav = [
     { name: 'Règles de Routage', href: '/admin/routing', icon: GitMerge },
     { name: 'Grades & Niveaux', href: '/admin/grades', icon: Award },
     { name: 'God Mode (Debug)', href: '/admin/debug', icon: ShieldAlert },
-    { name: 'Analytics (God\'s Eye)', href: '/admin/analytics', icon: BarChart3 },
+    { name: 'Analytics (God\'s Eye)', href: '/admin/analytics', icon: BarChart3, htmlId: 'godseye-nav' },
 ]
 
 export function Sidebar({ mobile = false }: { mobile?: boolean }) {
     const pathname = usePathname()
     const [createModalOpen, setCreateModalOpen] = useState(false)
     const [adminOpen, setAdminOpen] = useState(true)
+    const riftTotalUnread = useRiftStore(s => s.totalUnread)
     const { data: profile } = useQuery({
         queryKey: ['my-profile-sidebar'],
         queryFn: async () => {
@@ -81,6 +85,7 @@ export function Sidebar({ mobile = false }: { mobile?: boolean }) {
                         <Link
                             key={item.name}
                             href={item.href}
+                            id={(item as any).htmlId || undefined}
                             className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group ${isActive
                                 ? 'bg-white/10 text-foreground shadow-sm ring-1 ring-white/20'
                                 : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
@@ -90,7 +95,14 @@ export function Sidebar({ mobile = false }: { mobile?: boolean }) {
                                 <item.icon className={`w-5 h-5 transition-colors ${isActive ? 'text-primary/80' : 'text-muted-foreground group-hover:text-foreground/70'}`} />
                                 <span className="font-medium text-sm">{item.name}</span>
                             </div>
-                            {(item as any).lockedForOthers && <Lock className="w-4 h-4 text-amber-500/70" />}
+                            <div className="flex items-center gap-2">
+                                {item.href === '/rift' && riftTotalUnread > 0 && (
+                                    <span className="min-w-5 h-5 px-1.5 flex items-center justify-center rounded-full bg-primary text-[10px] font-bold text-foreground shadow-lg shadow-primary/30">
+                                        {riftTotalUnread > 99 ? '99+' : riftTotalUnread}
+                                    </span>
+                                )}
+                                {(item as any).lockedForOthers && <Lock className="w-4 h-4 text-amber-500/70" />}
+                            </div>
                         </Link>
                     )
                 })}
@@ -114,6 +126,7 @@ export function Sidebar({ mobile = false }: { mobile?: boolean }) {
                                         <Link
                                             key={item.name}
                                             href={item.href}
+                                            id={(item as any).htmlId || undefined}
                                             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive
                                                 ? 'bg-rose-500/10 text-rose-300 shadow-sm ring-1 ring-rose-500/20'
                                                 : 'text-white/40 hover:text-rose-300 hover:bg-rose-500/5'

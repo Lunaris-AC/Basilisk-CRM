@@ -11,7 +11,7 @@ import {
     TableRow,
 } from '@/components/ui/table'
 import { useRouter } from 'next/navigation'
-import { SlaTimer } from '@/components/SlaTimer'
+import { SlaBadge } from '@/components/SlaBadge'
 
 const getStatusConfig = (status: string) => {
     switch (status) {
@@ -163,7 +163,15 @@ export function TicketTable({ tickets, isLoading, error, showAssignButton = fals
                                 </TableCell>
                                 <TableCell className="text-right hidden sm:table-cell">
                                     <div className="flex justify-end">
-                                        <SlaTimer ticket={ticket} />
+                                        <SlaBadge
+                                            slaStartAt={ticket.sla_start_at}
+                                            slaDeadlineAt={ticket.sla_deadline_at}
+                                            slaPausedAt={ticket.sla_paused_at}
+                                            slaElapsedMinutes={ticket.sla_elapsed_minutes}
+                                            priority={ticket.priority}
+                                            status={ticket.status}
+                                            createdAt={ticket.created_at}
+                                        />
                                     </div>
                                 </TableCell>
                                 <TableCell className="text-right">

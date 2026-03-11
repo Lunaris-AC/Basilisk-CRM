@@ -948,3 +948,121 @@ export async function searchOmnibar(query: string) {
     }
 }
 
+// ─── Merge / Deduplication ──────────────────────────────────────────────────
+
+/**
+ * Recherche de tickets candidats à la fusion (ouverts uniquement).
+ * Exclut le ticket courant.
+ */
+export async function searchMergeCandidates(currentTicketId: string, query: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Non authentifié' }
+
+    if (!query || query.trim().length < 2) return { tickets: [] }
+
+    const closedStatuses = ['ferme']
+    const term = `%${query.trim()}%`
+
+    // Recherche par titre
+    const { data: byTitle } = await supabase
+        .from('tickets')
+        .select('id, title, status, priority, category, created_at')
+        .ilike('title', term)
+        .not('id', 'eq', currentTicketId)
+        .not('status', 'in', `(${closedStatuses.join(',')})`)
+        .order('created_at', { ascending: false })
+        .limit(10)
+
+    // Recherche par ID partiel (si la query ressemble à un nombre)
+    let byId: typeof byTitle = []
+    if (/^\d+/.test(query.trim())) {
+        const { data } = await supabase
+            .from('tickets')
+            .select('id, title, status, priority, category, created_at')
+            .ilike('id', term)
+            .not('id', 'eq', currentTicketId)
+            .not('status', 'in', `(${closedStatuses.join(',')})`)
+            .limit(5)
+        byId = data || []
+    }
+
+    // Dédupliquer
+    const map = new Map<string, any>()
+    for (const t of [...(byTitle || []), ...byId]) map.set(t.id, t)
+
+    return { tickets: [...map.values()].slice(0, 10) }
+}
+
+/**
+ * Fusionne un ticket doublon dans un ticket principal.
+ * - Ajoute un commentaire de liaison sur le ticket principal
+ * - Ajoute un commentaire de fermeture sur le doublon
+ * - Ferme le ticket doublon (status → 'ferme')
+ */
+export async function mergeTickets(primaryId: string, duplicateId: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Non authentifié' }
+
+    // Vérifier le rôle — seuls N1+ et ADMIN peuvent fusionner
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+    const allowedRoles = ['N1', 'N2', 'N3', 'N4', 'ADMIN']
+    if (!profile || !allowedRoles.includes(profile.role)) {
+        return { error: 'Permissions insuffisantes pour fusionner des tickets' }
+    }
+
+    // Vérifier que les deux tickets existent et que le doublon n'est pas déjà fermé
+    const [{ data: primary }, { data: duplicate }] = await Promise.all([
+        supabase.from('tickets').select('id, title, status').eq('id', primaryId).single(),
+        supabase.from('tickets').select('id, title, status').eq('id', duplicateId).single(),
+    ])
+
+    if (!primary) return { error: 'Ticket principal introuvable' }
+    if (!duplicate) return { error: 'Ticket doublon introuvable' }
+    if (duplicate.status === 'ferme') return { error: 'Le ticket doublon est déjà fermé' }
+
+    const shortPrimary = primaryId.slice(0, 8)
+    const shortDuplicate = duplicateId.slice(0, 8)
+
+    // Commentaire sur le ticket principal
+    const { error: errPrimary } = await supabase.from('ticket_comments').insert({
+        ticket_id: primaryId,
+        author_id: user.id,
+        content: `🔗 **Fusion :** Le ticket #${shortDuplicate} ("${duplicate.title}") a été marqué comme doublon et fusionné ici.`,
+        is_internal: true,
+    })
+    if (errPrimary) return { error: 'Impossible d\'ajouter le commentaire au ticket principal' }
+
+    // Commentaire sur le doublon
+    const { error: errDuplicate } = await supabase.from('ticket_comments').insert({
+        ticket_id: duplicateId,
+        author_id: user.id,
+        content: `🔒 **Fermé (Doublon) :** Ce ticket a été fusionné avec le ticket #${shortPrimary} ("${primary.title}").`,
+        is_internal: true,
+    })
+    if (errDuplicate) return { error: 'Impossible d\'ajouter le commentaire au ticket doublon' }
+
+    // Fermer le doublon
+    const { error: errClose } = await supabase
+        .from('tickets')
+        .update({ status: 'ferme' })
+        .eq('id', duplicateId)
+
+    if (errClose) return { error: 'Impossible de fermer le ticket doublon' }
+
+    revalidatePath(`/tickets/${primaryId}`)
+    revalidatePath(`/tickets/${duplicateId}`)
+    revalidatePath('/tickets')
+
+    return {
+        success: true,
+        message: `Ticket #${shortDuplicate} fusionné dans #${shortPrimary}`,
+    }
+}
+

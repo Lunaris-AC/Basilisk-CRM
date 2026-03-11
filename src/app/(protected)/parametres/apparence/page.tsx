@@ -2,14 +2,18 @@
 
 import { useState, useEffect } from 'react'
 import { useTheme } from 'next-themes'
-import { Palette, Moon, Sun, Monitor, Check, Sparkles } from 'lucide-react'
+import { Palette, Moon, Sun, Monitor, Check, Sparkles, Compass } from 'lucide-react'
 import { OLYMPE_THEMES, type Theme as OlympeTheme } from '@/lib/themes'
 import { cn } from '@/lib/utils'
+import { useAppTutorial } from '@/hooks/useAppTutorial'
 
 export default function ApparencePage() {
     const { theme, setTheme } = useTheme()
     const [mounted, setMounted] = useState(false)
     const [currentThemeId, setCurrentThemeId] = useState('default')
+
+    // SPRINT 43 : Tutoriel interactif
+    const { startTutorial } = useAppTutorial()
 
     useEffect(() => {
         setMounted(true)
@@ -154,6 +158,37 @@ export default function ApparencePage() {
                             </button>
                         )
                     })}
+                </div>
+            </section>
+
+            {/* ═══ SPRINT 43 : Tutoriel interactif ═══ */}
+            <section className="space-y-6">
+                <div className="p-6 rounded-3xl bg-gradient-to-br from-primary/10 via-white/5 to-primary/5 border border-primary/20 backdrop-blur-xl relative overflow-hidden group hover:border-primary/40 transition-all">
+                    <div className="absolute -right-8 -top-8 w-32 h-32 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-colors" />
+                    <div className="absolute -left-4 -bottom-4 w-20 h-20 bg-primary/5 rounded-full blur-xl" />
+
+                    <div className="relative z-10 flex items-start gap-5">
+                        <div className="p-3 rounded-2xl bg-primary/20 border border-primary/30 shadow-lg shadow-primary/10 shrink-0">
+                            <Compass className="w-7 h-7 text-primary" />
+                        </div>
+
+                        <div className="flex-1 space-y-3">
+                            <div>
+                                <h3 className="text-lg font-bold text-foreground">Guide de l'interface</h3>
+                                <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                                    Découvrez les fonctionnalités clés de Basilisk en quelques secondes grâce à un tutoriel interactif. Idéal pour les nouveaux arrivants ou pour un rappel rapide.
+                                </p>
+                            </div>
+
+                            <button
+                                onClick={startTutorial}
+                                className="inline-flex items-center gap-2.5 px-5 py-3 rounded-2xl bg-primary hover:bg-primary/80 text-primary-foreground font-bold text-sm transition-all shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-[1.02] active:scale-[0.98]"
+                            >
+                                <Compass className="w-4 h-4" />
+                                Lancer le tutoriel de l'interface
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </section>
         </div>

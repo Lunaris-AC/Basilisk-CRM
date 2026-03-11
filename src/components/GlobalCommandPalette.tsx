@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { Monitor, Moon, Sun, MonitorSmartphone, LayoutDashboard, Settings, Plus, Hand, Ticket as TicketIcon, Search } from "lucide-react"
+import { Monitor, Moon, Sun, MonitorSmartphone, LayoutDashboard, Settings, Plus, Hand, Ticket as TicketIcon, Search, BookOpen } from "lucide-react"
 import { useQuery } from "@tanstack/react-query"
 
 import {
@@ -58,6 +58,23 @@ export function GlobalCommandPalette() {
         staleTime: 120_000,
     })
 
+    // Wiki documents fetch (PUBLISHED only, cached 2 min)
+    const { data: allWikiDocs } = useQuery({
+        queryKey: ['command-palette-wiki'],
+        queryFn: async () => {
+            const supabase = createClient()
+            const { data } = await supabase
+                .from('wiki_documents')
+                .select('id, title, icon')
+                .eq('status', 'PUBLISHED')
+                .order('updated_at', { ascending: false })
+                .limit(100)
+            return data || []
+        },
+        enabled: isOpen,
+        staleTime: 120_000,
+    })
+
     // Filter tickets by search value
     const filteredTickets = React.useMemo(() => {
         if (!searchValue.trim() || !allTickets) return []
@@ -70,6 +87,15 @@ export function GlobalCommandPalette() {
             )
             .slice(0, 8)
     }, [searchValue, allTickets])
+
+    // Filter wiki docs by search value
+    const filteredWikiDocs = React.useMemo(() => {
+        if (!searchValue.trim() || !allWikiDocs) return []
+        const q = searchValue.toLowerCase().trim()
+        return allWikiDocs
+            .filter(d => d.title.toLowerCase().includes(q))
+            .slice(0, 6)
+    }, [searchValue, allWikiDocs])
 
     React.useEffect(() => {
         const down = (e: KeyboardEvent) => {
@@ -122,6 +148,29 @@ export function GlobalCommandPalette() {
                                     <span className={`text-[10px] font-semibold shrink-0 ${STATUS_COLORS[t.status] || 'text-muted-foreground'}`}>
                                         {t.status.replace('_', ' ')}
                                     </span>
+                                </CommandItem>
+                            ))}
+                        </CommandGroup>
+                        <CommandSeparator />
+                    </>
+                )}
+
+                {/* WIKI SEARCH RESULTS */}
+                {filteredWikiDocs.length > 0 && (
+                    <>
+                        <CommandGroup heading="BASE DE CONNAISSANCES (WIKI)">
+                            {filteredWikiDocs.map(d => (
+                                <CommandItem
+                                    key={d.id}
+                                    value={`wiki-${d.id}-${d.title}`}
+                                    keywords={[d.title, 'wiki', 'documentation', 'base de connaissances']}
+                                    onSelect={() => runCommand(() => router.push(`/wiki?docId=${d.id}`))}
+                                    className="flex items-center gap-3"
+                                >
+                                    <BookOpen className="w-4 h-4 text-violet-400/70 shrink-0" />
+                                    <span className="text-sm shrink-0">{d.icon}</span>
+                                    <span className="truncate flex-1 text-foreground/80">{d.title}</span>
+                                    <span className="text-[10px] font-semibold text-violet-300/60 shrink-0">wiki</span>
                                 </CommandItem>
                             ))}
                         </CommandGroup>

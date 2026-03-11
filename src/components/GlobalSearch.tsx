@@ -8,6 +8,7 @@ export function GlobalSearch() {
 
     return (
         <button
+            id="cmd-k-btn"
             onClick={() => setOpen(true)}
             className="w-full max-w-md flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-[#0a0a1a]/50 border border-white/5 hover:bg-[#0a0a1a]/80 hover:border-primary/30 text-muted-foreground hover:text-muted-foreground transition-all group shadow-sm"
         >

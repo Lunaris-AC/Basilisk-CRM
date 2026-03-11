@@ -1,6 +1,7 @@
 import { Sidebar } from '@/components/layout/Sidebar'
 import { Topbar } from '@/components/layout/Topbar'
 import { RealtimeSubscriber } from '@/components/RealtimeSubscriber'
+import { RiftUnreadTracker } from '@/components/RiftUnreadTracker'
 import { ClientDisplayManager } from '@/components/layout/ClientDisplayManager'
 import { GlobalCommandPalette } from '@/components/GlobalCommandPalette'
 
@@ -13,6 +14,7 @@ export default function ProtectedLayout({
         <div className="flex h-screen w-full overflow-hidden relative bg-background">
             {/* Activation de la synchronisation temps réel (Client Side) */}
             <RealtimeSubscriber />
+            <RiftUnreadTracker />
 
             <GlobalCommandPalette />
 

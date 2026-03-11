@@ -6,21 +6,22 @@ import { useQueryClient, useQuery } from '@tanstack/react-query'
 import { addComment, updateTicketStatus, escalateTicket, uploadAttachments, linkContactToTicket, linkTicketToSD, resolveSD, assignTicketManually } from '@/features/tickets/actions'
 import { useState, useTransition, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Send, CheckCircle2, AlertTriangle, ArrowUpRight, ArrowDownRight, Loader2, Lock, Paperclip, X, File, UploadCloud, UserCircle, Phone, Pencil, Link2, Code2, ExternalLink, Unlink, History, MessageSquare, Zap, UserCheck, ArrowRightLeft, Shield } from 'lucide-react'
+import { ArrowLeft, Send, CheckCircle2, AlertTriangle, ArrowUpRight, ArrowDownRight, Loader2, Lock, Paperclip, X, File, UploadCloud, UserCircle, Phone, Pencil, Link2, Code2, ExternalLink, Unlink, History, MessageSquare, Zap, UserCheck, ArrowRightLeft, Shield, GitMerge } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { AttachmentViewer } from '@/components/AttachmentViewer'
-import { SlaTimer } from '@/components/SlaTimer'
+import { SlaBadge } from '@/components/SlaBadge'
 import { SmartContactSelector } from '@/components/SmartContactSelector'
 import { DateTimePicker } from '@/components/DateTimePicker'
 import { CommerceDetailsCard, CommerceDetails } from '@/features/tickets/components/details/CommerceDetailsCard'
 import { SAVDetailsCard, SAVDetails } from '@/features/tickets/components/details/SAVDetailsCard'
 import { FormateurDetailsCard, FormateurDetails } from '@/features/tickets/components/details/FormateurDetailsCard'
 import { DevDetailsCard, DevDetails } from '@/features/tickets/components/details/DevDetailsCard'
+import MergeTicketModal from '@/features/tickets/components/MergeTicketModal'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { toast } from 'sonner'
 import { useOfflineStore } from '@/hooks/useOfflineStore'
-
+import { createClient } from '@/utils/supabase/client'
 import {
     Dialog,
     DialogContent,
@@ -34,6 +35,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 
+// ═══ HOTFIX 43.1 : Couleur déterministe par user_id pour avatars présence ═══
+const PRESENCE_COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#ef4444', '#14b8a6']
+function getPresenceColor(userId: string): string {
+    let hash = 0
+    for (let i = 0; i < userId.length; i++) hash = userId.charCodeAt(i) + ((hash << 5) - hash)
+    return PRESENCE_COLORS[Math.abs(hash) % PRESENCE_COLORS.length]
+}
+
 export function TicketDetailContent({ ticketId }: { ticketId: string }) {
     const router = useRouter()
     const queryClient = useQueryClient()
@@ -43,15 +52,82 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
     const { data: myProfile } = useQuery({
         queryKey: ['my-profile-detail'],
         queryFn: async () => {
-            const { createClient } = await import('@/utils/supabase/client')
             const supabase = createClient()
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) return null
-            const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+            const { data, error } = await supabase.from('profiles').select('id, role, first_name, last_name, avatar_url').eq('id', user.id).single()
+            if (error) {
+                console.error('[Profile] Erreur chargement profil:', error.message, error.code)
+                return null
+            }
             return data
         },
         staleTime: 1000 * 60 * 10,
+        retry: 1,
     })
+
+    // ═══ HOTFIX 43.1 : LIVE PRESENCE (CO-OP) — CYCLE DE VIE CORRIGÉ ═══
+    type PresenceUser = { user_id: string; name: string; avatar_url: string | null; role: string }
+    const [activeUsers, setActiveUsers] = useState<PresenceUser[]>([])
+
+    useEffect(() => {
+        if (!myProfile?.id) return
+
+        let cancelled = false
+        const supabase = createClient()
+
+        // 1. Déclarer le canal avec clé de présence explicite (= user id)
+        const room = supabase.channel(`ticket_presence_${ticketId}`, {
+            config: { presence: { key: myProfile.id } },
+        })
+
+        // 2. Écouter la synchro — le callback sync se déclenche à chaque changement
+        room.on('presence', { event: 'sync' }, () => {
+            if (cancelled) return
+            const state = room.presenceState()
+            // Aplatir (flatten) : presenceState() retourne Record<string, Presence[]>
+            const allPresences = Object.values(state).flat()
+            // Extraire les utilisateurs, EXCLURE l'utilisateur courant
+            const others = allPresences
+                .filter((p: any) => p.user_id && p.user_id !== myProfile.id)
+                .map((p: any): PresenceUser => ({
+                    user_id: String(p.user_id),
+                    name: String(p.name || 'Inconnu'),
+                    avatar_url: p.avatar_url ? String(p.avatar_url) : null,
+                    role: String(p.role || ''),
+                }))
+            // Dédoublonner par user_id (un utilisateur peut avoir 2+ onglets ouverts)
+            const unique = others.filter((u, i, arr) => arr.findIndex(x => x.user_id === u.user_id) === i)
+            setActiveUsers(unique)
+        })
+
+        // 3. Souscrire ET tracker uniquement si connecté
+        room.subscribe(async (status, err) => {
+            if (cancelled) return
+            if (err) {
+                console.error('[Presence] Subscription error:', err)
+                return
+            }
+            if (status === 'SUBSCRIBED') {
+                try {
+                    await room.track({
+                        user_id: myProfile.id,
+                        name: `${myProfile.first_name} ${myProfile.last_name}`,
+                        avatar_url: myProfile.avatar_url ?? null,
+                        role: myProfile.role,
+                    })
+                } catch (e) {
+                    console.error('[Presence] Track error:', e)
+                }
+            }
+        })
+
+        // Cleanup : marquer annulé, untrack puis supprimer le canal
+        return () => {
+            cancelled = true
+            room.untrack().then(() => supabase.removeChannel(room))
+        }
+    }, [ticketId, myProfile?.id, myProfile?.first_name, myProfile?.last_name, myProfile?.avatar_url, myProfile?.role])
 
     // Formulaires
     const [commentContent, setCommentContent] = useState('')
@@ -84,6 +160,9 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
     const [resolveSDModalOpen, setResolveSDModalOpen] = useState(false)
     const [resolveSDMessage, setResolveSDMessage] = useState('')
     const [resolveSDCloseLinked, setResolveSDCloseLinked] = useState(true)
+
+    // Merge / Deduplication modal (Sprint 49)
+    const [mergeModalOpen, setMergeModalOpen] = useState(false)
 
     // Ref pour le champ commentaire (raccourci "C")
     const commentRef = useRef<HTMLTextAreaElement>(null)
@@ -410,7 +489,52 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                 </div>
 
                 <div className="flex flex-wrap gap-2 items-center">
-                    <SlaTimer ticket={ticket} />
+                    {/* ═══ HOTFIX 43.1 : Avatars présence co-op (corrigé) ═══ */}
+                    {activeUsers.length > 0 && (
+                        <div className="flex items-center -space-x-2 mr-3 z-10">
+                            {activeUsers.slice(0, 5).map((u) => {
+                                const color = getPresenceColor(u.user_id)
+                                return (
+                                    <div
+                                        key={u.user_id}
+                                        className="relative group/avatar"
+                                    >
+                                        <div
+                                            className="w-8 h-8 rounded-full border-2 border-background flex items-center justify-center text-[10px] font-bold text-white shadow-lg ring-2 ring-emerald-500/60 cursor-default overflow-hidden"
+                                            style={{ backgroundColor: u.avatar_url ? 'transparent' : color }}
+                                        >
+                                            {u.avatar_url ? (
+                                                <img src={u.avatar_url} alt={u.name} className="w-full h-full rounded-full object-cover" />
+                                            ) : (
+                                                u.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+                                            )}
+                                        </div>
+                                        {/* Tooltip */}
+                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 rounded-lg bg-black/90 border border-white/10 text-xs text-foreground whitespace-nowrap opacity-0 group-hover/avatar:opacity-100 pointer-events-none transition-opacity z-50 shadow-xl">
+                                            <span className="font-semibold">{u.name}</span>
+                                            <span className="text-muted-foreground"> ({u.role})</span>
+                                            <span className="text-emerald-400"> regarde ce ticket</span>
+                                            <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-black/90 border-r border-b border-white/10 rotate-45 -mt-1" />
+                                        </div>
+                                    </div>
+                                )
+                            })}
+                            {activeUsers.length > 5 && (
+                                <div className="w-8 h-8 rounded-full border-2 border-background bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground ring-2 ring-white/20">
+                                    +{activeUsers.length - 5}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                    <SlaBadge
+                        slaStartAt={ticket.sla_start_at}
+                        slaDeadlineAt={ticket.sla_deadline_at}
+                        slaPausedAt={ticket.sla_paused_at}
+                        slaElapsedMinutes={ticket.sla_elapsed_minutes}
+                        priority={ticket.priority}
+                        status={ticket.status}
+                        createdAt={ticket.created_at}
+                    />
                     <span className="px-3 py-1 bg-white/10 rounded-full text-xs font-medium text-foreground/80 border border-white/10">
                         {ticket.status.replace('_', ' ').toUpperCase()}
                     </span>
@@ -427,6 +551,17 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                     >
                         {ticket.support_level?.name?.toUpperCase() || `NIVEAU ${ticket.escalation_level}`}
                     </span>
+
+                    {/* Sprint 49 : Bouton Fusion — visible N1+ / ADMIN, masqué si fermé */}
+                    {ticket.status !== 'ferme' && myProfile && ['N1', 'N2', 'N3', 'N4', 'ADMIN'].includes(myProfile.role) && (
+                        <button
+                            onClick={() => setMergeModalOpen(true)}
+                            className="ml-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 transition-colors"
+                        >
+                            <GitMerge className="h-3.5 w-3.5" />
+                            Fusionner
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -1362,6 +1497,14 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                 </div>
 
             </div>
+
+            {/* Sprint 49 : Modal Fusion */}
+            <MergeTicketModal
+                open={mergeModalOpen}
+                onOpenChange={setMergeModalOpen}
+                currentTicketId={ticketId}
+                currentTicketTitle={ticket.title}
+            />
         </div>
     )
 }
