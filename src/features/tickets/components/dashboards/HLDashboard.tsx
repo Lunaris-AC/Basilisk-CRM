@@ -117,50 +117,50 @@ export function HLDashboard() {
             {/* ═══════════════════════════════════════════════════════════ */}
             {/* ÉTAPE 1 — MÉTÉO GLOBALE (Top Level)                       */}
             {/* ═══════════════════════════════════════════════════════════ */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {/* Total Portail */}
-                <div className="relative group p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 backdrop-blur-xl overflow-hidden transition-all hover:border-primary/40">
-                    <div className="absolute -right-8 -top-8 w-28 h-28 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/15 transition-colors" />
+                <div className="relative group p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 backdrop-blur-xl overflow-hidden transition-all hover:border-primary/40">
+                    <div className="absolute -right-6 -top-6 w-20 h-20 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/15 transition-colors" />
                     <div className="relative">
-                        <div className="flex items-center gap-2 mb-3">
-                            <Activity className="w-4 h-4 text-primary/80" />
-                            <span className="text-xs font-bold tracking-widest text-primary/80 uppercase">Total Portail</span>
+                        <div className="flex items-center gap-2 mb-1.5">
+                            <Activity className="w-3.5 h-3.5 text-primary/80" />
+                            <span className="text-[10px] font-bold tracking-widest text-primary/80 uppercase">Total Portail</span>
                         </div>
-                        <p className="text-5xl font-black tracking-tighter text-foreground">{globalStats?.totalTickets ?? '—'}</p>
-                        <p className="text-xs text-muted-foreground mt-1 font-medium">tickets ouverts</p>
+                        <p className="text-3xl font-black tracking-tighter text-foreground">{globalStats?.totalTickets ?? '—'}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5 font-medium">tickets ouverts</p>
                     </div>
                 </div>
 
                 {/* File d'attente */}
-                <div className="relative group p-6 rounded-2xl bg-gradient-to-br from-amber-500/10 to-orange-500/5 border border-amber-500/25 backdrop-blur-xl overflow-hidden transition-all hover:border-amber-500/50">
-                    <div className="absolute -right-8 -top-8 w-28 h-28 bg-amber-500/10 rounded-full blur-3xl group-hover:bg-amber-500/15 transition-colors" />
+                <div className="relative group p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 to-orange-500/5 border border-amber-500/25 backdrop-blur-xl overflow-hidden transition-all hover:border-amber-500/50">
+                    <div className="absolute -right-6 -top-6 w-20 h-20 bg-amber-500/10 rounded-full blur-3xl group-hover:bg-amber-500/15 transition-colors" />
                     <div className="relative">
-                        <div className="flex items-center gap-2 mb-3">
-                            <Inbox className="w-4 h-4 text-amber-400" />
-                            <span className="text-xs font-bold tracking-widest text-amber-400/80 uppercase">File d'attente</span>
+                        <div className="flex items-center gap-2 mb-1.5">
+                            <Inbox className="w-3.5 h-3.5 text-amber-400" />
+                            <span className="text-[10px] font-bold tracking-widest text-amber-400/80 uppercase">File d'attente</span>
                         </div>
-                        <p className="text-5xl font-black tracking-tighter text-foreground">{globalStats?.totalUnassigned ?? '—'}</p>
-                        <p className="text-xs text-muted-foreground mt-1 font-medium">non affectés</p>
+                        <p className="text-3xl font-black tracking-tighter text-foreground">{globalStats?.totalUnassigned ?? '—'}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5 font-medium">non affectés</p>
                     </div>
                 </div>
 
                 {/* SLA Dépassés */}
-                <div className={`relative group p-6 rounded-2xl backdrop-blur-xl overflow-hidden transition-all
+                <div className={`relative group p-4 rounded-2xl backdrop-blur-xl overflow-hidden transition-all
                     ${slaCount > 0
                         ? 'bg-gradient-to-br from-rose-500/15 to-red-500/10 border border-rose-500/40 hover:border-rose-500/60'
                         : 'bg-gradient-to-br from-emerald-500/10 to-green-500/5 border border-emerald-500/20 hover:border-emerald-500/40'
                     }`}
                 >
-                    <div className={`absolute -right-8 -top-8 w-28 h-28 rounded-full blur-3xl transition-colors ${slaCount > 0 ? 'bg-rose-500/15 group-hover:bg-rose-500/20' : 'bg-emerald-500/10 group-hover:bg-emerald-500/15'}`} />
+                    <div className={`absolute -right-6 -top-6 w-20 h-20 rounded-full blur-3xl transition-colors ${slaCount > 0 ? 'bg-rose-500/15 group-hover:bg-rose-500/20' : 'bg-emerald-500/10 group-hover:bg-emerald-500/15'}`} />
                     {/* Pulse néon si SLA > 0 */}
                     {slaCount > 0 && <div className="absolute inset-0 rounded-2xl border border-rose-500/40 animate-pulse" />}
                     <div className="relative">
-                        <div className="flex items-center gap-2 mb-3">
-                            <AlertTriangle className={`w-4 h-4 ${slaCount > 0 ? 'text-rose-400' : 'text-emerald-400'}`} />
-                            <span className={`text-xs font-bold tracking-widest uppercase ${slaCount > 0 ? 'text-rose-400/80' : 'text-emerald-400/80'}`}>SLA Dépassés</span>
+                        <div className="flex items-center gap-2 mb-1.5">
+                            <AlertTriangle className={`w-3.5 h-3.5 ${slaCount > 0 ? 'text-rose-400' : 'text-emerald-400'}`} />
+                            <span className={`text-[10px] font-bold tracking-widest uppercase ${slaCount > 0 ? 'text-rose-400/80' : 'text-emerald-400/80'}`}>SLA Dépassés</span>
                         </div>
-                        <p className={`text-5xl font-black tracking-tighter ${slaCount > 0 ? 'text-rose-300' : 'text-emerald-300'}`}>{slaCount}</p>
-                        <p className={`text-xs mt-1 font-medium ${slaCount > 0 ? 'text-rose-300/40' : 'text-emerald-300/40'}`}>
+                        <p className={`text-3xl font-black tracking-tighter ${slaCount > 0 ? 'text-rose-300' : 'text-emerald-300'}`}>{slaCount}</p>
+                        <p className={`text-[10px] mt-0.5 font-medium ${slaCount > 0 ? 'text-rose-300/40' : 'text-emerald-300/40'}`}>
                             {slaCount > 0 ? 'à traiter en urgence' : 'aucun dépassement'}
                         </p>
                     </div>
@@ -258,18 +258,18 @@ export function HLDashboard() {
                 </Popover>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-5 rounded-2xl bg-cyan-500/[0.04] border border-cyan-500/15 backdrop-blur-md transition-all hover:border-cyan-500/30">
-                    <span className="text-cyan-400/60 text-xs font-bold uppercase tracking-wider">Mes tickets en cours</span>
-                    <p className="text-3xl font-black tracking-tight text-foreground mt-2">{activeTickets.length}</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="p-3.5 rounded-2xl bg-cyan-500/[0.04] border border-cyan-500/15 backdrop-blur-md transition-all hover:border-cyan-500/30">
+                    <span className="text-cyan-400/60 text-[10px] font-bold uppercase tracking-wider">Mes tickets en cours</span>
+                    <p className="text-2xl font-black tracking-tight text-foreground mt-1">{activeTickets.length}</p>
                 </div>
-                <div className="p-5 rounded-2xl bg-cyan-500/[0.04] border border-cyan-500/15 backdrop-blur-md transition-all hover:border-cyan-500/30">
-                    <span className="text-cyan-400/60 text-xs font-bold uppercase tracking-wider">Créés à cette date</span>
-                    <p className="text-3xl font-black tracking-tight text-cyan-300 mt-2">{personalStats?.createdCount ?? '—'}</p>
+                <div className="p-3.5 rounded-2xl bg-cyan-500/[0.04] border border-cyan-500/15 backdrop-blur-md transition-all hover:border-cyan-500/30">
+                    <span className="text-cyan-400/60 text-[10px] font-bold uppercase tracking-wider">Créés à cette date</span>
+                    <p className="text-2xl font-black tracking-tight text-cyan-300 mt-1">{personalStats?.createdCount ?? '—'}</p>
                 </div>
-                <div className="p-5 rounded-2xl bg-cyan-500/[0.04] border border-cyan-500/15 backdrop-blur-md transition-all hover:border-cyan-500/30">
-                    <span className="text-cyan-400/60 text-xs font-bold uppercase tracking-wider">Fermés à cette date</span>
-                    <p className="text-3xl font-black tracking-tight text-cyan-300 mt-2">{personalStats?.closedCount ?? '—'}</p>
+                <div className="p-3.5 rounded-2xl bg-cyan-500/[0.04] border border-cyan-500/15 backdrop-blur-md transition-all hover:border-cyan-500/30">
+                    <span className="text-cyan-400/60 text-[10px] font-bold uppercase tracking-wider">Fermés à cette date</span>
+                    <p className="text-2xl font-black tracking-tight text-cyan-300 mt-1">{personalStats?.closedCount ?? '—'}</p>
                 </div>
             </div>
 
