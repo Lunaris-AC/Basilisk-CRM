@@ -281,6 +281,16 @@ export async function rejectDocument(documentId: string, reason: string) {
         return { error: 'Seuls les N3, N4 et ADMIN peuvent rejeter.' }
     }
 
+    // Vérifier que le document est bien PENDING
+    const { data: doc } = await supabase
+        .from('wiki_documents')
+        .select('status')
+        .eq('id', documentId)
+        .single()
+
+    if (!doc) return { error: 'Document introuvable.' }
+    if (doc.status !== 'PENDING') return { error: 'Seuls les documents en attente peuvent être rejetés.' }
+
     const { error } = await supabase
         .from('wiki_documents')
         .update({ status: 'DRAFT', rejection_reason: reason || 'Aucune raison spécifiée.' })
