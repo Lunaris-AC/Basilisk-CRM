@@ -7,6 +7,7 @@ import { LayoutDashboard, Ticket, Users, Settings, Inbox, Plus, Code2, FileText,
 import { useQuery } from '@tanstack/react-query'
 import { CreateTicketModal } from '@/features/tickets/components/CreateTicketModal'
 import { useRiftStore } from '@/hooks/useRiftStore'
+import { VersionIndicator } from '@/components/layout/VersionIndicator'
 
 const navigation = [
     { name: 'Dashboard Personnel', href: '/dashboard', icon: LayoutDashboard },
@@ -172,6 +173,7 @@ export function Sidebar({ mobile = false }: { mobile?: boolean }) {
                         </div>
                     </div>
                 </div>
+                <VersionIndicator />
             </div>
         </div>
     )
