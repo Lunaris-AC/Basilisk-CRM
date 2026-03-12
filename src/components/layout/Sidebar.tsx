@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Ticket, Users, Settings, Inbox, Plus, Code2, FileText, FileCode, Eye, ShieldAlert, ChevronDown, BarChart3, HardDrive, Lock, Award, GitMerge, BookOpen, MessageSquare } from 'lucide-react'
+import { LayoutDashboard, Ticket, Users, Settings, Inbox, Plus, Code2, FileText, FileCode, Eye, ShieldAlert, ChevronDown, BarChart3, HardDrive, Lock, Award, GitMerge, BookOpen, MessageSquare, Monitor } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { CreateTicketModal } from '@/features/tickets/components/CreateTicketModal'
 import { useRiftStore } from '@/hooks/useRiftStore'
@@ -27,6 +27,7 @@ const adminNav = [
     { name: 'Grades & Niveaux', href: '/admin/grades', icon: Award },
     { name: 'God Mode (Debug)', href: '/admin/debug', icon: ShieldAlert },
     { name: 'Analytics (God\'s Eye)', href: '/admin/analytics', icon: BarChart3, htmlId: 'godseye-nav' },
+    { name: 'Wallboard TV', href: '/wallboard', icon: Monitor },
 ]
 
 export function Sidebar({ mobile = false }: { mobile?: boolean }) {
