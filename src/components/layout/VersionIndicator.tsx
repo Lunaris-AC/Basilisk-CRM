@@ -24,7 +24,7 @@ export function VersionIndicator() {
     useEffect(() => {
         const controller = new AbortController()
 
-        fetch('https://api.github.com/repos/Lunaris-AC/Basilisk-CRM/releases/latest', {
+        fetch('https://api.github.com/repos/Lunaris-AC/Basilisk-CRM/releases?per_page=1', {
             signal: controller.signal,
             headers: { Accept: 'application/vnd.github+json' },
         })
@@ -32,10 +32,11 @@ export function VersionIndicator() {
                 if (!res.ok) return null
                 return res.json()
             })
-            .then((data: GithubRelease | null) => {
-                if (!data?.tag_name) return
-                setRelease(data)
-                const remote = normalizeVersion(data.tag_name)
+            .then((data: GithubRelease[] | null) => {
+                const latest = data?.[0]
+                if (!latest?.tag_name) return
+                setRelease(latest)
+                const remote = normalizeVersion(latest.tag_name)
                 const local = normalizeVersion(CURRENT_VERSION)
                 if (remote !== local) {
                     setHasUpdate(true)
