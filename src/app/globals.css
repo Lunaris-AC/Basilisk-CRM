@@ -183,3 +183,11 @@
   background: rgba(255, 255, 255, 0.1) !important;
   color: #e2e8f0 !important;
 }
+
+/* ═══ Wiki BlockNote : fond transparent ═══ */
+.wiki-editor-wrapper .bn-editor {
+  background-color: transparent;
+}
+.wiki-editor-wrapper .bn-container[data-color-scheme="dark"] {
+  --bn-colors-editor-background: transparent;
+}

@@ -53,10 +53,12 @@ CREATE TABLE public.rift_channel_members (
     channel_id  UUID        NOT NULL REFERENCES public.rift_channels(id)  ON DELETE CASCADE,
     user_id     UUID        NOT NULL REFERENCES public.profiles(id)       ON DELETE CASCADE,
     joined_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_read_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     PRIMARY KEY (channel_id, user_id)
 );
 
 CREATE INDEX idx_rift_channel_members_user ON public.rift_channel_members(user_id);
+CREATE INDEX idx_rift_channel_members_last_read ON public.rift_channel_members(user_id, channel_id, last_read_at);
 
 -- ==========================================
 -- ÉTAPE 2 : MESSAGES, AUDIT & ACCUSÉS DE LECTURE
@@ -423,7 +425,37 @@ BEGIN
 END $$;
 
 -- ==========================================
--- ÉTAPE 5 : REALTIME (pour les messages en temps réel)
+-- ÉTAPE 5 : FONCTIONS RPC (compteurs non lus)
+-- ==========================================
+
+-- Retourne le nombre de messages non lus par channel pour l'utilisateur courant
+CREATE OR REPLACE FUNCTION public.get_rift_unread_counts()
+RETURNS TABLE(channel_id UUID, unread_count BIGINT) AS $$
+    SELECT
+        cm.channel_id,
+        COUNT(m.id)::BIGINT AS unread_count
+    FROM public.rift_channel_members cm
+    INNER JOIN public.rift_messages m
+        ON m.channel_id = cm.channel_id
+        AND m.created_at > cm.last_read_at
+        AND m.user_id != auth.uid()
+        AND m.deleted_at IS NULL
+    WHERE cm.user_id = auth.uid()
+    GROUP BY cm.channel_id
+    HAVING COUNT(m.id) > 0;
+$$ LANGUAGE sql STABLE SECURITY DEFINER;
+
+-- Met à jour last_read_at pour marquer un channel comme lu
+CREATE OR REPLACE FUNCTION public.mark_rift_channel_read(p_channel_id UUID)
+RETURNS VOID AS $$
+    UPDATE public.rift_channel_members
+    SET last_read_at = NOW()
+    WHERE channel_id = p_channel_id
+      AND user_id = auth.uid();
+$$ LANGUAGE sql VOLATILE SECURITY DEFINER;
+
+-- ==========================================
+-- ÉTAPE 6 : REALTIME (pour les messages en temps réel)
 -- ==========================================
 
 ALTER PUBLICATION supabase_realtime ADD TABLE public.rift_messages;

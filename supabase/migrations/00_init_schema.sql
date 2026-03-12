@@ -99,10 +99,8 @@ CREATE TABLE public.profiles (
     avatar_url  TEXT,
     store_id    UUID REFERENCES public.stores(id) ON DELETE SET NULL,
     support_level_id UUID REFERENCES public.support_levels(id) ON DELETE SET NULL,
-    contact_id  UUID REFERENCES public.contacts(id) ON DELETE SET NULL
+    contact_id  UUID
 );
-
-CREATE INDEX IF NOT EXISTS idx_profiles_contact_id ON public.profiles(contact_id);
 
 CREATE TABLE public.equipment_catalogue (
     id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -175,6 +173,13 @@ CREATE TABLE public.contacts (
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- FK ajoutée après la création de contacts (évite la référence circulaire)
+ALTER TABLE public.profiles
+  ADD CONSTRAINT fk_profiles_contact_id
+  FOREIGN KEY (contact_id) REFERENCES public.contacts(id) ON DELETE SET NULL;
+
+CREATE INDEX IF NOT EXISTS idx_profiles_contact_id ON public.profiles(contact_id);
 
 CREATE TABLE public.tickets (
     id                    UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
