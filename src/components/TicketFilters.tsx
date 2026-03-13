@@ -5,6 +5,17 @@ import { TicketFilters as Filters } from '@/features/tickets/api/getTickets'
 import { useActiveAssignees, useSupportLevels } from '@/features/tickets/api/useTickets'
 import { useState } from 'react'
 
+import { useClientsWithStores } from '@/features/clients/api/useClients'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  SelectGroup,
+  SelectLabel
+} from "@/components/ui/select"
+
 export type TicketFiltersProps = {
     filters: Filters;
     setFilters: React.Dispatch<React.SetStateAction<Filters>>;
@@ -77,10 +88,11 @@ function FacetSection({ title, defaultOpen = true, children }: { title: string; 
 export function TicketFilters({ filters, setFilters }: TicketFiltersProps) {
     const { data: activeAssignees } = useActiveAssignees()
     const { data: levels } = useSupportLevels()
+    const { data: clients } = useClientsWithStores()
     const [panelOpen, setPanelOpen] = useState(false)
 
     // Helpers pour multi-sélection
-    const toggleArrayFilter = (key: 'statuses' | 'priorities' | 'support_level_ids', value: string) => {
+    const toggleArrayFilter = (key: 'statuses' | 'priorities' | 'support_level_ids' | 'store_ids', value: string) => {
         setFilters(prev => {
             const current = prev[key] || []
             const next = current.includes(value)
@@ -91,7 +103,7 @@ export function TicketFilters({ filters, setFilters }: TicketFiltersProps) {
     }
 
     // Badges actifs : liste de tous les filtres cochés
-    const activeBadges: { key: string; filterKey: 'statuses' | 'priorities' | 'support_level_ids' | 'status' | 'priority' | 'category' | 'support_level_id' | 'assignee_id'; value: string; label: string; color?: string }[] = []
+    const activeBadges: { key: string; filterKey: 'statuses' | 'priorities' | 'support_level_ids' | 'store_ids' | 'status' | 'priority' | 'category' | 'support_level_id' | 'assignee_id'; value: string; label: string; color?: string }[] = []
 
     // Multi-select badges
     ;(filters.statuses || []).forEach(v => {
@@ -105,6 +117,14 @@ export function TicketFilters({ filters, setFilters }: TicketFiltersProps) {
     ;(filters.support_level_ids || []).forEach(v => {
         const lvl = levels?.find(l => l.id === v)
         if (lvl) activeBadges.push({ key: `level-${v}`, filterKey: 'support_level_ids', value: v, label: lvl.name })
+    })
+    ;(filters.store_ids || []).forEach(v => {
+        let storeName = "Magasin inconnu"
+        clients?.forEach(c => {
+            const s = c.stores?.find(st => st.id === v)
+            if (s) storeName = `${s.name} (${c.company})`
+        })
+        activeBadges.push({ key: `store-${v}`, filterKey: 'store_ids', value: v, label: storeName })
     })
 
     // Legacy single-select badges
@@ -130,7 +150,7 @@ export function TicketFilters({ filters, setFilters }: TicketFiltersProps) {
     }
 
     const removeBadge = (badge: typeof activeBadges[number]) => {
-        if (badge.filterKey === 'statuses' || badge.filterKey === 'priorities' || badge.filterKey === 'support_level_ids') {
+        if (badge.filterKey === 'statuses' || badge.filterKey === 'priorities' || badge.filterKey === 'support_level_ids' || badge.filterKey === 'store_ids') {
             toggleArrayFilter(badge.filterKey, badge.value)
         } else {
             setFilters(prev => ({ ...prev, [badge.filterKey]: 'all' }))
@@ -148,6 +168,7 @@ export function TicketFilters({ filters, setFilters }: TicketFiltersProps) {
             statuses: [],
             priorities: [],
             support_level_ids: [],
+            store_ids: [],
         }))
     }
 
@@ -191,8 +212,34 @@ export function TicketFilters({ filters, setFilters }: TicketFiltersProps) {
                     )}
                 </button>
 
-                {/* Filtres rapides legacy (Catégorie & Assigné) */}
-                <div className="flex items-center gap-3 w-full md:w-auto">
+                {/* Filtres rapides legacy (Catégorie & Assigné & Magasin) */}
+                <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                    <Select
+                        value={filters.store_ids?.[0] || 'all'}
+                        onValueChange={(val) => setFilters(prev => ({ ...prev, store_ids: val === 'all' ? [] : [val] }))}
+                    >
+                        <SelectTrigger className="w-full md:w-56 h-[38px] bg-black/40 border-white/10 text-foreground">
+                            <SelectValue placeholder="Magasin / Site" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-[300px]">
+                            <SelectItem value="all">Tous les magasins</SelectItem>
+                            {clients?.map((client) => {
+                                // On vérifie que le client a des stores
+                                if (!client.stores || client.stores.length === 0) return null;
+                                return (
+                                    <SelectGroup key={client.id}>
+                                        <SelectLabel className="text-xs text-muted-foreground">{client.company}</SelectLabel>
+                                        {client.stores.map(store => (
+                                            <SelectItem key={store.id} value={store.id} className="pl-6">
+                                                {store.name} - {store.city}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectGroup>
+                                );
+                            })}
+                        </SelectContent>
+                    </Select>
+
                     <select
                         value={filters.category || 'all'}
                         onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}

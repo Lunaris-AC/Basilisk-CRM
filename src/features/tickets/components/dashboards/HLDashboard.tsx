@@ -3,7 +3,7 @@
 import { useMyTickets, useMyStatsByDate, useGlobalStats } from '@/features/tickets/api/useTickets'
 import { TicketTable } from '@/features/tickets/components/TicketTable'
 import { Plus, Loader2, ChevronDown, ChevronUp, Pause, AlertTriangle, Clock, CalendarDays, Inbox, Activity, Shield, Zap } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { pickRandomTicket } from '@/features/tickets/actions'
 import { TicketFilters } from '@/components/TicketFilters'
@@ -41,6 +41,7 @@ function DistributionBar({ label, value, total, color }: { label: string; value:
 }
 
 export function HLDashboard() {
+    const [mounted, setMounted] = useState(false)
     const [filters, setFilters] = useState<Filters>({ search: '', status: 'all', priority: 'all', category: 'HL' })
     const { data: tickets, isLoading, error } = useMyTickets(filters)
     const { data: globalStats } = useGlobalStats()
@@ -53,6 +54,10 @@ export function HLDashboard() {
     const [statsDate, setStatsDate] = useState<Date>(new Date())
     const [datePickerOpen, setDatePickerOpen] = useState(false)
     const { data: personalStats } = useMyStatsByDate(statsDate.toISOString())
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
 
     // Flux tendu : exclure les tickets suspendus
     const activeTickets = tickets?.filter(t => t.status !== 'resolu' && t.status !== 'ferme' && t.status !== 'suspendu') || []
@@ -226,7 +231,7 @@ export function HLDashboard() {
                     <PopoverTrigger asChild>
                         <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 hover:border-cyan-500/40 text-cyan-300/80 text-xs font-bold transition-all hover:bg-cyan-500/15">
                             <CalendarDays className="w-3.5 h-3.5" />
-                            {format(statsDate, 'EEEE d MMMM yyyy', { locale: fr })}
+                            {mounted ? format(statsDate, 'EEEE d MMMM yyyy', { locale: fr }) : "..."}
                         </button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0 bg-primary/95 backdrop-blur-xl border-white/10 shadow-2xl" align="end">
@@ -279,7 +284,7 @@ export function HLDashboard() {
             <TicketFilters filters={filters} setFilters={setFilters} />
 
             <h2 className="text-xl font-bold text-foreground mt-10 mb-4 tracking-wide">Mes Tickets Actifs</h2>
-            <TicketTable tickets={activeTickets} isLoading={isLoading} error={error} showAssignButton={false} />
+            <TicketTable tickets={activeTickets} isLoading={!mounted || isLoading} error={error} showAssignButton={false} />
 
             {suspendedTickets.length > 0 && (
                 <div className="mt-8">

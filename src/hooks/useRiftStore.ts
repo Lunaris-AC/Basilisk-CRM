@@ -61,6 +61,7 @@ export interface RiftMessage {
         user_id: string
         profile?: { first_name: string; last_name: string }
     } | null
+    reactions?: RiftReaction[]
 }
 
 export interface RiftMessageEdit {
@@ -68,6 +69,13 @@ export interface RiftMessageEdit {
     message_id: string
     old_content: string
     created_at: string
+}
+
+export interface RiftReaction {
+    id: string
+    message_id: string
+    user_id: string
+    emoji: string
 }
 
 export interface RiftReadReceipt {
@@ -261,7 +269,8 @@ export const useRiftStore = create<RiftStore>((set, get) => ({
                 .from('rift_messages')
                 .select(`
                     *,
-                    profile:profiles!rift_messages_user_id_fkey(id, first_name, last_name, avatar_url, role)
+                    profile:profiles!rift_messages_user_id_fkey(id, first_name, last_name, avatar_url, role),
+                    reactions:rift_reactions(id, message_id, user_id, emoji)
                 `)
                 .eq('channel_id', channelId)
                 .order('created_at', { ascending: false })
@@ -525,6 +534,42 @@ export const useRiftStore = create<RiftStore>((set, get) => ({
                 (payload) => {
                     const updated = payload.new as RiftMessage
                     get().updateMessage(updated)
+                }
+            )
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'rift_reactions',
+                },
+                (payload) => {
+                    const reaction = payload.new as RiftReaction
+                    const msgs = get().messages
+                    const msg = msgs.find(m => m.id === reaction.message_id)
+                    if (msg) {
+                        const newReactions = [...(msg.reactions || []), reaction]
+                        get().updateMessage({ id: msg.id, reactions: newReactions })
+                    }
+                }
+            )
+            .on(
+                'postgres_changes',
+                {
+                    event: 'DELETE',
+                    schema: 'public',
+                    table: 'rift_reactions',
+                },
+                (payload) => {
+                    const deletedId = payload.old.id
+                    const msgs = get().messages
+                    for (const msg of msgs) {
+                        if (msg.reactions?.some(r => r.id === deletedId)) {
+                            const newReactions = msg.reactions.filter(r => r.id !== deletedId)
+                            get().updateMessage({ id: msg.id, reactions: newReactions })
+                            break
+                        }
+                    }
                 }
             )
             .subscribe()

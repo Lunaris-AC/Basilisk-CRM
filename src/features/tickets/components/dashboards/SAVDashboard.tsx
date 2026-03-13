@@ -4,10 +4,15 @@ import { useMyTickets, useUnassignedTickets } from '@/features/tickets/api/useTi
 import { TicketTable } from '@/features/tickets/components/TicketTable'
 import { TicketFilters } from '@/components/TicketFilters'
 import { TicketFilters as Filters } from '@/features/tickets/api/getTickets'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export function SAVDashboard() {
+    const [mounted, setMounted] = useState(false)
     const [filters, setFilters] = useState<Filters>({ search: '', status: 'all', priority: 'all', category: 'SAV' })
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
 
     // Le SAV voit ses tickets assignés ET les tickets de la file d'attente (escaladés niveau 2/3 ou catégorie SAV)
     const { data: myTickets, isLoading: loadingMy } = useMyTickets(filters)
@@ -39,7 +44,7 @@ export function SAVDashboard() {
             <TicketFilters filters={filters} setFilters={setFilters} />
 
             <h2 className="text-xl font-bold text-foreground mt-10 mb-4 tracking-wide">Tickets Service Après-Vente</h2>
-            <TicketTable tickets={tickets} isLoading={isGlobalLoading} error={null} showAssignButton={true} />
+            <TicketTable tickets={tickets} isLoading={!mounted || isGlobalLoading} error={null} showAssignButton={true} />
 
         </div>
     )

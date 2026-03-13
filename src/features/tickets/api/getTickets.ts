@@ -15,6 +15,7 @@ export interface TicketFilters {
     statuses?: string[]
     priorities?: string[]
     support_level_ids?: string[]
+    store_ids?: string[]
 }
 
 export interface TicketWithRelations {
@@ -126,6 +127,10 @@ export const getMyTickets = async (userId: string, filters?: TicketFilters): Pro
         query = query.eq('category', filters.category)
     }
 
+    if (filters?.store_ids && filters.store_ids.length > 0) {
+        query = query.in('store_id', filters.store_ids)
+    }
+
     const { data, error } = await query.order('created_at', { ascending: false })
 
     if (error) throw new Error(error.message)
@@ -175,6 +180,10 @@ export const getUnassignedTickets = async (filters?: TicketFilters): Promise<Tic
 
     if (filters?.category && filters.category !== 'all') {
         query = query.eq('category', filters.category)
+    }
+
+    if (filters?.store_ids && filters.store_ids.length > 0) {
+        query = query.in('store_id', filters.store_ids)
     }
 
     const { data, error } = await query.order('created_at', { ascending: false })

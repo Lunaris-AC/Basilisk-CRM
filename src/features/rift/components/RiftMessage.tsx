@@ -6,11 +6,13 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { differenceInMinutes, format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { Check, CheckCheck, CornerUpLeft, History, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
+import { Check, CheckCheck, CornerUpLeft, History, MoreHorizontal, Pencil, Trash2, SmilePlus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useRiftStore, type RiftMessage, type RiftMessageEdit } from '@/hooks/useRiftStore'
-import { deleteRiftMessage, editRiftMessage, getRiftMessageEdits } from '@/features/rift/actions'
+import { deleteRiftMessage, editRiftMessage, getRiftMessageEdits, toggleRiftReaction } from '@/features/rift/actions'
 import { toast } from 'sonner'
+import EmojiPicker from 'emoji-picker-react'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 // ── Utilitaire : séparer le texte des pièces jointes markdown ──
 const ATTACHMENT_REGEX = /\n*(?:!\[[^\]]*\]\([^)]+\)|\[📎\s*[^\]]*\]\([^)]+\))/g
@@ -167,10 +169,12 @@ export function RiftMessageComponent({ message, currentUserId, isLastByUser = fa
         const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g
         // Pattern pour les liens de fichiers : [📎 nom](url)
         const fileRegex = /\[📎\s*([^\]]*)\]\(([^)]+)\)/g
+        // Pattern pour les mentions (@PrénomNom)
+        const mentionRegex = /@([a-zA-ZÀ-ÿ0-9_]+)/g
 
         const parts: React.ReactNode[] = []
         let lastIndex = 0
-        const combined = new RegExp(`${imageRegex.source}|${fileRegex.source}`, 'g')
+        const combined = new RegExp(`${imageRegex.source}|${fileRegex.source}|${mentionRegex.source}`, 'g')
         let match: RegExpExecArray | null
 
         while ((match = combined.exec(content)) !== null) {
@@ -183,9 +187,9 @@ export function RiftMessageComponent({ message, currentUserId, isLastByUser = fa
                 )
             }
 
-            if (match[0].startsWith('!')) {
-                // Image
-                const alt = match[1]
+            if (match[0].startsWith('![')) {
+                // Image ou GIF
+                const alt = match[1] || 'Image'
                 const url = match[2]
                 parts.push(
                     <img
@@ -196,7 +200,7 @@ export function RiftMessageComponent({ message, currentUserId, isLastByUser = fa
                         loading="lazy"
                     />
                 )
-            } else {
+            } else if (match[0].startsWith('[📎')) {
                 // Fichier
                 const fileName = match[3] ?? match[1]
                 const url = match[4] ?? match[2]
@@ -210,6 +214,15 @@ export function RiftMessageComponent({ message, currentUserId, isLastByUser = fa
                     >
                         📎 {fileName}
                     </a>
+                )
+            } else if (match[0].startsWith('@')) {
+                // Mention
+                const mentionName = match[5] || match[0].substring(1)
+                // Coloriser la mention
+                parts.push(
+                    <span key={`mention-${match.index}`} className="font-bold text-primary bg-primary/10 px-1 py-0.5 rounded-md">
+                        @{mentionName}
+                    </span>
                 )
             }
 
@@ -372,6 +385,25 @@ export function RiftMessageComponent({ message, currentUserId, isLastByUser = fa
                             'absolute -top-8 flex items-center gap-0.5 bg-black/80 backdrop-blur-xl border border-white/10 rounded-lg px-1 py-0.5 shadow-xl z-10',
                             isOwn ? 'right-0' : 'left-0'
                         )}>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <button
+                                        className="p-1.5 rounded hover:bg-white/10 transition-colors text-muted-foreground hover:text-foreground"
+                                        title="Ajouter une réaction"
+                                    >
+                                        <SmilePlus className="w-3.5 h-3.5" />
+                                    </button>
+                                </PopoverTrigger>
+                                <PopoverContent side="top" align="center" className="w-auto p-0 border-none bg-transparent shadow-none">
+                                    <EmojiPicker
+                                        onEmojiClick={async (emojiData) => {
+                                            const res = await toggleRiftReaction(message.id, emojiData.emoji)
+                                            if (res.error) toast.error(res.error)
+                                        }}
+                                        theme={'dark' as any}
+                                    />
+                                </PopoverContent>
+                            </Popover>
                             <button
                                 onClick={() => setReplyingTo(message)}
                                 className="p-1.5 rounded hover:bg-white/10 transition-colors text-muted-foreground hover:text-foreground"
@@ -414,6 +446,37 @@ export function RiftMessageComponent({ message, currentUserId, isLastByUser = fa
                         </div>
                     )}
                 </div>
+
+                {/* Réactions */}
+                {message.reactions && message.reactions.length > 0 && (
+                    <div className={cn('flex flex-wrap gap-1 mt-1 z-10', isOwn ? 'justify-end' : 'justify-start')}>
+                        {Object.entries(
+                            message.reactions.reduce((acc, r) => {
+                                if (!acc[r.emoji]) acc[r.emoji] = { count: 0, hasReacted: false }
+                                acc[r.emoji].count++
+                                if (r.user_id === currentUserId) acc[r.emoji].hasReacted = true
+                                return acc
+                            }, {} as Record<string, { count: number, hasReacted: boolean }>)
+                        ).map(([emoji, { count, hasReacted }]) => (
+                            <button
+                                key={emoji}
+                                onClick={async () => {
+                                    const res = await toggleRiftReaction(message.id, emoji);
+                                    if (res.error) toast.error(res.error);
+                                }}
+                                className={cn(
+                                    'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs border transition-colors',
+                                    hasReacted 
+                                        ? 'bg-primary/20 border-primary/40 text-primary' 
+                                        : 'bg-white/5 border-white/10 text-muted-foreground hover:bg-white/10'
+                                )}
+                            >
+                                <span>{emoji}</span>
+                                <span className="font-semibold">{count}</span>
+                            </button>
+                        ))}
+                    </div>
+                )}
 
                 {/* Historique des éditions (dropdown) */}
                 {showEdits && edits.length > 0 && (

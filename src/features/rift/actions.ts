@@ -267,6 +267,37 @@ export async function getRiftMessageEdits(messageId: string) {
 }
 
 // ==========================================
+// REACTIONS
+// ==========================================
+
+export async function toggleRiftReaction(messageId: string, emoji: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Non authentifié.' }
+
+    const { data: existing } = await supabase
+        .from('rift_reactions')
+        .select('id')
+        .eq('message_id', messageId)
+        .eq('user_id', user.id)
+        .eq('emoji', emoji)
+        .maybeSingle()
+
+    if (existing) {
+        const { error } = await supabase.from('rift_reactions').delete().eq('id', existing.id)
+        if (error) return { error: error.message }
+    } else {
+        const { error } = await supabase.from('rift_reactions').insert({
+            message_id: messageId,
+            user_id: user.id,
+            emoji
+        })
+        if (error) return { error: error.message }
+    }
+    return { success: true }
+}
+
+// ==========================================
 // UPLOAD ATTACHMENTS
 // ==========================================
 

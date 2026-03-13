@@ -26,3 +26,26 @@ export async function updateMyProfile(formData: { first_name: string; last_name:
     revalidatePath('/parametres')
     return { success: true }
 }
+
+export async function updateMyAvatarUrl(avatar_url: string) {
+    const supabase = await createClient()
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Non authentifié' }
+
+    const { error } = await supabase
+        .from('profiles')
+        .update({
+            avatar_url,
+            updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id)
+
+    if (error) {
+        console.error('Error updating avatar:', error)
+        return { error: 'Erreur lors de la mise à jour de l\'avatar' }
+    }
+
+    revalidatePath('/parametres')
+    return { success: true }
+}

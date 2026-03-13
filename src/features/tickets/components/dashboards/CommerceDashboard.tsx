@@ -4,9 +4,10 @@ import { useMyTickets } from '@/features/tickets/api/useTickets'
 import { TicketTable } from '@/features/tickets/components/TicketTable'
 import { TicketFilters } from '@/components/TicketFilters'
 import { TicketFilters as Filters } from '@/features/tickets/api/getTickets'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export function CommerceDashboard() {
+    const [mounted, setMounted] = useState(false)
     const [filters, setFilters] = useState<Filters>({ search: '', status: 'all', priority: 'all', category: 'COMMERCE' })
 
     // Le commercial voit ses propres tickets (l'API getMyTickets filtre déjà par créateur_id = MOI)
@@ -14,6 +15,10 @@ export function CommerceDashboard() {
     // Pour être certain, on pourrait filtrer côté frontend `ticket.category === 'COMMERCE'` mais ce n'est pas strict.
     // L'API a été faite pour `getMyTickets`, ce qui est parfait pour un commercial.
     const { data: tickets, isLoading, error } = useMyTickets(filters)
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
 
     return (
         <div className="space-y-8 pb-10">
@@ -31,7 +36,7 @@ export function CommerceDashboard() {
             <TicketFilters filters={filters} setFilters={setFilters} />
 
             <h2 className="text-xl font-bold text-foreground mt-10 mb-4 tracking-wide">Mes Tickets</h2>
-            <TicketTable tickets={tickets} isLoading={isLoading} error={error} showAssignButton={false} />
+            <TicketTable tickets={tickets} isLoading={!mounted || isLoading} error={error} showAssignButton={false} />
 
         </div>
     )

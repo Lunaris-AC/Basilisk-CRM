@@ -8,12 +8,14 @@ import { TicketFilters } from '@/components/TicketFilters'
 import { TicketFilters as Filters } from '@/features/tickets/api/getTickets'
 
 export function IncidentsContent() {
+    const [mounted, setMounted] = useState(false)
     const [filters, setFilters] = useState<Filters>({ search: '', status: 'all', priority: 'all' })
     const { data: tickets, isLoading, error } = useUnassignedTickets(filters)
     const { data: user } = useAuthUser()
     const [userRole, setUserRole] = useState<string>('')
 
     useEffect(() => {
+        setMounted(true)
         const fetchRole = async () => {
             if (user?.id) {
                 const supabase = createClient()
@@ -57,7 +59,7 @@ export function IncidentsContent() {
 
             {/* LISTE DES TICKETS (DATA TABLE) */}
             <div className="pt-4">
-                <TicketTable tickets={tickets} isLoading={isLoading} error={error} showAssignButton={true} userRole={userRole} />
+                <TicketTable tickets={tickets} isLoading={!mounted || isLoading} error={error} showAssignButton={true} userRole={userRole} />
             </div>
 
         </div>

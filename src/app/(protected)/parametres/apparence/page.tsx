@@ -2,15 +2,17 @@
 
 import { useState, useEffect } from 'react'
 import { useTheme } from 'next-themes'
-import { Palette, Moon, Sun, Monitor, Check, Sparkles, Compass } from 'lucide-react'
+import { Palette, Moon, Sun, Monitor, Check, Sparkles, Compass, Paintbrush } from 'lucide-react'
 import { OLYMPE_THEMES, type Theme as OlympeTheme } from '@/lib/themes'
 import { cn } from '@/lib/utils'
 import { useAppTutorial } from '@/hooks/useAppTutorial'
+import { useThemeCustomizer } from '@/hooks/useThemeCustomizer'
 
 export default function ApparencePage() {
     const { theme, setTheme } = useTheme()
     const [mounted, setMounted] = useState(false)
     const [currentThemeId, setCurrentThemeId] = useState('default')
+    const { customColors, updateColor, resetCustomColors } = useThemeCustomizer()
 
     // SPRINT 43 : Tutoriel interactif
     const { startTutorial } = useAppTutorial()
@@ -46,6 +48,7 @@ export default function ApparencePage() {
     const handleThemeSelect = (themeId: string) => {
         setCurrentThemeId(themeId)
         localStorage.setItem('basilisk-olympe-theme', themeId)
+        resetCustomColors()
 
         if (themeId === 'default') {
             applyOlympeTheme(null)
@@ -158,6 +161,81 @@ export default function ApparencePage() {
                             </button>
                         )
                     })}
+                </div>
+            </section>
+
+            {/* SPRINT 53.1 : Etch-a-theme Customizer */}
+            <section className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-xl bg-primary/10">
+                            <Paintbrush className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-bold text-foreground">Etch-a-theme</h3>
+                            <p className="text-xs text-muted-foreground">Personnalisation extrême des couleurs principales.</p>
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={() => {
+                            resetCustomColors()
+                            handleThemeSelect('default')
+                        }}
+                        className="text-[10px] font-black uppercase tracking-tighter text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
+                    >
+                        Réinitialiser
+                    </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Primary Color Picker */}
+                    <div className="p-5 rounded-3xl border border-white/10 bg-white/5 flex flex-col gap-3">
+                        <label className="text-sm font-bold text-foreground">Couleur Primaire (--primary)</label>
+                        <div className="flex items-center gap-4">
+                            <input 
+                                type="color" 
+                                value={customColors.primary || '#000000'}
+                                onChange={(e) => updateColor('primary', e.target.value)}
+                                className="w-12 h-12 rounded cursor-pointer bg-transparent border-0" 
+                            />
+                            <div className="flex-1 text-xs text-muted-foreground font-mono">
+                                {customColors.primary || 'Non défini'}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Background Color Picker */}
+                    <div className="p-5 rounded-3xl border border-white/10 bg-white/5 flex flex-col gap-3">
+                        <label className="text-sm font-bold text-foreground">Fond (--background)</label>
+                        <div className="flex items-center gap-4">
+                            <input 
+                                type="color" 
+                                value={customColors.background || '#000000'}
+                                onChange={(e) => updateColor('background', e.target.value)}
+                                className="w-12 h-12 rounded cursor-pointer bg-transparent border-0" 
+                            />
+                            <div className="flex-1 text-xs text-muted-foreground font-mono">
+                                {customColors.background || 'Non défini'}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Border Color Picker */}
+                    <div className="p-5 rounded-3xl border border-white/10 bg-white/5 flex flex-col gap-3">
+                        <label className="text-sm font-bold text-foreground">Bordures (--border)</label>
+                        <div className="flex items-center gap-4">
+                            <input 
+                                type="color" 
+                                value={customColors.border || '#000000'}
+                                onChange={(e) => updateColor('border', e.target.value)}
+                                className="w-12 h-12 rounded cursor-pointer bg-transparent border-0" 
+                            />
+                            <div className="flex-1 text-xs text-muted-foreground font-mono">
+                                {customColors.border || 'Non défini'}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 

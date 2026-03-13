@@ -4,8 +4,15 @@ import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import Link from 'next/link'
 import { Ticket, FileText, BookOpen, ExternalLink, Loader2, Building2, Code2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
 
 export function ClientDashboard() {
+    const [mounted, setMounted] = useState(false)
+    
+    useEffect(() => {
+        setMounted(true)
+    }, [])
+
     // Fetch le contact_id du profil connecté, puis les tickets de son magasin
     const { data, isLoading } = useQuery({
         queryKey: ['client-dashboard'],
@@ -88,7 +95,7 @@ export function ClientDashboard() {
         suspendu: 'bg-primary/15 text-primary/80 border-primary/30',
     }
 
-    if (isLoading) return (
+    if (!mounted || isLoading) return (
         <div className="flex items-center justify-center h-96">
             <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
         </div>
@@ -144,7 +151,7 @@ export function ClientDashboard() {
                                 <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${statusColors[t.status] || 'bg-white/5 text-muted-foreground border-white/10'}`}>{t.status}</span>
                                 <span className="text-foreground/70 text-xs truncate flex-1">{t.title}</span>
                                 <span className="text-foreground/20 text-[10px] shrink-0">{t.category}</span>
-                                <span className="text-foreground/15 text-[10px] shrink-0">{new Date(t.created_at).toLocaleDateString('fr-FR')}</span>
+                                <span className="text-foreground/15 text-[10px] shrink-0">{mounted ? new Date(t.created_at).toLocaleDateString('fr-FR') : '...'}</span>
                                 <ExternalLink className="w-3 h-3 text-foreground/20 group-hover:text-cyan-400 transition-colors shrink-0" />
                             </Link>
                         ))}
