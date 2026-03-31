@@ -171,6 +171,7 @@ export function TicketTable({ tickets, isLoading, error, showAssignButton = fals
                                             priority={ticket.priority}
                                             status={ticket.status}
                                             createdAt={ticket.created_at}
+                                            updatedAt={(ticket as any).updated_at}
                                         />
                                     </div>
                                 </TableCell>

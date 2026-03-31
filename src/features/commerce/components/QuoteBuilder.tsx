@@ -173,7 +173,7 @@ export function QuoteBuilder({ catalogue }: QuoteBuilderProps) {
                         <SelectTrigger className="bg-black/20 border-white/10 text-foreground focus:ring-emerald-500/50">
                             <SelectValue placeholder="Sélectionner un client..." />
                         </SelectTrigger>
-                        <SelectContent className="bg-primary border-white/10 text-foreground max-h-[300px]">
+                        <SelectContent className="bg-card border-white/10 text-foreground max-h-[300px]">
                             {clients.map(c => (
                                 <SelectItem key={c.id} value={c.id} className="hover:bg-white/10 cursor-pointer">
                                     {c.company}
@@ -189,7 +189,7 @@ export function QuoteBuilder({ catalogue }: QuoteBuilderProps) {
                         <SelectTrigger className="bg-black/20 border-white/10 text-foreground focus:ring-emerald-500/50 disabled:opacity-50">
                             <SelectValue placeholder={clientId ? "Sélectionner un magasin..." : "Choisissez un client d'abord"} />
                         </SelectTrigger>
-                        <SelectContent className="bg-primary border-white/10 text-foreground max-h-[300px]">
+                        <SelectContent className="bg-card border-white/10 text-foreground max-h-[300px]">
                             {availableStores.map(s => (
                                 <SelectItem key={s.id} value={s.id} className="hover:bg-white/10 cursor-pointer">
                                     {s.name} {s.city ? `(${s.city})` : ''}
@@ -248,7 +248,7 @@ export function QuoteBuilder({ catalogue }: QuoteBuilderProps) {
                                             <SelectTrigger className="bg-black/20 border-white/10 text-foreground w-full h-8 text-xs">
                                                 <SelectValue placeholder="Piocher dans le catalogue..." />
                                             </SelectTrigger>
-                                            <SelectContent className="bg-primary border-white/10 text-foreground max-w-sm">
+                                            <SelectContent className="bg-card border-white/10 text-foreground max-w-sm">
                                                 <SelectItem value="custom" className="text-emerald-400 font-medium text-xs">-- Ligne Libre --</SelectItem>
                                                 {catalogue.map(c => (
                                                     <SelectItem key={c.id} value={c.id} className="text-xs">

@@ -208,7 +208,7 @@ export function EquipmentSheet({ equipment, open, onOpenChange }: EquipmentSheet
                             <SelectTrigger className="bg-white/5 border-white/10 text-foreground">
                                 <SelectValue />
                             </SelectTrigger>
-                            <SelectContent className="bg-primary border-white/10">
+                            <SelectContent className="bg-card border-white/10">
                                 {STATUS_OPTIONS.map(opt => (
                                     <SelectItem key={opt.value} value={opt.value} className="text-foreground/80 focus:bg-white/10 focus:text-foreground">
                                         {opt.label}

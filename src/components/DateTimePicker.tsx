@@ -57,7 +57,7 @@ export function DateTimePicker({ value, onChange, placeholder = 'Sélectionner u
                     )}
                 </button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 bg-primary/95 backdrop-blur-xl border-white/10 shadow-2xl shadow-black/50" align="start" sideOffset={8}>
+            <PopoverContent className="w-auto p-0 bg-card/95 backdrop-blur-xl border-white/10 shadow-2xl shadow-black/50" align="start" sideOffset={8}>
                 <div className="p-1">
                     <Calendar
                         mode="single"
@@ -97,7 +97,7 @@ export function DateTimePicker({ value, onChange, placeholder = 'Sélectionner u
                             className="bg-black/60 border border-white/10 text-foreground rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30 appearance-none cursor-pointer hover:border-amber-500/30 transition-colors"
                         >
                             {Array.from({ length: 24 }, (_, i) => (
-                                <option key={i} value={i} className="bg-primary">
+                                <option key={i} value={i} className="bg-background">
                                     {i.toString().padStart(2, '0')}
                                 </option>
                             ))}
@@ -109,7 +109,7 @@ export function DateTimePicker({ value, onChange, placeholder = 'Sélectionner u
                             className="bg-black/60 border border-white/10 text-foreground rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30 appearance-none cursor-pointer hover:border-amber-500/30 transition-colors"
                         >
                             {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map(m => (
-                                <option key={m} value={m} className="bg-primary">
+                                <option key={m} value={m} className="bg-background">
                                     {m.toString().padStart(2, '0')}
                                 </option>
                             ))}

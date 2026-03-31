@@ -87,7 +87,7 @@ export function FormateurDetailsCard({ ticketId, details, isClosed }: { ticketId
 
             {/* Modale d'édition */}
             <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-                <DialogContent className="bg-primary border-emerald-500/20 text-foreground sm:max-w-md">
+                <DialogContent className="bg-card border-emerald-500/20 text-foreground sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle className="text-xl font-bold text-emerald-300 flex items-center gap-2">
                             <GraduationCap className="w-5 h-5" />

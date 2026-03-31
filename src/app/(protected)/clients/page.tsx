@@ -247,7 +247,7 @@ export default function ClientsPage() {
 
             {/* Add Contact Modal */}
             <Dialog open={contactModalOpen} onOpenChange={setContactModalOpen}>
-                <DialogContent className="bg-primary border-white/10 text-foreground sm:max-w-md">
+                <DialogContent className="bg-card border-white/10 text-foreground sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle className="text-xl font-bold text-emerald-300 flex items-center gap-2">
                             <UserCircle className="w-5 h-5" />

@@ -29,6 +29,8 @@ interface SlaBadgeProps {
     status: string
     /** Date de création du ticket */
     createdAt: string
+    /** Date de dernière mise à jour (résolution) */
+    updatedAt?: string
 }
 
 /** Formatte une durée en minutes en texte lisible */
@@ -50,6 +52,7 @@ export function SlaBadge({
     priority,
     status,
     createdAt,
+    updatedAt,
 }: SlaBadgeProps) {
     const [now, setNow] = useState(() => new Date())
 
@@ -62,6 +65,10 @@ export function SlaBadge({
     const slaLimitMinutes = (SLA_HOURS[priority] ?? 48) * 60
 
     return useMemo(() => {
+        // Si aucune donnée SLA provenant du backend n'est présente, on ne tente pas 
+        // de faire un fallback (qui serait faux et afficherait des chiffres aberrants comme +884h)
+        if (!slaDeadlineAt) return null;
+
         const isStopped = STOP_STATUSES.includes(status)
         const isPaused = PAUSE_STATUSES.includes(status)
         const start = slaStartAt ? new Date(slaStartAt) : new Date(createdAt)
@@ -70,10 +77,13 @@ export function SlaBadge({
         // CAS 1 : Ticket résolu ou fermé → badge statique
         // ═══════════════════════════════════════════════════
         if (isStopped) {
-            // Temps total = elapsed minutes accumulées, ou bien diff start→now si pas de deadline
-            const totalMinutes = slaElapsedMinutes
-                ?? Math.floor((now.getTime() - start.getTime()) / 60_000)
-            const wasBreached = totalMinutes > slaLimitMinutes
+            // Sans updatedAt, on ne peut pas savoir le temps exact écoulé pour un ticket résolu.
+            // On se fie uniquement à updatedAt vs slaDeadlineAt pour savoir s'il est hors SLA.
+            if (!updatedAt) return null;
+            
+            const resolvedTime = new Date(updatedAt).getTime()
+            const deadlineTime = new Date(slaDeadlineAt).getTime()
+            const wasBreached = resolvedTime > deadlineTime
 
             return (
                 <div className={cn(
@@ -83,7 +93,7 @@ export function SlaBadge({
                         : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400/70'
                 )}>
                     <CheckCircle2 className="w-3 h-3" />
-                    <span>{wasBreached ? 'Résolu hors SLA' : `Résolu en ${formatDuration(totalMinutes)}`}</span>
+                    <span>{wasBreached ? 'Résolu hors SLA' : 'SLA respecté'}</span>
                 </div>
             )
         }
@@ -141,36 +151,8 @@ export function SlaBadge({
         }
 
         // ═══════════════════════════════════════════════════
-        // CAS 4 : Pas de deadline backend → fallback sur created_at
+        // CAS 4 : Pas de deadline backend → ne plus tenter de deviner 
         // ═══════════════════════════════════════════════════
-        const elapsedMinutes = (now.getTime() - start.getTime()) / 60_000
-        const remainingMinutes = slaLimitMinutes - elapsedMinutes
-        const ratio = remainingMinutes / slaLimitMinutes
-
-        if (remainingMinutes <= 0) {
-            const overMinutes = Math.abs(remainingMinutes)
-            return (
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-400 text-[10px] font-black animate-pulse shadow-[0_0_12px_rgba(244,63,94,0.25)] backdrop-blur-md whitespace-nowrap">
-                    <AlertCircle className="w-3 h-3" />
-                    <span>+{formatDuration(overMinutes)}</span>
-                </div>
-            )
-        }
-
-        if (ratio < 0.5) {
-            return (
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-500/15 border border-orange-500/30 text-orange-400 text-[10px] font-bold backdrop-blur-sm whitespace-nowrap">
-                    <Timer className="w-3 h-3" />
-                    <span>{formatDuration(remainingMinutes)}</span>
-                </div>
-            )
-        }
-
-        return (
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-[10px] font-bold backdrop-blur-sm whitespace-nowrap">
-                <Clock className="w-3 h-3" />
-                <span>{formatDuration(remainingMinutes)}</span>
-            </div>
-        )
-    }, [now, slaStartAt, slaDeadlineAt, slaPausedAt, slaElapsedMinutes, priority, status, createdAt, slaLimitMinutes])
+        return null;
+    }, [now, slaStartAt, slaDeadlineAt, slaPausedAt, slaElapsedMinutes, priority, status, createdAt, updatedAt, slaLimitMinutes])
 }

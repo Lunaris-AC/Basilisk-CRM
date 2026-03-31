@@ -115,7 +115,7 @@ export function AddCatalogueDialog({ open, onOpenChange }: AddCatalogueDialogPro
                             <SelectTrigger className="bg-white/5 border-white/10 text-foreground">
                                 <SelectValue placeholder="Sélectionner une catégorie..." />
                             </SelectTrigger>
-                            <SelectContent className="bg-primary border-white/10">
+                            <SelectContent className="bg-card border-white/10">
                                 {CATEGORIES.map(cat => (
                                     <SelectItem key={cat} value={cat} className="text-foreground/80 focus:bg-white/10 focus:text-foreground">
                                         {cat}

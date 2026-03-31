@@ -29,6 +29,7 @@ export interface TicketWithRelations {
     support_level: { id: string; name: string; color: string; rank: number } | null
     resume_at: string | null
     created_at: string
+    updated_at: string
     category: 'HL' | 'COMMERCE' | 'SAV' | 'FORMATION' | 'DEV'
     // SPRINT 32 : Champs SLA
     sla_start_at: string | null
@@ -62,7 +63,8 @@ export const getMyTickets = async (userId: string, filters?: TicketFilters): Pro
     let query = supabase
         .from('tickets')
         .select(`
-      id, title, description, status, priority, escalation_level, created_at, support_level_id,
+      id, title, description, status, priority, escalation_level, created_at, updated_at, support_level_id,
+      sla_start_at, sla_deadline_at, sla_paused_at, sla_elapsed_minutes,
       clients (company),
       profiles!tickets_assignee_id_fkey (first_name, last_name),
       support_levels (id, name, color, rank)
@@ -142,7 +144,8 @@ export const getUnassignedTickets = async (filters?: TicketFilters): Promise<Tic
     let query = supabase
         .from('tickets')
         .select(`
-      id, title, description, status, priority, escalation_level, created_at, support_level_id,
+      id, title, description, status, priority, escalation_level, created_at, updated_at, support_level_id,
+      sla_start_at, sla_deadline_at, sla_paused_at, sla_elapsed_minutes,
       clients (company),
       support_levels (id, name, color, rank)
     `)
@@ -189,7 +192,14 @@ export const getUnassignedTickets = async (filters?: TicketFilters): Promise<Tic
     const { data, error } = await query.order('created_at', { ascending: false })
 
     if (error) throw new Error(error.message)
-    return formatTickets(data)
+    const formatted = formatTickets(data)
+
+    // Placer les tickets "resolu" à la fin de la liste dans la file
+    return formatted.sort((a, b) => {
+        if (a.status === 'resolu' && b.status !== 'resolu') return 1
+        if (a.status !== 'resolu' && b.status === 'resolu') return -1
+        return 0
+    })
 }
 
 // ============== SPRINT 17 : SD (BUGS & ÉVOLUTIONS DEV) ==============
@@ -206,7 +216,8 @@ export const getSDs = async (filters?: SDFilters): Promise<TicketWithRelations[]
     let query = supabase
         .from('tickets')
         .select(`
-      id, title, description, status, priority, escalation_level, created_at, category, support_level_id,
+      id, title, description, status, priority, escalation_level, created_at, updated_at, category, support_level_id,
+      sla_start_at, sla_deadline_at, sla_paused_at, sla_elapsed_minutes,
       clients (company),
       creator:profiles!tickets_creator_id_fkey (id, first_name, last_name),
       assignee:profiles!tickets_assignee_id_fkey (id, first_name, last_name),
@@ -384,7 +395,7 @@ export async function getTicketById(id: string): Promise<TicketWithRelations | n
     const { data: ticket, error } = await supabase
         .from('tickets')
         .select(`
-            id, title, description, status, priority, escalation_level, created_at, category,
+            id, title, description, status, priority, escalation_level, created_at, updated_at, category,
             linked_sd_id, support_level_id,
             sla_start_at, sla_deadline_at, sla_paused_at, sla_elapsed_minutes,
             support_level:support_levels (id, name, color, rank),

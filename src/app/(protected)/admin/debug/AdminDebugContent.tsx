@@ -425,7 +425,7 @@ function TicketsExplorerTab() {
 
             {/* Force Edit Modal */}
             <Dialog open={!!editTicketId} onOpenChange={(open) => { if (!open) setEditTicketId(null) }}>
-                <DialogContent className="bg-primary/95 backdrop-blur-xl border-white/10 text-foreground max-w-lg">
+                <DialogContent className="bg-card/95 backdrop-blur-xl border-white/10 text-foreground max-w-lg">
                     <DialogHeader>
                         <DialogTitle className="text-lg font-bold flex items-center gap-2">
                             <Pencil className="w-4 h-4 text-primary/80" /> Force Edit — Ticket

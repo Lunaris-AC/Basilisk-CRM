@@ -234,7 +234,7 @@ export function HLDashboard() {
                             {mounted ? format(statsDate, 'EEEE d MMMM yyyy', { locale: fr }) : "..."}
                         </button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 bg-primary/95 backdrop-blur-xl border-white/10 shadow-2xl" align="end">
+                    <PopoverContent className="w-auto p-0 bg-card/95 backdrop-blur-xl border-white/10 shadow-2xl" align="end">
                         <Calendar
                             mode="single"
                             selected={statsDate}

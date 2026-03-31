@@ -137,7 +137,7 @@ export function CatalogueManager({ catalogue }: { catalogue: CommercialCatalogue
                         <SelectTrigger className="w-full md:w-48 bg-white/5 border-white/10 text-foreground h-11 rounded-xl">
                             <SelectValue placeholder="Catégorie" />
                         </SelectTrigger>
-                        <SelectContent className="bg-primary border-white/10 text-foreground">
+                        <SelectContent className="bg-card border-white/10 text-foreground">
                             <SelectItem value="ALL">Toutes les catégories</SelectItem>
                             <SelectItem value="MATERIEL">Matériel</SelectItem>
                             <SelectItem value="LICENCE">Licence</SelectItem>
@@ -249,7 +249,7 @@ export function CatalogueManager({ catalogue }: { catalogue: CommercialCatalogue
                                 <SelectTrigger className="bg-white/5 border-white/10 text-foreground focus:ring-primary">
                                     <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent className="bg-primary border-white/10 text-foreground">
+                                <SelectContent className="bg-card border-white/10 text-foreground">
                                     <SelectItem value="MATERIEL">Matériel</SelectItem>
                                     <SelectItem value="LICENCE">Licence</SelectItem>
                                     <SelectItem value="SERVICE">Service</SelectItem>
@@ -267,7 +267,7 @@ export function CatalogueManager({ catalogue }: { catalogue: CommercialCatalogue
                                     <SelectTrigger className="bg-white/5 border-white/10 text-foreground focus:ring-primary">
                                         <SelectValue placeholder="Sélectionnez un modèle..." />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-primary border-white/10 text-foreground max-h-[200px]">
+                                    <SelectContent className="bg-card border-white/10 text-foreground max-h-[200px]">
                                         <SelectItem value="none">Aucun modèle lié</SelectItem>
                                         {equipmentModels.map(m => (
                                             <SelectItem key={m.id} value={m.id}>{m.label}</SelectItem>
