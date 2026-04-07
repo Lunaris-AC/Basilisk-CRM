@@ -30,7 +30,7 @@ export default function RiftPage() {
 
             supabase
                 .from('profiles')
-                .select('role')
+                .select('role, support_level')
                 .eq('id', user.id)
                 .single()
                 .then(({ data: profile }) => {

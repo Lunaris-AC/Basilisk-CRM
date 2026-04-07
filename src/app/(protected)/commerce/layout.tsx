@@ -19,7 +19,7 @@ export default async function CommerceLayout({
     // 2. Vérification du rôle
     const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, support_level')
         .eq('id', user.id)
         .single()
 

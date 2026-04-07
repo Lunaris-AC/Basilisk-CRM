@@ -183,7 +183,7 @@ export default function ProfilPage() {
                                 <h3 className="text-xl font-bold text-foreground">{profile?.first_name} {profile?.last_name}</h3>
                                 <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/20 border border-primary/30 text-[10px] font-black tracking-widest text-primary/80 uppercase">
                                     <ShieldCheck className="w-3.5 h-3.5" />
-                                    {profile?.role === 'N4' ? 'ADMIN N4' : `NIVEAU ${profile?.role}`}
+                                    {profile?.role === 'TECHNICIEN' ? (profile?.support_level === 'N4' ? 'ADMIN N4' : `TECH ${profile?.support_level}`) : `NIVEAU ${profile?.role}`}
                                 </div>
                             </div>
 

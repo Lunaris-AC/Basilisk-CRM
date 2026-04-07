@@ -139,7 +139,7 @@ export const getMyTickets = async (userId: string, filters?: TicketFilters): Pro
     return formatTickets(data)
 }
 
-export const getUnassignedTickets = async (filters?: TicketFilters): Promise<TicketWithRelations[]> => {
+export const getUnassignedTickets = async (filters?: TicketFilters, userRolesLevel?: { role: string; support_level_id?: string | null }): Promise<TicketWithRelations[]> => {
     const supabase = createClient()
     let query = supabase
         .from('tickets')
@@ -151,6 +151,15 @@ export const getUnassignedTickets = async (filters?: TicketFilters): Promise<Tic
     `)
         .is('assignee_id', null)
         .neq('category', 'DEV') // Exclure les SD de la file d'attente
+
+    // Filtrer par niveau de support du technicien
+    if (userRolesLevel && userRolesLevel.role === 'TECHNICIEN') {
+        if (userRolesLevel.support_level_id) {
+            query = query.or(`support_level_id.eq.${userRolesLevel.support_level_id},support_level_id.is.null`)
+        } else {
+             query = query.is('support_level_id', null)
+        }
+    }
 
     // SPRINT 40 : Filtres multi-sélection (facettes)
     if (filters?.statuses && filters.statuses.length > 0) {
@@ -382,7 +391,8 @@ export interface TicketComment {
     author: {
         first_name: string
         last_name: string
-        role: string
+        role: string;
+  support_level?: string
     }
 }
 
@@ -524,7 +534,8 @@ export interface AuditLogEntry {
     user: {
         first_name: string
         last_name: string
-        role: string
+        role: string;
+  support_level?: string
     } | null
 }
 
@@ -556,7 +567,8 @@ export async function getTicketAuditLogs(ticketId: string): Promise<AuditLogEntr
                 : null
 
     // 3. Batch-fetch profiles for all unique user ids
-    let profileMap: Record<string, { first_name: string; last_name: string; role: string }> = {}
+    let profileMap: Record<string, { first_name: string; last_name: string; role: string;
+  support_level?: string }> = {}
 
     if (userIdKey) {
         const userIds = [...new Set(logs.map(l => (l as any)[userIdKey]).filter(Boolean))] as string[]

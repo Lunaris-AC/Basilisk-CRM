@@ -37,13 +37,13 @@ function WikiPageContent() {
             const supabase = createClient()
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) return null
-            const { data } = await supabase.from('profiles').select('id, role, first_name, last_name').eq('id', user.id).single()
+            const { data } = await supabase.from('profiles').select('id, role, support_level, first_name, last_name').eq('id', user.id).single()
             return data
         },
         staleTime: 1000 * 60 * 10,
     })
 
-    const isReviewer = ['N3', 'N4', 'ADMIN'].includes(profile?.role ?? '')
+    const isReviewer = (['ADMIN'].includes(profile?.role ?? '') || (profile?.role === 'TECHNICIEN' && ['N3', 'N4'].includes(profile?.support_level ?? '')))
 
     return (
         <div className="flex h-[calc(100vh-5rem)] -m-6 md:-m-8">

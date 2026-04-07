@@ -17,7 +17,7 @@ export async function uploadDocumentAction(formData: FormData) {
     // Vérifier le rôle
     const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, support_level')
         .eq('id', user.id)
         .single()
 
@@ -87,7 +87,7 @@ export async function deleteDocumentAction(documentId: string) {
     // Vérifier le rôle
     const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, support_level')
         .eq('id', user.id)
         .single()
 

@@ -10,21 +10,29 @@ import { TicketFilters as Filters } from '@/features/tickets/api/getTickets'
 export function IncidentsContent() {
     const [mounted, setMounted] = useState(false)
     const [filters, setFilters] = useState<Filters>({ search: '', status: 'all', priority: 'all' })
-    const { data: tickets, isLoading, error } = useUnassignedTickets(filters)
     const { data: user } = useAuthUser()
-    const [userRole, setUserRole] = useState<string>('')
+    const [userRole, setUserRole] = useState<string>('');
+    const [userSupportLevel, setUserSupportLevel] = useState<string>('');
+    const [userSupportLevelId, setUserSupportLevelId] = useState<string | null>(null);
 
     useEffect(() => {
         setMounted(true)
         const fetchRole = async () => {
             if (user?.id) {
                 const supabase = createClient()
-                const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-                if (data) setUserRole(data.role)
+                const { data } = await supabase.from('profiles').select('role, support_level, support_level_id').eq('id', user.id).single()
+                if (data) { 
+                    setUserRole(data.role); 
+                    setUserSupportLevel(data.support_level); 
+                    setUserSupportLevelId(data.support_level_id);
+                }
             }
         }
         fetchRole()
     }, [user?.id])
+
+    const userRolesLevel = userRole ? { role: userRole, support_level_id: userSupportLevelId } : undefined;
+    const { data: tickets, isLoading, error } = useUnassignedTickets(filters, userRolesLevel)
 
     return (
         <div className="space-y-8 pb-10">
@@ -59,7 +67,7 @@ export function IncidentsContent() {
 
             {/* LISTE DES TICKETS (DATA TABLE) */}
             <div className="pt-4">
-                <TicketTable tickets={tickets} isLoading={!mounted || isLoading} error={error} showAssignButton={true} userRole={userRole} />
+                <TicketTable tickets={tickets} isLoading={!mounted || isLoading} error={error} showAssignButton={true} userRole={userRole} userSupportLevel={userSupportLevel} />
             </div>
 
         </div>

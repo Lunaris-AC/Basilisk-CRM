@@ -44,10 +44,11 @@ interface TicketTableProps {
     isLoading: boolean
     error: Error | null
     showAssignButton?: boolean
-    userRole?: string
+    userRole?: string;
+    userSupportLevel?: string;
 }
 
-export function TicketTable({ tickets, isLoading, error, showAssignButton = false, userRole }: TicketTableProps) {
+export function TicketTable({ tickets, isLoading, error, showAssignButton = false, userRole, userSupportLevel }: TicketTableProps) {
     const [assigningId, setAssigningId] = useState<string | null>(null)
     const queryClient = useQueryClient()
     const router = useRouter()
@@ -56,8 +57,11 @@ export function TicketTable({ tickets, isLoading, error, showAssignButton = fals
         setAssigningId(ticketId)
         const res = await assignTicketManually(ticketId)
         if (res?.success) {
-            queryClient.invalidateQueries({ queryKey: ['myTickets'] })
-            queryClient.invalidateQueries({ queryKey: ['unassignedTickets'] })
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ['myTickets'] }),
+                queryClient.invalidateQueries({ queryKey: ['unassignedTickets'] })
+            ])
+            router.refresh()
         }
         setAssigningId(null)
     }
@@ -178,7 +182,7 @@ export function TicketTable({ tickets, isLoading, error, showAssignButton = fals
                                 <TableCell className="text-right">
                                     <div className="flex items-center justify-end gap-3">
                                         {showAssignButton && (
-                                            !['N1', 'N2', 'N3'].includes(userRole || '') ? (
+                                            !(userRole === 'TECHNICIEN' && ['N1', 'N2', 'N3'].includes(userSupportLevel || '')) ? (
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation()

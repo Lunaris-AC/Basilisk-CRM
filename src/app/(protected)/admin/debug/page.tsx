@@ -18,9 +18,9 @@ export default async function AdminDebugPage() {
         redirect('/login')
     }
 
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    const { data: profile } = await supabase.from('profiles').select('role, support_level').eq('id', user.id).single()
 
-    if (profile?.role !== 'N4' && profile?.role !== 'ADMIN') {
+    if ((profile?.role !== 'TECHNICIEN' || profile?.support_level !== 'N4') && profile?.role !== 'ADMIN') {
         // Renvoi brutal vers le dashboard si c'est pas un admin
         redirect('/dashboard')
     }

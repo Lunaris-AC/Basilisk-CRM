@@ -68,7 +68,7 @@ export async function assignTicketManually(ticketId: string) {
 
     const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, support_level')
         .eq('id', user.id)
         .single()
 
@@ -728,7 +728,7 @@ export async function assignSD(ticketId: string) {
 
     const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, support_level')
         .eq('id', user.id)
         .single()
 
@@ -1008,7 +1008,7 @@ export async function mergeTickets(primaryId: string, duplicateId: string) {
     // Vérifier le rôle — seuls N1+ et ADMIN peuvent fusionner
     const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, support_level')
         .eq('id', user.id)
         .single()
 

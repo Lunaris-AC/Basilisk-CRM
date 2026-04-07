@@ -38,7 +38,7 @@ export default function ClientsPage() {
         queryFn: async () => {
             const supabase = createClient()
             if (!user?.id) return null
-            const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+            const { data } = await supabase.from('profiles').select('role, support_level').eq('id', user.id).single()
             return data
         },
         enabled: !!user?.id
@@ -55,7 +55,7 @@ export default function ClientsPage() {
         setExpandedClients(newSet)
     }
 
-    const canAdd = profile?.role === 'COM' || profile?.role === 'N4' || profile?.role === 'ADMIN'
+    const canAdd = profile?.role === 'COM' || (profile?.role === 'TECHNICIEN' && profile?.support_level === 'N4') || profile?.role === 'ADMIN'
 
     const handleAddContact = async () => {
         if (!contactForm.first_name || !contactForm.last_name) return

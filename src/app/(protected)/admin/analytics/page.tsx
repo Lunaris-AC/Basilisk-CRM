@@ -29,7 +29,7 @@ export default function AdminAnalyticsPage() {
             const supabase = createClient()
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) { router.replace('/dashboard'); return }
-            const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+            const { data: profile } = await supabase.from('profiles').select('role, support_level').eq('id', user.id).single()
             if (profile?.role !== 'ADMIN') { router.replace('/dashboard'); return }
             setAuthorized(true)
         })()

@@ -34,7 +34,8 @@ export interface RiftChannelMember {
         first_name: string
         last_name: string
         avatar_url: string | null
-        role: string
+        role: string;
+  support_level?: string
     }
 }
 
@@ -53,7 +54,8 @@ export interface RiftMessage {
         first_name: string
         last_name: string
         avatar_url: string | null
-        role: string
+        role: string;
+  support_level?: string
     }
     reply_to?: {
         id: string

@@ -14,7 +14,8 @@ interface Profile {
     first_name: string
     last_name: string
     avatar_url: string | null
-    role: string
+    role: string;
+  support_level?: string
 }
 
 interface RiftCreateChannelModalProps {

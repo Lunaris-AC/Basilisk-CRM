@@ -13,7 +13,8 @@ import { createClient } from '@/utils/supabase/client'
 interface UserProfile {
     first_name: string
     last_name: string
-    role: string
+    role: string;
+  support_level?: string
 }
 
 export function Topbar() {

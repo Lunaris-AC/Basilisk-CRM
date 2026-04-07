@@ -201,7 +201,7 @@ export async function addCatalogueItem(formData: {
 
     const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, support_level')
         .eq('id', user.id)
         .single()
 
@@ -240,7 +240,7 @@ export async function deleteCatalogueItem(catalogueId: string) {
 
     const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, support_level')
         .eq('id', user.id)
         .single()
 
@@ -289,7 +289,7 @@ export async function createEquipment(formData: {
 
     const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, support_level')
         .eq('id', user.id)
         .single()
 
@@ -365,7 +365,7 @@ export async function sendToRMA(equipmentId: string, trackingNumber: string) {
 
     const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, support_level')
         .eq('id', user.id)
         .single()
 
@@ -425,7 +425,7 @@ export async function createLicense(formData: {
 
     const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, support_level')
         .eq('id', user.id)
         .single()
 
@@ -499,7 +499,7 @@ export async function deleteLicense(licenseId: string) {
 
     const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, support_level')
         .eq('id', user.id)
         .single()
 

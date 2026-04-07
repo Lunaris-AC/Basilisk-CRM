@@ -57,11 +57,11 @@ export default function WallboardPage() {
 
             const { data: profile } = await supabase
                 .from('profiles')
-                .select('role')
+                .select('role, support_level')
                 .eq('id', user.id)
                 .single()
 
-            if (profile?.role !== 'ADMIN' && profile?.role !== 'N4') {
+            if (profile?.role !== 'ADMIN' && (profile?.role !== 'TECHNICIEN' || profile?.support_level !== 'N4')) {
                 window.location.href = '/dashboard'
                 return
             }

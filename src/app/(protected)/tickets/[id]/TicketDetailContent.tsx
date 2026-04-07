@@ -55,7 +55,7 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
             const supabase = createClient()
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) return null
-            const { data, error } = await supabase.from('profiles').select('id, role, first_name, last_name, avatar_url').eq('id', user.id).single()
+            const { data, error } = await supabase.from('profiles').select('id, role, support_level, first_name, last_name, avatar_url').eq('id', user.id).single()
             if (error) {
                 console.error('[Profile] Erreur chargement profil:', error.message, error.code)
                 return null
@@ -67,7 +67,8 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
     })
 
     // ═══ HOTFIX 43.1 : LIVE PRESENCE (CO-OP) — CYCLE DE VIE CORRIGÉ ═══
-    type PresenceUser = { user_id: string; name: string; avatar_url: string | null; role: string }
+    type PresenceUser = { user_id: string; name: string; avatar_url: string | null; role: string;
+  support_level?: string }
     const [activeUsers, setActiveUsers] = useState<PresenceUser[]>([])
 
     useEffect(() => {
@@ -553,7 +554,7 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                     </span>
 
                     {/* Sprint 49 : Bouton Fusion — visible N1+ / ADMIN, masqué si fermé */}
-                    {ticket.status !== 'ferme' && myProfile && ['N1', 'N2', 'N3', 'N4', 'ADMIN'].includes(myProfile.role) && (
+                    {ticket.status !== 'ferme' && myProfile && (['ADMIN'].includes(myProfile.role) || (myProfile.role === 'TECHNICIEN' && ['N1', 'N2', 'N3', 'N4'].includes(myProfile.support_level))) && (
                         <button
                             onClick={() => setMergeModalOpen(true)}
                             className="ml-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 transition-colors"
@@ -1388,7 +1389,7 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                     <div className="h-px bg-white/10 w-full my-4" />
 
                                     {/* ESCALADE - Visible seulement pour N1/N2/N3/N4/ADMIN */}
-                                    {['N1', 'N2', 'N3', 'N4', 'ADMIN'].includes(myProfile?.role) && (
+                                    {(['ADMIN'].includes(myProfile?.role) || (myProfile?.role === 'TECHNICIEN' && ['N1', 'N2', 'N3', 'N4'].includes(myProfile?.support_level))) && (
                                         <>
                                             {/* ESCALADER HAUT */}
                                             <Dialog open={escalateUpModalOpen} onOpenChange={setEscalateUpModalOpen}>

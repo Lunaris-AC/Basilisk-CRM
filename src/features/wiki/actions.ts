@@ -22,7 +22,8 @@ export interface WikiDocument {
     position: number
     created_at: string
     updated_at: string
-    author?: { first_name: string; last_name: string; role: string }
+    author?: { first_name: string; last_name: string; role: string;
+  support_level?: string }
     children?: WikiDocument[]
 }
 
@@ -50,7 +51,7 @@ async function getAuthenticatedUserAndRole() {
 
     const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, support_level')
         .eq('id', user.id)
         .single()
 

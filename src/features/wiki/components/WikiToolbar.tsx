@@ -30,7 +30,8 @@ interface WikiToolbarProps {
         author_id: string
         base_document_id?: string | null
         rejection_reason?: string | null
-        author?: { first_name: string; last_name: string; role: string } | null
+        author?: { first_name: string; last_name: string; role: string;
+  support_level?: string } | null
     }
     userRole: string
     userId: string

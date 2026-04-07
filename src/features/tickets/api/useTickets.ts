@@ -26,10 +26,10 @@ export const useMyTickets = (filters?: TicketFilters) => {
     })
 }
 
-export const useUnassignedTickets = (filters?: TicketFilters) => {
-    return useQuery({
-        queryKey: ['unassignedTickets', filters],
-        queryFn: () => getUnassignedTickets(filters),
+export const useUnassignedTickets = (filters?: TicketFilters, userRolesLevel?: { role: string; support_level_id?: string | null }) => {
+      return useQuery({
+          queryKey: ['unassignedTickets', filters, userRolesLevel],
+          queryFn: () => getUnassignedTickets(filters, userRolesLevel),
     })
 }
 

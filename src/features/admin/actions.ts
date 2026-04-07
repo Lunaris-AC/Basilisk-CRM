@@ -13,8 +13,8 @@ export async function forceChangeUserRole(targetUserId: string, newRole: string)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Non authentifié.' }
 
-    const { data: callerProfile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-    if (callerProfile?.role !== 'N4' && callerProfile?.role !== 'ADMIN') return { error: 'Accès non autorisé : God Mode réservé aux administrateurs.' }
+    const { data: callerProfile } = await supabase.from('profiles').select('role, support_level').eq('id', user.id).single()
+    if ((callerProfile?.role !== 'TECHNICIEN' || callerProfile?.support_level !== 'N4') && callerProfile?.role !== 'ADMIN') return { error: 'Accès non autorisé : God Mode réservé aux administrateurs.' }
 
     const { error } = await supabase
         .from('profiles')
@@ -40,8 +40,8 @@ export async function unassignAllUserTickets(targetUserId: string) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Non authentifié.' }
 
-    const { data: callerProfile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-    if (callerProfile?.role !== 'N4' && callerProfile?.role !== 'ADMIN') return { error: 'Accès non autorisé.' }
+    const { data: callerProfile } = await supabase.from('profiles').select('role, support_level').eq('id', user.id).single()
+    if ((callerProfile?.role !== 'TECHNICIEN' || callerProfile?.support_level !== 'N4') && callerProfile?.role !== 'ADMIN') return { error: 'Accès non autorisé.' }
 
     // Strip de l'assignation
     const { error } = await supabase
@@ -70,8 +70,8 @@ export async function softDeleteOldClosedTickets() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Non authentifié.' }
 
-    const { data: callerProfile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-    if (callerProfile?.role !== 'N4' && callerProfile?.role !== 'ADMIN') return { error: 'Accès non autorisé.' }
+    const { data: callerProfile } = await supabase.from('profiles').select('role, support_level').eq('id', user.id).single()
+    if ((callerProfile?.role !== 'TECHNICIEN' || callerProfile?.support_level !== 'N4') && callerProfile?.role !== 'ADMIN') return { error: 'Accès non autorisé.' }
 
     // Calcul de la date d'il y a 30 jours
     const thirtyDaysAgo = new Date()
@@ -106,8 +106,8 @@ export async function adminUpdateProfile(
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Non authentifié.' }
 
-    const { data: callerProfile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-    if (callerProfile?.role !== 'N4' && callerProfile?.role !== 'ADMIN') return { error: 'Accès non autorisé.' }
+    const { data: callerProfile } = await supabase.from('profiles').select('role, support_level').eq('id', user.id).single()
+    if ((callerProfile?.role !== 'TECHNICIEN' || callerProfile?.support_level !== 'N4') && callerProfile?.role !== 'ADMIN') return { error: 'Accès non autorisé.' }
 
     const { error } = await supabase
         .from('profiles')
@@ -134,8 +134,8 @@ export async function adminForceEditTicket(
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Non authentifié.' }
 
-    const { data: callerProfile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-    if (callerProfile?.role !== 'N4' && callerProfile?.role !== 'ADMIN') return { error: 'Accès non autorisé.' }
+    const { data: callerProfile } = await supabase.from('profiles').select('role, support_level').eq('id', user.id).single()
+    if ((callerProfile?.role !== 'TECHNICIEN' || callerProfile?.support_level !== 'N4') && callerProfile?.role !== 'ADMIN') return { error: 'Accès non autorisé.' }
 
     const { error } = await supabase
         .from('tickets')

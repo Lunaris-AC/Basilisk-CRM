@@ -30,11 +30,11 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
 
     const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, support_level')
         .eq('id', user.id)
         .single()
 
-    const isInternal = profile?.role === 'COM' || profile?.role === 'ADMIN' || profile?.role === 'N1' || profile?.role === 'N2' || profile?.role === 'N3' || profile?.role === 'N4'
+    const isInternal = profile?.role === 'COM' || profile?.role === 'ADMIN' || (profile?.role === 'TECHNICIEN' && profile?.support_level === 'N1') || (profile?.role === 'TECHNICIEN' && profile?.support_level === 'N2') || (profile?.role === 'TECHNICIEN' && profile?.support_level === 'N3') || (profile?.role === 'TECHNICIEN' && profile?.support_level === 'N4')
 
     const quote = await getQuoteById(id)
 

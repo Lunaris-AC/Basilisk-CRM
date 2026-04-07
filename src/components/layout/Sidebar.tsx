@@ -163,11 +163,11 @@ export function Sidebar({ mobile = false }: { mobile?: boolean }) {
                                 {profile?.first_name} {profile?.last_name}
                             </span>
                             <div className="flex items-center gap-1.5 mt-0.5">
-                                <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wider border ${profile?.role === 'N4'
+                                <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wider border ${(profile?.role === 'TECHNICIEN' && profile?.support_level === 'N4')
                                     ? 'bg-rose-500/20 text-rose-300 border-rose-500/50 shadow-[0_0_10px_rgba(244,63,94,0.3)]'
                                     : 'bg-primary/20 text-primary/80 border-primary/50'
                                     }`}>
-                                    {profile?.role === 'N4' ? 'ADMIN N4' : `NIVEAU ${profile?.role}`}
+                                    {profile?.role === 'TECHNICIEN' ? (profile?.support_level === 'N4' ? 'ADMIN N4' : `TECH ${profile?.support_level}`) : `NIVEAU ${profile?.role}`}
                                 </span>
                             </div>
                         </div>

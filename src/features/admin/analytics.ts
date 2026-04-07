@@ -14,7 +14,8 @@ export interface AgentPerformance {
     id: string
     first_name: string
     last_name: string
-    role: string
+    role: string;
+  support_level?: string
     ticketsInProgress: number
     resolvedThisMonth: number
     avgResolutionHours: number | null

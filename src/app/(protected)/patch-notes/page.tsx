@@ -18,7 +18,7 @@ export default function PatchNotesPage() {
             const supabase = createClient()
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) return null
-            const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+            const { data } = await supabase.from('profiles').select('role, support_level').eq('id', user.id).single()
             return data
         },
         staleTime: 1000 * 60 * 10,

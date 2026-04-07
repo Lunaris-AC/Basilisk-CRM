@@ -88,10 +88,12 @@ export function HLDashboard() {
                                 description: `Vous pouvez maintenant travailler sur ce ticket.`,
                                 duration: 4000,
                             })
-                            queryClient.invalidateQueries({ queryKey: ['myTickets'] })
-                            queryClient.invalidateQueries({ queryKey: ['myStatsByDate'] })
-                            queryClient.invalidateQueries({ queryKey: ['globalStats'] })
-                            queryClient.invalidateQueries({ queryKey: ['unassignedTickets'] })
+                            await Promise.all([
+                                queryClient.invalidateQueries({ queryKey: ['myTickets'] }),
+                                queryClient.invalidateQueries({ queryKey: ['myStatsByDate'] }),
+                                queryClient.invalidateQueries({ queryKey: ['globalStats'] }),
+                                queryClient.invalidateQueries({ queryKey: ['unassignedTickets'] })
+                            ])
                             router.refresh()
                         } else if (res?.error) {
                             toast.error('Pioche impossible', {
