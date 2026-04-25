@@ -383,12 +383,12 @@ export const useRiftStore = create<RiftStore>((set, get) => ({
                 const { data: { user } } = await createClient().auth.getUser()
                 if (!user) return
 
-                if (p.event === 'INSERT' && p.new.status === 'ACTIVE' && p.new.created_by !== user.id) {
+                if (p.eventType === 'INSERT' && p.new.status === 'ACTIVE' && p.new.created_by !== user.id) {
                     const { data: member } = await createClient().from('rift_channel_members').select('id').eq('channel_id', p.new.channel_id).eq('user_id', user.id).maybeSingle()
                     if (member) set({ incomingCall: p.new as RiftCall })
                 }
-                if (p.new?.status === 'ENDED' || p.old?.status === 'ACTIVE') {
-                    const id = p.new?.id || p.old?.id
+                if ((p.new as any)?.status === 'ENDED' || (p.old as any)?.status === 'ACTIVE') {
+                    const id = (p.new as any)?.id || (p.old as any)?.id
                     if (get().activeCall?.id === id) set({ activeCall: null })
                     if (get().incomingCall?.id === id) set({ incomingCall: null })
                 }

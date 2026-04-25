@@ -525,7 +525,7 @@ export async function createTicket(formData: FormData, assignToMe: boolean = fal
     } else if (category === 'FORMATION') {
         const { error: extError } = await supabase.from('ticket_formateur_details').insert({
             ticket_id: ticket.id,
-            travel_date: travel_date ? new Date(travel_date).toISOString() : null,
+            travel_date: travelDate ? new Date(travelDate).toISOString() : null,
             training_location: trainingLocation,
             training_type: trainingType,
         })

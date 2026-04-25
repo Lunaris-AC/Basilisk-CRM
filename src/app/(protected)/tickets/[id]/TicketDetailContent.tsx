@@ -1522,7 +1522,7 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                     <Dialog open={migrateModalOpen} onOpenChange={setMigrateModalOpen}>
                                         <DialogTrigger asChild>
                                             <button
-                                                disabled={isPending || ticket.status === 'ferme'}
+                                                disabled={isPending}
                                                 className="w-full rounded-xl p-3 border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-sm font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
                                                 <ArrowRightLeft className="w-4 h-4" />

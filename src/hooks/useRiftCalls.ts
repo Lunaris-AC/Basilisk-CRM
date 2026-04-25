@@ -6,7 +6,7 @@
 
 import { useEffect, useRef, useCallback, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import { useRiftStore, type RiftCall, type RiftCallParticipant } from '@/hooks/useRiftStore'
+import { useRiftStore, type RiftCall } from '@/hooks/useRiftStore'
 import { joinRiftCall, leaveRiftCall, updateParticipantMedia, declineRiftCall } from '@/features/rift/actions'
 import { toast } from 'sonner'
 

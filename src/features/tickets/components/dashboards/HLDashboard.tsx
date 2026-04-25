@@ -66,7 +66,7 @@ export function HLDashboard() {
     const hasActiveTickets = activeTickets.length > 0
 
     const slaCount = globalStats?.slaViolations ?? 0
-    const totalForServices = (globalStats?.byCategory.HL ?? 0) + (globalStats?.byCategory.SAV ?? 0) + (globalStats?.byCategory.FORMATION ?? 0) + (globalStats?.byCategory.DEV ?? 0)
+    const totalForServices = (globalStats?.byCategory.HL ?? 0) + (globalStats?.byCategory.SAV1 ?? 0) + (globalStats?.byCategory.SAV2 ?? 0) + (globalStats?.byCategory.FORMATION ?? 0) + (globalStats?.byCategory.DEV ?? 0)
     const totalForLevels = Object.values(globalStats?.byLevel ?? {}).reduce((acc, curr) => acc + curr, 0)
 
     const colors = ['sky', 'purple', 'pink', 'rose', 'indigo', 'teal', 'emerald', 'amber']
@@ -204,7 +204,7 @@ export function HLDashboard() {
                     </div>
                     <div className="space-y-3">
                         <DistributionBar label="Hotline" value={globalStats?.byCategory.HL ?? 0} total={totalForServices} color="indigo" />
-                        <DistributionBar label="SAV" value={globalStats?.byCategory.SAV ?? 0} total={totalForServices} color="amber" />
+                        <DistributionBar label="SAV" value={(globalStats?.byCategory.SAV1 ?? 0) + (globalStats?.byCategory.SAV2 ?? 0)} total={totalForServices} color="amber" />
                         <DistributionBar label="Formation" value={globalStats?.byCategory.FORMATION ?? 0} total={totalForServices} color="purple" />
                         <DistributionBar label="DEV" value={globalStats?.byCategory.DEV ?? 0} total={totalForServices} color="teal" />
                     </div>
