@@ -1,7 +1,7 @@
 import { RoutingRuleForm } from '@/features/admin/components/RoutingRuleForm'
 import { getRoutingRuleById } from '@/features/tickets/actions/routing'
 import { getStoresForSelect } from '@/features/admin/actions'
-import { getClientsForSelect } from '@/features/commerce/actions'
+import { getClientsForSelect } from '@/features/clients/actions'
 import { redirect } from 'next/navigation'
 
 export default async function NewRoutingRulePage(props: {

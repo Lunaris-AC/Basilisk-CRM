@@ -8,25 +8,21 @@ import { useState, useEffect } from 'react'
 
 export function SAVDashboard() {
     const [mounted, setMounted] = useState(false)
-    const [filters, setFilters] = useState<Filters>({ search: '', status: 'all', priority: 'all', category: 'SAV' })
+    const [filters, setFilters] = useState<Filters>({ search: '', status: 'all', priority: 'all', category: 'all' })
 
     useEffect(() => {
         setMounted(true)
     }, [])
 
-    // Le SAV voit ses tickets assignés ET les tickets de la file d'attente (escaladés niveau 2/3 ou catégorie SAV)
-    const { data: myTickets, isLoading: loadingMy } = useMyTickets(filters)
-    const { data: queueTickets, isLoading: loadingQueue } = useUnassignedTickets(filters)
+    // Le SAV voit ses tickets assignés ET les tickets de la file d'attente (escaladés niveau 2/3 ou catégories SAV1/SAV2)
+    const { data: myTickets, isLoading: loadingMy } = useMyTickets({ ...filters, category: filters.category === 'all' ? undefined : filters.category })
+    const { data: queueTickets, isLoading: loadingQueue } = useUnassignedTickets({ ...filters, category: filters.category === 'all' ? undefined : filters.category })
 
-    // On pourrait filtrer frontend par category='SAV' si on le souhaite, 
-    // mais le rôle RLS et le niveau d'escalade (N2/N3) défini dans getTickets.ts font déjà le gros du travail.
     const isGlobalLoading = loadingMy || loadingQueue
 
-    // On fusionne et on dé-duplique au cas où (bien que les requêtes soient distinctes)
-    const allTicketsMap = new Map()
-    myTickets?.forEach(t => allTicketsMap.set(t.id, t))
-    queueTickets?.forEach(t => allTicketsMap.set(t.id, t))
-    const tickets = Array.from(allTicketsMap.values())
+    // Filtrage supplémentaire pour s'assurer qu'on ne voit que SAV1 et SAV2 si category est 'all' sur ce dashboard spécifique
+    const tickets = Array.from(new Map([...(myTickets || []), ...(queueTickets || [])].map(t => [t.id, t])).values())
+        .filter(t => filters.category !== 'all' ? t.category === filters.category : (t.category === 'SAV1' || t.category === 'SAV2'))
 
     return (
         <div className="space-y-8 pb-10">

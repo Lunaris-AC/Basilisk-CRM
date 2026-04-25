@@ -4,13 +4,19 @@ import { usePathname } from 'next/navigation'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { Topbar } from '@/components/layout/Topbar'
 import { ClientDisplayManager } from '@/components/layout/ClientDisplayManager'
+import { useThemeCustomizer } from '@/hooks/useThemeCustomizer'
+import { cn } from '@/lib/utils'
 
 // Routes qui s'affichent en plein écran (sans sidebar ni topbar)
 const FULLSCREEN_ROUTES = ['/wallboard']
 
 export function ProtectedShell({ children }: { children: React.ReactNode }) {
     const pathname = usePathname()
+    // Initialize/Sync theme from DB
+    useThemeCustomizer()
+    
     const isFullscreen = FULLSCREEN_ROUTES.some(r => pathname.startsWith(r))
+    const isRift = pathname.startsWith('/rift')
 
     if (isFullscreen) {
         return <>{children}</>
@@ -30,7 +36,10 @@ export function ProtectedShell({ children }: { children: React.ReactNode }) {
             {/* Main content area */}
             <div className="flex-1 flex flex-col h-full relative z-10">
                 <Topbar />
-                <main className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar">
+                <main className={cn(
+                    "flex-1 overflow-y-auto custom-scrollbar",
+                    isRift ? "p-0 overflow-hidden" : "p-6 md:p-8"
+                )}>
                     <ClientDisplayManager>
                         {children}
                     </ClientDisplayManager>

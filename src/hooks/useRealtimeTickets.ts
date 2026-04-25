@@ -31,6 +31,9 @@ export function useRealtimeTickets() {
                     queryClient.invalidateQueries({ queryKey: ['myTickets'] })
                     queryClient.invalidateQueries({ queryKey: ['unassignedTickets'] })
                     queryClient.invalidateQueries({ queryKey: ['ticket', (payload.new as any)?.id] })
+                    queryClient.invalidateQueries({ queryKey: ['globalStats'] })
+                    queryClient.invalidateQueries({ queryKey: ['myStatsByDate'] })
+                    queryClient.invalidateQueries({ queryKey: ['myDailyStats'] })
 
                     const ticket = payload.new as any
 

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Ticket, Users, Settings, Inbox, Plus, Code2, FileText, FileCode, Eye, ShieldAlert, ChevronDown, BarChart3, HardDrive, Lock, Award, GitMerge, BookOpen, MessageSquare, Monitor } from 'lucide-react'
+import { LayoutDashboard, Ticket, Users, Settings, Inbox, Plus, Code2, FileText, FileCode, Eye, ShieldAlert, ChevronDown, BarChart3, HardDrive, Lock, Award, GitMerge, BookOpen, MessageSquare, Monitor, Lightbulb } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { CreateTicketModal } from '@/features/tickets/components/CreateTicketModal'
 import { useRiftStore } from '@/hooks/useRiftStore'
@@ -13,20 +13,21 @@ const navigation = [
     { name: 'Dashboard Personnel', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Incidents (File)', href: '/incidents', icon: Inbox, hideForClient: true, htmlId: 'sidebar-queue' },
     { name: 'Portail SD', href: '/sd', icon: Code2, hideForClient: true },
-    { name: 'Parc Matériel', href: '/cmdb', icon: HardDrive, allowedRoles: ['ADMIN', 'SAV1', 'SAV2', 'COM'] },
+    { name: 'Parc Matériel', href: '/cmdb', icon: HardDrive, allowedRoles: ['ADMIN', 'SAV1', 'SAV2'] },
     { name: 'Documentation', href: '/documentation', icon: FileText, hideForClient: true },
-    { name: 'Commerce & Ventes', href: '/commerce', icon: FileText, onlyFor: ['ADMIN'], lockedForOthers: true },
     { name: 'Patch Notes', href: '/patch-notes', icon: FileCode, hideForClient: true },
     { name: 'Wiki', href: '/wiki', icon: BookOpen, hideForClient: true },
     { name: 'Clients', href: '/clients', icon: Users, hideForClient: true },
     { name: 'Rift', href: '/rift', icon: MessageSquare, hideForClient: true },
+    { name: 'Boîte à Idées', href: '/suggestions', icon: Lightbulb },
     { name: 'Paramètres', href: '/parametres', icon: Settings },
 ]
 
 const adminNav = [
+    { name: 'Control Center', href: '/admin/control-center', icon: ShieldAlert },
+    { name: 'Audit Logs', href: '/admin/audit', icon: FileCode },
     { name: 'Règles de Routage', href: '/admin/routing', icon: GitMerge },
     { name: 'Grades & Niveaux', href: '/admin/grades', icon: Award },
-    { name: 'God Mode (Debug)', href: '/admin/debug', icon: ShieldAlert },
     { name: 'Analytics (God\'s Eye)', href: '/admin/analytics', icon: BarChart3, htmlId: 'godseye-nav' },
     { name: 'Wallboard TV', href: '/wallboard', icon: Monitor },
 ]
@@ -52,12 +53,16 @@ export function Sidebar({ mobile = false }: { mobile?: boolean }) {
     return (
         <div className={`${mobile ? 'flex' : 'hidden md:flex'} flex-col w-64 h-full bg-black/40 backdrop-blur-xl border-r border-white/10 text-foreground shrink-0 z-50`}>
             <div className="flex items-center justify-center h-20 border-b border-white/5">
-                <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary shadow-lg shadow-primary/20 flex items-center justify-center">
-                        <Ticket className="w-5 h-5 text-foreground" />
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 shadow-xl flex items-center justify-center overflow-hidden p-1.5 transition-transform hover:scale-105">
+                        <img 
+                            src="https://cdn-icons-png.flaticon.com/512/5169/5169557.png" 
+                            alt="Basilisk Logo" 
+                            className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(var(--primary),0.5)]"
+                        />
                     </div>
                     <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">
-                        Basilisk Support ERP
+                        Basilisk Support
                     </span>
                 </div>
             </div>

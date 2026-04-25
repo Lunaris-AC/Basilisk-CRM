@@ -5,18 +5,17 @@
  */
 
 /**
- * Délais SLA en heures selon la priorité du ticket.
- * - critique : 2h  (SLA d'urgence)
- * - haute    : 8h  (1 jour ouvré)
- * - normale  : 48h (2 jours ouvrés)
- * - basse    : 120h (1 semaine)
+ * Délais SLA par défaut (fallback si la DB est inaccessible ou côté client)
  */
-export const SLA_HOURS: Record<string, number> = {
+export const DEFAULT_SLA_HOURS: Record<string, number> = {
     critique: 2,
     haute: 8,
     normale: 48,
     basse: 120,
 }
+
+/** Alias pour compatibilité avec les composants clients */
+export const SLA_HOURS = DEFAULT_SLA_HOURS
 
 /**
  * Retourne une nouvelle Date décalée de `hours` heures dans le futur.

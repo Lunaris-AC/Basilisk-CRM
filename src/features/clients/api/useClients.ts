@@ -1,16 +1,38 @@
 import { createClient } from '@/utils/supabase/client'
 import { useQuery } from '@tanstack/react-query'
 
+export interface MiniCentrale {
+    id: string
+    name: string
+    centrale_id: string
+    stores: Store[]
+    contacts: Contact[]
+}
+
+export interface Centrale {
+    id: string
+    name: string
+    client_id: string
+    mini_centrales: MiniCentrale[]
+    magasins_directs: Store[]
+    contacts: Contact[]
+}
+
 export interface Store {
     id: string
     name: string
     city: string
     client_id: string
+    centrale_id: string | null
+    mini_centrale_id: string | null
+    contacts: Contact[]
 }
 
 export interface Contact {
     id: string
     client_id: string
+    centrale_id: string | null
+    mini_centrale_id: string | null
     store_id: string | null
     first_name: string
     last_name: string
@@ -25,7 +47,7 @@ export interface Client {
     company: string
     email: string
     phone: string
-    stores: Store[]
+    centrales: Centrale[]
     contacts: Contact[]
 }
 
@@ -41,15 +63,89 @@ export function useClientsWithStores() {
                     company, 
                     email, 
                     phone,
-                    stores (
+                    centrales!client_id (
                         id,
                         name,
-                        city,
-                        client_id
+                        client_id,
+                        mini_centrales!centrale_id (
+                            id,
+                            name,
+                            centrale_id,
+                            stores!mini_centrale_id (
+                                id,
+                                name,
+                                city,
+                                client_id,
+                                centrale_id,
+                                mini_centrale_id,
+                                contacts!store_id (
+                                    id,
+                                    client_id,
+                                    centrale_id,
+                                    mini_centrale_id,
+                                    store_id,
+                                    first_name,
+                                    last_name,
+                                    email,
+                                    phone,
+                                    job_title,
+                                    is_active
+                                )
+                            ),
+                            contacts!mini_centrale_id (
+                                id,
+                                client_id,
+                                centrale_id,
+                                mini_centrale_id,
+                                store_id,
+                                first_name,
+                                last_name,
+                                email,
+                                phone,
+                                job_title,
+                                is_active
+                            )
+                        ),
+                        magasins_directs:stores!centrale_id (
+                            id,
+                            name,
+                            city,
+                            client_id,
+                            centrale_id,
+                            mini_centrale_id,
+                            contacts!store_id (
+                                id,
+                                client_id,
+                                centrale_id,
+                                mini_centrale_id,
+                                store_id,
+                                first_name,
+                                last_name,
+                                email,
+                                phone,
+                                job_title,
+                                is_active
+                            )
+                        ),
+                        contacts!centrale_id (
+                            id,
+                            client_id,
+                            centrale_id,
+                            mini_centrale_id,
+                            store_id,
+                            first_name,
+                            last_name,
+                            email,
+                            phone,
+                            job_title,
+                            is_active
+                        )
                     ),
-                    contacts (
+                    contacts!client_id (
                         id,
                         client_id,
+                        centrale_id,
+                        mini_centrale_id,
                         store_id,
                         first_name,
                         last_name,
@@ -61,8 +157,26 @@ export function useClientsWithStores() {
                 `)
                 .order('company')
 
-            if (error) throw error
-            return data as Client[]
+            if (error) {
+                console.error("Supabase error details:", {
+                    message: error.message,
+                    details: error.details,
+                    hint: error.hint,
+                    code: error.code
+                })
+                throw error
+            }
+            
+            // Post-processing for magasins_directs filtering (those without mini_centrale_id)
+            const processedData = data?.map((client: any) => ({
+                ...client,
+                centrales: client.centrales?.map((centrale: any) => ({
+                    ...centrale,
+                    magasins_directs: centrale.magasins_directs?.filter((s: any) => !s.mini_centrale_id) || []
+                }))
+            }))
+
+            return processedData as Client[]
         }
     })
 }

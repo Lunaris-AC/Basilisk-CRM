@@ -175,7 +175,9 @@ export async function leaveRiftChannel(channelId: string) {
 export async function sendRiftMessage(
     channelId: string,
     content: string,
-    replyToId?: string | null
+    replyToId?: string | null,
+    entityId?: string | null,
+    entityType?: string | null
 ) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -188,6 +190,8 @@ export async function sendRiftMessage(
             user_id: user.id,
             content,
             reply_to_id: replyToId ?? null,
+            entity_id: entityId ?? null,
+            entity_type: entityType ?? null
         })
         .select('id')
         .single()
@@ -198,6 +202,92 @@ export async function sendRiftMessage(
     }
 
     return { success: true, messageId: message?.id }
+}
+
+/**
+ * Transférer un message vers un autre channel
+ */
+export async function forwardRiftMessage(messageId: string, targetChannelId: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Non authentifié.' }
+
+    // Récupérer le message original
+    const { data: original, error: getError } = await supabase
+        .from('rift_messages')
+        .select('*')
+        .eq('id', messageId)
+        .single()
+
+    if (getError || !original) {
+        return { error: 'Message original introuvable.' }
+    }
+
+    // Créer le nouveau message
+    const { data: message, error } = await supabase
+        .from('rift_messages')
+        .insert({
+            channel_id: targetChannelId,
+            user_id: user.id,
+            content: original.content,
+            is_forwarded: true,
+            forwarded_from_id: original.id,
+            entity_id: original.entity_id,
+            entity_type: original.entity_type
+        })
+        .select('id')
+        .single()
+
+    if (error) {
+        console.error('[Rift] Erreur forwardRiftMessage:', error)
+        return { error: error.message }
+    }
+
+    return { success: true, messageId: message?.id }
+}
+
+/**
+ * Mettre à jour la présence de l'utilisateur
+ */
+export async function updateUserPresence(status: 'ONLINE' | 'AWAY' | 'BUSY' | 'OFFLINE') {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Non authentifié.' }
+
+    const { error } = await supabase
+        .from('profiles')
+        .update({
+            presence_status: status,
+            last_seen_at: new Date().toISOString()
+        })
+        .eq('id', user.id)
+
+    if (error) {
+        console.error('[Rift] Erreur updateUserPresence:', error)
+        return { error: error.message }
+    }
+
+    return { success: true }
+}
+
+/**
+ * Partager un ticket ou un SD dans un channel Rift
+ */
+export async function shareEntityInRift(entityId: string, entityType: 'TICKET' | 'SD', channelId: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Non authentifié.' }
+
+    // On récupère quelques infos de l'entité pour le message
+    let title = ''
+    if (entityType === 'TICKET' || entityType === 'SD') {
+        const { data } = await supabase.from('tickets').select('title').eq('id', entityId).single()
+        title = data?.title ?? ''
+    }
+
+    const content = `🔗 **${entityType} Partagé :** ${title}`
+
+    return sendRiftMessage(channelId, content, null, entityId, entityType)
 }
 
 /**
@@ -294,6 +384,181 @@ export async function toggleRiftReaction(messageId: string, emoji: string) {
         })
         if (error) return { error: error.message }
     }
+    return { success: true }
+}
+
+// ==========================================
+// CALLS (SPRINT 50.3)
+// ==========================================
+
+/**
+ * Démarrer un appel dans un channel
+ */
+export async function startRiftCall(channelId: string, type: 'AUDIO' | 'VIDEO' = 'AUDIO') {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Non authentifié.' }
+
+    // 1. Créer l'appel
+    const { data: call, error: callError } = await supabase
+        .from('rift_calls')
+        .insert({
+            channel_id: channelId,
+            created_by: user.id,
+            type,
+            status: 'ACTIVE'
+        })
+        .select('id')
+        .single()
+
+    if (callError || !call) {
+        return { error: 'Impossible de démarrer l\'appel.' }
+    }
+
+    // 2. Ajouter le créateur comme participant (IN_CALL)
+    await supabase
+        .from('rift_call_participants')
+        .insert({
+            call_id: call.id,
+            user_id: user.id,
+            status: 'IN_CALL'
+        })
+
+    return { success: true, callId: call.id }
+}
+
+/**
+ * Rejoindre un appel
+ */
+export async function joinRiftCall(callId: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Non authentifié.' }
+
+    const { error } = await supabase
+        .from('rift_call_participants')
+        .upsert({
+            call_id: callId,
+            user_id: user.id,
+            status: 'IN_CALL',
+            joined_at: new Date().toISOString()
+        }, { onConflict: 'call_id,user_id' })
+
+    if (error) return { error: 'Impossible de rejoindre l\'appel.' }
+    return { success: true }
+}
+
+/**
+ * Quitter un appel
+ */
+export async function leaveRiftCall(callId: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Non authentifié.' }
+
+    // 1. Marquer le départ du participant
+    const { error: updateError } = await supabase
+        .from('rift_call_participants')
+        .update({
+            status: 'LEFT',
+            left_at: new Date().toISOString()
+        })
+        .eq('call_id', callId)
+        .eq('user_id', user.id)
+
+    if (updateError) return { error: 'Erreur lors de la sortie de l\'appel.' }
+
+    // 2. Compter les participants encore EN APPEL (IN_CALL)
+    const { count, error: countError } = await supabase
+        .from('rift_call_participants')
+        .select('*', { count: 'exact', head: true })
+        .eq('call_id', callId)
+        .eq('status', 'IN_CALL')
+
+    if (countError) {
+        console.error('[RiftCall] Erreur count:', countError)
+        return { error: 'Erreur technique lors de la vérification de l\'appel.' }
+    }
+
+    // 3. Si plus personne n'est en ligne, fermer l'appel
+    if (count === 0) {
+        console.log(`[RiftCall] Dernier participant parti, fermeture de l'appel ${callId}`)
+        await supabase
+            .from('rift_calls')
+            .update({ 
+                status: 'ENDED', 
+                ended_at: new Date().toISOString() 
+            })
+            .eq('id', callId)
+    }
+
+    return { success: true }
+}
+
+/**
+ * Forcer la fermeture d'un appel (ADMIN ou Créateur)
+ */
+export async function endRiftCall(callId: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Non authentifié.' }
+
+    const { data: call } = await supabase.from('rift_calls').select('*').eq('id', callId).single()
+    if (!call) return { error: 'Appel introuvable.' }
+
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    
+    if (profile?.role !== 'ADMIN' && call.created_by !== user.id) {
+        return { error: 'Permission refusée.' }
+    }
+
+    const { error } = await supabase
+        .from('rift_calls')
+        .update({ 
+            status: 'ENDED', 
+            ended_at: new Date().toISOString() 
+        })
+        .eq('id', callId)
+
+    if (error) return { error: 'Erreur technique.' }
+    return { success: true }
+}
+
+/**
+ * Décliner un appel (RINGING -> DECLINED)
+ */
+export async function declineRiftCall(callId: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Non authentifié.' }
+
+    const { error } = await supabase
+        .from('rift_call_participants')
+        .upsert({
+            call_id: callId,
+            user_id: user.id,
+            status: 'DECLINED'
+        }, { onConflict: 'call_id,user_id' })
+
+    if (error) return { error: 'Erreur technique.' }
+    return { success: true }
+}
+
+/**
+ * Mettre à jour l'état du participant (micro, cam, etc.)
+ */
+export async function updateParticipantMedia(callId: string, updates: { is_muted?: boolean, is_camera_on?: boolean, is_screen_sharing?: boolean }) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Non authentifié.' }
+
+    const { error } = await supabase
+        .from('rift_call_participants')
+        .update(updates)
+        .eq('call_id', callId)
+        .eq('user_id', user.id)
+
+    if (error) return { error: 'Erreur lors de la mise à jour média.' }
     return { success: true }
 }
 

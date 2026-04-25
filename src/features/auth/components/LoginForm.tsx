@@ -38,6 +38,15 @@ export function LoginForm() {
     return (
         <div className="w-full max-w-md p-8 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl">
             <div className="mb-8 text-center">
+                <div className="flex justify-center mb-6">
+                    <div className="w-20 h-20 rounded-2xl bg-white/5 border border-white/10 shadow-2xl flex items-center justify-center p-3 transition-transform hover:scale-110">
+                        <img 
+                            src="https://cdn-icons-png.flaticon.com/512/5169/5169557.png" 
+                            alt="Basilisk Logo" 
+                            className="w-full h-full object-contain filter drop-shadow-[0_0_15px_rgba(var(--primary),0.5)]"
+                        />
+                    </div>
+                </div>
                 <h1 className="text-3xl font-bold text-foreground mb-2 tracking-tight">Bienvenue</h1>
                 <p className="text-muted-foreground text-sm">Connectez-vous à votre espace support</p>
             </div>

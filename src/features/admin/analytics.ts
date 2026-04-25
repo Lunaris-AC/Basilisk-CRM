@@ -104,7 +104,7 @@ export async function getGlobalMetrics(): Promise<GlobalMetrics> {
     const closedLast30d = closedTickets?.length ?? 0
 
     // Volume par catégorie (actifs)
-    const categories = ['HL', 'COMMERCE', 'SAV', 'FORMATION', 'DEV'] as const
+    const categories = ['HL', 'COMMERCE', 'SAV1', 'SAV2', 'FORMATION', 'DEV'] as const
     const volumeByCategory: { name: string; value: number }[] = []
     for (const cat of categories) {
         const { count } = await supabase
@@ -412,7 +412,7 @@ export async function getAgentSparklines(agentIds: string[]): Promise<Record<str
 export async function getCategoryStatusMatrix(): Promise<CategoryStatusItem[]> {
     const supabase = createClient()
 
-    const categories = ['HL', 'COMMERCE', 'SAV', 'FORMATION', 'DEV'] as const
+    const categories = ['HL', 'COMMERCE', 'SAV1', 'SAV2', 'FORMATION', 'DEV'] as const
     const statuses = ['nouveau', 'assigne', 'en_cours', 'attente_client', 'resolu', 'ferme'] as const
 
     const items: CategoryStatusItem[] = []

@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { evaluateTicketRouting } from './actions/routing'
 import { SLA_HOURS, addHours, addMinutes, diffInMinutes } from './sla'
+import { getDynamicSlaHours } from './sla-server'
 
 /**
  * Server Action : Piocher un ticket aléatoire selon le niveau du technicien.
@@ -58,9 +59,10 @@ export async function pickRandomTicket() {
 
 /**
  * Server Action : Assigner un ticket manuellement.
- * Réservé aux N4 et ADMIN.
+ * Désormais ouvert aux ADMIN et STANDARD (pour réassigner).
+ * targetUserId : Optionnel, si non fourni assigne à soi-même.
  */
-export async function assignTicketManually(ticketId: string) {
+export async function assignTicketManually(ticketId: string, targetUserId?: string) {
     const supabase = await createClient()
 
     const { data: { user } } = await supabase.auth.getUser()
@@ -72,19 +74,25 @@ export async function assignTicketManually(ticketId: string) {
         .eq('id', user.id)
         .single()
 
-    const BLOCKED_ROLES = ['N1', 'N2', 'N3']
-    if (!profile || BLOCKED_ROLES.includes(profile.role)) {
-        return { error: 'Action non autorisée. Utilisez le bouton Piocher.' }
+    // SPRINT 50 : On autorise ADMIN et STANDARD à réassigner manuellement
+    const ALLOWED_ROLES = ['ADMIN', 'STANDARD']
+    
+    // On garde aussi l'accès pour les techniciens N4
+    const isN4 = profile?.role === 'TECHNICIEN' && profile?.support_level === 'N4'
+
+    if (!profile || (!ALLOWED_ROLES.includes(profile.role) && !isN4)) {
+        return { error: 'Action non autorisée. Votre rôle ne permet pas l\'assignation manuelle.' }
     }
+
+    const finalAssigneeId = targetUserId || user.id
 
     const { error: updateError } = await supabase
         .from('tickets')
         .update({
-            assignee_id: user.id,
+            assignee_id: finalAssigneeId,
             status: 'assigne'
         })
         .eq('id', ticketId)
-        .is('assignee_id', null) // S'assure qu'il n'est pas déjà pris entre temps
 
     if (updateError) {
         return { error: 'Impossible d\'assigner ce ticket manuellement.' }
@@ -92,8 +100,56 @@ export async function assignTicketManually(ticketId: string) {
 
     revalidatePath('/dashboard')
     revalidatePath('/incidents')
+    revalidatePath(`/tickets/${ticketId}`)
 
     return { success: true }
+}
+
+/**
+ * Server Action : Migrer un ticket vers un autre service (catégorie).
+ */
+export async function migrateTicketCategory(ticketId: string, newCategory: 'COMMERCE' | 'SAV1' | 'SAV2' | 'FORMATION' | 'HL' | 'DEV') {
+    const supabase = await createClient()
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Non authentifié.' }
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role, support_level')
+        .eq('id', user.id)
+        .single()
+
+    if (!profile) {
+        return { error: 'Profil introuvable.' }
+    }
+
+    try {
+        const { error: updateError } = await supabase
+            .from('tickets')
+            .update({
+                category: newCategory,
+                assignee_id: null,
+                status: 'nouveau'
+            })
+            .eq('id', ticketId)
+
+        if (updateError) {
+            console.error('Erreur migration ticket (SQL):', updateError)
+            return { error: `Impossible de migrer ce ticket (SQL) : ${updateError.message}` }
+        }
+
+        await addComment(ticketId, `[MIGRATION] Ticket migré vers le service ${newCategory}. Désassigné et remis en file d'attente.`, true)
+
+        revalidatePath('/dashboard')
+        revalidatePath('/incidents')
+        revalidatePath(`/tickets/${ticketId}`)
+
+        return { success: true }
+    } catch (e: any) {
+        console.error('Erreur migration ticket (Exception):', e)
+        return { error: `Erreur inattendue lors de la migration : ${e.message}` }
+    }
 }
 
 // ============== SPRINT 7 : ACTIONS DÉTAIL TICKET ==============
@@ -417,7 +473,8 @@ export async function createTicket(formData: FormData, assignToMe: boolean = fal
 
     const nowInsert = new Date()
     const effectivePriority = priority || 'normale'
-    const slaHours = SLA_HOURS[effectivePriority] ?? SLA_HOURS['normale']
+    const dynamicSlaHours = await getDynamicSlaHours()
+    const slaHours = dynamicSlaHours[effectivePriority] ?? dynamicSlaHours['normale']
 
     const { data: ticket, error: ticketError } = await supabase
         .from('tickets')
@@ -457,7 +514,7 @@ export async function createTicket(formData: FormData, assignToMe: boolean = fal
             service_type: serviceType,
         })
         if (extError) console.error("Erreur insertion commerce_details:", extError)
-    } else if (category === 'SAV') {
+    } else if (category === 'SAV1' || category === 'SAV2') {
         const { error: extError } = await supabase.from('ticket_sav_details').insert({
             ticket_id: ticket.id,
             serial_number: serialNumber,
@@ -468,7 +525,7 @@ export async function createTicket(formData: FormData, assignToMe: boolean = fal
     } else if (category === 'FORMATION') {
         const { error: extError } = await supabase.from('ticket_formateur_details').insert({
             ticket_id: ticket.id,
-            travel_date: travelDate ? new Date(travelDate).toISOString() : null,
+            travel_date: travel_date ? new Date(travel_date).toISOString() : null,
             training_location: trainingLocation,
             training_type: trainingType,
         })
@@ -632,33 +689,6 @@ export async function linkContactToTicket(ticketId: string, contactId: string) {
 }
 
 // ============== SPRINT 14.1 : ACTIONS DE MISE À JOUR MULTI-SERVICES ==============
-
-/**
- * Server Action : Mettre à jour les détails métier d'un ticket Commerce.
- */
-export async function updateCommerceDetails(ticketId: string, data: { quote_number?: string, invoice_number?: string, service_type?: string }) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { error: 'Non authentifié.' }
-
-    const { error } = await supabase
-        .from('ticket_commerce_details')
-        .update({
-            quote_number: data.quote_number || null,
-            invoice_number: data.invoice_number || null,
-            service_type: data.service_type || null
-        })
-        .eq('ticket_id', ticketId)
-
-    if (error) {
-        console.error('Erreur updateCommerceDetails:', error)
-        return { error: 'Erreur lors de la mise à jour des détails Commerce.' }
-    }
-
-    await addComment(ticketId, `[MISE À JOUR] Les détails Commerce ont été modifiés.`, true)
-    revalidatePath(`/tickets/${ticketId}`)
-    return { success: true }
-}
 
 /**
  * Server Action : Mettre à jour les détails métier d'un ticket SAV.
@@ -1065,4 +1095,3 @@ export async function mergeTickets(primaryId: string, duplicateId: string) {
         message: `Ticket #${shortDuplicate} fusionné dans #${shortPrimary}`,
     }
 }
-

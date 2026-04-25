@@ -97,6 +97,40 @@ export function RiftMessageInput() {
         textareaRef.current?.focus()
     }, [])
 
+    // Focus textarea when replyingTo changes
+    useEffect(() => {
+        if (replyingTo && textareaRef.current) {
+            textareaRef.current.focus()
+        }
+    }, [replyingTo])
+
+    // ── Gérer le Coller (Paste) ──
+    const handlePaste = useCallback(async (e: React.ClipboardEvent) => {
+        const items = e.clipboardData.items
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1 || items[i].kind === 'file') {
+                const file = items[i].getAsFile()
+                if (file) {
+                    // Simuler une sélection de fichier
+                    if (file.size > 20 * 1024 * 1024) {
+                        toast.error('Le fichier collé est trop volumineux (max 20 MB)')
+                        continue
+                    }
+
+                    const isImage = file.type.startsWith('image/') && file.type !== 'image/svg+xml'
+                    let preview: string | null = null
+                    if (isImage) {
+                        preview = URL.createObjectURL(file)
+                    }
+
+                    setAttachmentPreview({ file, preview, isImage })
+                    // On arrête au premier fichier trouvé dans le presse-papier
+                    break
+                }
+            }
+        }
+    }, [])
+
     // ── Auto-resize du textarea ──
     const handleTextareaChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
         const val = e.target.value
@@ -255,6 +289,10 @@ export function RiftMessageInput() {
                 is_edited: false,
                 deleted_at: null,
                 created_at: new Date().toISOString(),
+                entity_id: null,
+                entity_type: null,
+                is_forwarded: false,
+                forwarded_from_id: null,
                 profile: myProfile ? {
                     id: myProfile.id,
                     first_name: myProfile.first_name,
@@ -324,7 +362,24 @@ export function RiftMessageInput() {
                         <span className="text-xs font-medium text-primary/80">
                             Réponse à {replyingTo.profile?.first_name} {replyingTo.profile?.last_name}
                         </span>
-                        <p className="text-xs text-muted-foreground truncate">{replyingTo.content}</p>
+                        <div className="text-[11px] text-muted-foreground truncate flex items-center gap-2">
+                            {(() => {
+                                const content = replyingTo.content
+                                const imageRegex = /!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)/g
+                                const fileRegex = /\[📎\s*([^\]]*)\]\((https?:\/\/[^\s)]+)\)/g
+                                
+                                let displayContent: React.ReactNode = content
+                                
+                                if (content.match(imageRegex)) {
+                                    displayContent = <span className="flex items-center gap-1 italic opacity-70">🖼️ Image</span>
+                                } else if (content.match(fileRegex)) {
+                                    const match = fileRegex.exec(content)
+                                    displayContent = <span className="flex items-center gap-1 italic text-primary/60">📎 {match?.[1] || 'Fichier'}</span>
+                                }
+                                
+                                return displayContent
+                            })()}
+                        </div>
                     </div>
                     <button
                         onClick={() => setReplyingTo(null)}
@@ -366,7 +421,7 @@ export function RiftMessageInput() {
             )}
 
             {/* Barre de saisie */}
-            <div className="flex items-end gap-2 p-3">
+            <div className="flex items-end gap-2 p-3 min-w-0">
                 {/* Bouton trombone */}
                 <button
                     onClick={() => fileInputRef.current?.click()}
@@ -423,6 +478,7 @@ export function RiftMessageInput() {
                         value={content}
                         onChange={handleTextareaChange}
                         onKeyDown={handleKeyDown}
+                        onPaste={handlePaste}
                         placeholder="Écrire un message..."
                         disabled={isSending}
                         rows={1}

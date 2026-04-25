@@ -49,3 +49,25 @@ export async function updateMyAvatarUrl(avatar_url: string) {
     revalidatePath('/parametres')
     return { success: true }
 }
+
+export async function updateMyThemeConfig(config: any) {
+    const supabase = await createClient()
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Non authentifié' }
+
+    const { error } = await supabase
+        .from('profiles')
+        .update({
+            theme_config: config,
+            updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id)
+
+    if (error) {
+        console.error('Error updating theme config:', error)
+        return { error: 'Erreur lors de la mise à jour du thème' }
+    }
+
+    return { success: true }
+}

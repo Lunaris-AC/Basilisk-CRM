@@ -11,20 +11,13 @@ import { useThemeCustomizer } from '@/hooks/useThemeCustomizer'
 export default function ApparencePage() {
     const { theme, setTheme } = useTheme()
     const [mounted, setMounted] = useState(false)
-    const [currentThemeId, setCurrentThemeId] = useState('default')
-    const { customColors, updateColor, resetCustomColors } = useThemeCustomizer()
+    const { customColors, updateColor, resetCustomColors, olympeTheme, setOlympeThemeId } = useThemeCustomizer()
 
     // SPRINT 43 : Tutoriel interactif
     const { startTutorial } = useAppTutorial()
 
     useEffect(() => {
         setMounted(true)
-        const savedThemeId = localStorage.getItem('basilisk-olympe-theme') || 'default'
-        setCurrentThemeId(savedThemeId)
-        if (savedThemeId !== 'default') {
-            const t = OLYMPE_THEMES.find(th => th.id === savedThemeId)
-            if (t) applyOlympeTheme(t)
-        }
     }, [])
 
     const applyOlympeTheme = (olympe: OlympeTheme | null) => {
@@ -45,16 +38,16 @@ export default function ApparencePage() {
         }
     }
 
-    const handleThemeSelect = (themeId: string) => {
-        setCurrentThemeId(themeId)
-        localStorage.setItem('basilisk-olympe-theme', themeId)
-        resetCustomColors()
-
+    const handleThemeSelect = async (themeId: string) => {
         if (themeId === 'default') {
+            await setOlympeThemeId(null)
             applyOlympeTheme(null)
         } else {
             const t = OLYMPE_THEMES.find(th => th.id === themeId)
-            if (t) applyOlympeTheme(t)
+            if (t) {
+                await setOlympeThemeId(themeId)
+                applyOlympeTheme(t)
+            }
         }
     }
 
@@ -126,7 +119,7 @@ export default function ApparencePage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                     {OLYMPE_THEMES.map((olympe) => {
-                        const isSelected = currentThemeId === olympe.id
+                        const isSelected = olympeTheme === olympe.id
                         return (
                             <button
                                 key={olympe.id}

@@ -182,7 +182,7 @@ export function TicketTable({ tickets, isLoading, error, showAssignButton = fals
                                 <TableCell className="text-right">
                                     <div className="flex items-center justify-end gap-3">
                                         {showAssignButton && (
-                                            !(userRole === 'TECHNICIEN' && ['N1', 'N2', 'N3'].includes(userSupportLevel || '')) ? (
+                                            (userRole === 'ADMIN' || userRole === 'STANDARD' || (userRole === 'TECHNICIEN' && userSupportLevel === 'N4')) ? (
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation()
@@ -192,10 +192,10 @@ export function TicketTable({ tickets, isLoading, error, showAssignButton = fals
                                                     className="px-3 py-1.5 rounded-lg bg-primary hover:bg-primary/20 text-primary-foreground text-xs font-bold transition-colors disabled:opacity-50 flex items-center gap-2"
                                                 >
                                                     {assigningId === ticket.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
-                                                    S'assigner
+                                                    {ticket.assignee_id ? 'Réassigner' : "S'assigner"}
                                                 </button>
                                             ) : (
-                                                <span className="text-[10px] text-muted-foreground italic uppercase font-bold tracking-wider" title="Accès restreint aux Administrateurs et N4">
+                                                <span className="text-[10px] text-muted-foreground italic uppercase font-bold tracking-wider" title="Accès restreint aux Administrateurs, Standards et N4">
                                                     Restreint
                                                 </span>
                                             )

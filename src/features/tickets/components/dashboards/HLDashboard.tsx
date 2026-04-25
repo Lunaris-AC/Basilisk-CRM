@@ -14,6 +14,7 @@ import { fr } from 'date-fns/locale'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 
 // Barre de répartition inline
 function DistributionBar({ label, value, total, color }: { label: string; value: number; total: number; color: string }) {
@@ -65,7 +66,7 @@ export function HLDashboard() {
     const hasActiveTickets = activeTickets.length > 0
 
     const slaCount = globalStats?.slaViolations ?? 0
-    const totalForServices = (globalStats?.byCategory.HL ?? 0) + (globalStats?.byCategory.COMMERCE ?? 0) + (globalStats?.byCategory.SAV ?? 0) + (globalStats?.byCategory.FORMATION ?? 0) + (globalStats?.byCategory.DEV ?? 0)
+    const totalForServices = (globalStats?.byCategory.HL ?? 0) + (globalStats?.byCategory.SAV ?? 0) + (globalStats?.byCategory.FORMATION ?? 0) + (globalStats?.byCategory.DEV ?? 0)
     const totalForLevels = Object.values(globalStats?.byLevel ?? {}).reduce((acc, curr) => acc + curr, 0)
 
     const colors = ['sky', 'purple', 'pink', 'rose', 'indigo', 'teal', 'emerald', 'amber']
@@ -129,9 +130,26 @@ export function HLDashboard() {
                 <div className="relative group p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 backdrop-blur-xl overflow-hidden transition-all hover:border-primary/40">
                     <div className="absolute -right-6 -top-6 w-20 h-20 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/15 transition-colors" />
                     <div className="relative">
-                        <div className="flex items-center gap-2 mb-1.5">
-                            <Activity className="w-3.5 h-3.5 text-primary/80" />
-                            <span className="text-[10px] font-bold tracking-widest text-primary/80 uppercase">Total Portail</span>
+                        <div className="flex items-center justify-between mb-1.5">
+                            <div className="flex items-center gap-2">
+                                <Activity className="w-3.5 h-3.5 text-primary/80" />
+                                <span className="text-[10px] font-bold tracking-widest text-primary/80 uppercase">Total Portail</span>
+                            </div>
+                            {globalStats && (
+                                <div className={cn(
+                                    "flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-black border",
+                                    globalStats.deltaTickets > 0 
+                                        ? "bg-rose-500/10 text-rose-400 border-rose-500/20" 
+                                        : globalStats.deltaTickets < 0 
+                                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                                            : "bg-white/5 text-muted-foreground border-white/10"
+                                )}>
+                                    {globalStats.deltaTickets > 0 ? '+' : ''}{globalStats.deltaTickets}
+                                    {globalStats.deltaTickets !== 0 && (
+                                        globalStats.deltaTickets > 0 ? <ChevronUp className="w-2.5 h-2.5" /> : <ChevronDown className="w-2.5 h-2.5" />
+                                    )}
+                                </div>
+                            )}
                         </div>
                         <p className="text-3xl font-black tracking-tighter text-foreground">{globalStats?.totalTickets ?? '—'}</p>
                         <p className="text-[10px] text-muted-foreground mt-0.5 font-medium">tickets ouverts</p>
@@ -186,7 +204,6 @@ export function HLDashboard() {
                     </div>
                     <div className="space-y-3">
                         <DistributionBar label="Hotline" value={globalStats?.byCategory.HL ?? 0} total={totalForServices} color="indigo" />
-                        <DistributionBar label="Commerce" value={globalStats?.byCategory.COMMERCE ?? 0} total={totalForServices} color="emerald" />
                         <DistributionBar label="SAV" value={globalStats?.byCategory.SAV ?? 0} total={totalForServices} color="amber" />
                         <DistributionBar label="Formation" value={globalStats?.byCategory.FORMATION ?? 0} total={totalForServices} color="purple" />
                         <DistributionBar label="DEV" value={globalStats?.byCategory.DEV ?? 0} total={totalForServices} color="teal" />

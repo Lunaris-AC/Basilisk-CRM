@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { createClient } from '@/utils/supabase/client'
+import { updateMyThemeConfig } from '@/features/profiles/actions'
 
 export function useThemeCustomizer() {
     const [customColors, setCustomColors] = useState({
@@ -6,25 +8,82 @@ export function useThemeCustomizer() {
         background: '',
         border: ''
     })
+    const [olympeTheme, setOlympeTheme] = useState<string | null>(null)
 
     useEffect(() => {
-        const saved = localStorage.getItem('basilisk-custom-theme')
-        if (saved) {
-            const parsed = JSON.parse(saved)
-            setCustomColors(parsed)
-            applyColors(parsed)
+        const loadTheme = async () => {
+            const supabase = createClient()
+            const { data: { user } } = await supabase.auth.getUser()
+            
+            if (user) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('theme_config')
+                    .eq('id', user.id)
+                    .single()
+                
+                const config = profile?.theme_config
+                
+                if (config && (config.customColors || config.olympeTheme)) {
+                    // La DB a des données, on les applique et on synchronise le LocalStorage
+                    if (config.customColors && Object.values(config.customColors).some(v => v)) {
+                        setCustomColors(config.customColors)
+                        applyColors(config.customColors)
+                        localStorage.setItem('basilisk-custom-theme', JSON.stringify(config.customColors))
+                    } else {
+                        localStorage.removeItem('basilisk-custom-theme')
+                    }
+
+                    if (config.olympeTheme && config.olympeTheme !== 'default') {
+                        setOlympeTheme(config.olympeTheme)
+                        localStorage.setItem('basilisk-olympe-theme', config.olympeTheme)
+                    } else {
+                        setOlympeTheme(null)
+                        localStorage.removeItem('basilisk-olympe-theme')
+                    }
+                    return
+                } else {
+                    // La DB est vide, on regarde si le LocalStorage a quelque chose à lui donner
+                    const savedCustom = localStorage.getItem('basilisk-custom-theme')
+                    const savedOlympe = localStorage.getItem('basilisk-olympe-theme')
+                    
+                    if (savedCustom || savedOlympe) {
+                        const parsedCustom = savedCustom ? JSON.parse(savedCustom) : null
+                        // On pousse le local vers la DB pour la prochaine fois
+                        await updateMyThemeConfig({
+                            customColors: parsedCustom || { primary: '', background: '', border: '' },
+                            olympeTheme: savedOlympe || null
+                        })
+                        if (parsedCustom) {
+                            setCustomColors(parsedCustom)
+                            applyColors(parsedCustom)
+                        }
+                        if (savedOlympe) setOlympeTheme(savedOlympe)
+                        return
+                    }
+                }
+            }
+
+            // Fallback standard si non connecté ou erreur
+            const saved = localStorage.getItem('basilisk-custom-theme')
+            if (saved) {
+                const parsed = JSON.parse(saved)
+                setCustomColors(parsed)
+                applyColors(parsed)
+            }
+            const savedOlympe = localStorage.getItem('basilisk-olympe-theme')
+            if (savedOlympe) {
+                setOlympeTheme(savedOlympe)
+            }
         }
+
+        loadTheme()
     }, [])
 
     const applyColors = (colors: { primary?: string, background?: string, border?: string }) => {
         const root = document.documentElement
         
         if (colors.primary) {
-            // Assume we can just pass standard CSS colors to primary if it's hex, but shadcn uses HSL for primary
-            // Since we use standard color pickers (which output hex), we might need to convert hex to HSL
-            // Or just allow CSS var overrides directly if we set them properly, but standard shadcn uses `hsl(var(--primary))`
-            // If the user selects a hex, we need to set `--primary` as `H S L` values.
-            // Let's implement a simple wrapper or just assign directly and see if they modify `--primary` space.
             const hsl = hexToHSL(colors.primary)
             root.style.setProperty('--primary', hsl)
             root.style.setProperty('--ring', hsl)
@@ -48,27 +107,61 @@ export function useThemeCustomizer() {
         }
     }
 
-    const updateColor = (key: keyof typeof customColors, hex: string) => {
+    const updateColor = async (key: keyof typeof customColors, hex: string) => {
         const next = { ...customColors, [key]: hex }
         setCustomColors(next)
         localStorage.setItem('basilisk-custom-theme', JSON.stringify(next))
         applyColors(next)
-        // Switch off Olympe theme if we have custom colors
+        
         if (hex) {
+            setOlympeTheme(null)
             localStorage.removeItem('basilisk-olympe-theme')
         }
+
+        // Sync with DB
+        await updateMyThemeConfig({ customColors: next, olympeTheme: null })
     }
 
-    const resetCustomColors = () => {
-        setCustomColors({ primary: '', background: '', border: '' })
+    const setOlympeThemeId = async (themeId: string | null) => {
+        setOlympeTheme(themeId)
+        const root = document.documentElement
+        
+        // Nettoyage préalable pour éviter les conflits
+        root.style.removeProperty('--primary')
+        root.style.removeProperty('--ring')
+        root.style.removeProperty('--background')
+        root.style.removeProperty('--border')
+        root.style.removeProperty('--accent')
+        root.style.removeProperty('--muted')
+        root.style.removeProperty('--sidebar-primary')
+
+        if (themeId && themeId !== 'default') {
+            localStorage.setItem('basilisk-olympe-theme', themeId)
+            localStorage.removeItem('basilisk-custom-theme')
+            setCustomColors({ primary: '', background: '', border: '' })
+        } else {
+            localStorage.removeItem('basilisk-olympe-theme')
+            localStorage.removeItem('basilisk-custom-theme')
+        }
+        
+        // Sync with DB
+        await updateMyThemeConfig({ 
+            customColors: { primary: '', background: '', border: '' }, 
+            olympeTheme: themeId 
+        })
+    }
+
+    const resetCustomColors = async () => {
+        const empty = { primary: '', background: '', border: '' }
+        setCustomColors(empty)
         localStorage.removeItem('basilisk-custom-theme')
-        applyColors({ primary: '', background: '', border: '' })
+        applyColors(empty)
+        await updateMyThemeConfig({ customColors: empty, olympeTheme: olympeTheme })
     }
 
-    return { customColors, updateColor, resetCustomColors }
+    return { customColors, updateColor, resetCustomColors, olympeTheme, setOlympeThemeId }
 }
 
-// Helper to convert HEX to HSL format used by shadcn (e.g. "210 100% 50%")
 function hexToHSL(hex: string): string {
     let r = 0, g = 0, b = 0;
     if (hex.length === 4) {

@@ -1,5 +1,6 @@
 import { RealtimeSubscriber } from '@/components/RealtimeSubscriber'
 import { RiftUnreadTracker } from '@/components/RiftUnreadTracker'
+import { RiftCallManager } from '@/components/RiftCallManager'
 import { GlobalCommandPalette } from '@/components/GlobalCommandPalette'
 import { ProtectedShell } from '@/components/layout/ProtectedShell'
 
@@ -13,6 +14,7 @@ export default function ProtectedLayout({
             {/* Activation de la synchronisation temps réel (Client Side) */}
             <RealtimeSubscriber />
             <RiftUnreadTracker />
+            <RiftCallManager />
 
             <GlobalCommandPalette />
 

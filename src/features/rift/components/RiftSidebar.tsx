@@ -2,12 +2,14 @@
 
 // SPRINT 50.2 - Basilisk Rift : Sidebar de la messagerie
 // Liste des salons (Publics/Privés) + DMs avec pastilles de présence
+// SPRINT 50.3 - Ajout des indicateurs d'appels actifs
 
 import { useEffect, useState, useMemo, useCallback } from 'react'
-import { Hash, Lock, MessageSquare, Plus, Search, Users, ChevronDown, Loader2 } from 'lucide-react'
+import { Hash, Lock, MessageSquare, Plus, Search, Users, ChevronDown, Loader2, Circle, Clock, MinusCircle, HelpCircle, Phone, Video } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useRiftStore, type RiftChannel, type RiftPresenceStatus } from '@/hooks/useRiftStore'
 import { RiftCreateChannelModal } from './RiftCreateChannelModal'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 interface RiftSidebarProps {
     currentUserId: string
@@ -22,6 +24,8 @@ export function RiftSidebar({ currentUserId }: RiftSidebarProps) {
         isLoadingChannels,
         fetchChannels,
         unreadCounts,
+        activeCallsMap,
+        setMyPresence,
     } = useRiftStore()
 
     const [search, setSearch] = useState('')
@@ -80,10 +84,12 @@ export function RiftSidebar({ currentUserId }: RiftSidebarProps) {
         switch (status) {
             case 'online': return 'bg-emerald-500'
             case 'away': return 'bg-amber-500'
-            case 'dnd': return 'bg-rose-500'
+            case 'busy': return 'bg-rose-500'
             default: return 'bg-white/20'
         }
     }
+
+    const myPresence = getUserPresence(currentUserId)
 
     const handleCreateChannel = useCallback((type: 'PUBLIC' | 'PRIVATE_GROUP' | 'DM') => {
         setCreateType(type)
@@ -91,7 +97,7 @@ export function RiftSidebar({ currentUserId }: RiftSidebarProps) {
     }, [])
 
     return (
-        <div className="flex flex-col w-72 h-full bg-black/30 backdrop-blur-xl border-r border-white/[0.06] flex-shrink-0">
+        <div className="flex flex-col w-64 h-full bg-black/30 backdrop-blur-xl border-r border-white/[0.06] flex-shrink-0">
             {/* Header */}
             <div className="p-4 border-b border-white/[0.06]">
                 <div className="flex items-center justify-between mb-3">
@@ -148,6 +154,7 @@ export function RiftSidebar({ currentUserId }: RiftSidebarProps) {
                                 const isActive = activeChannel?.id === channel.id
                                 const isPublic = channel.type === 'PUBLIC'
                                 const unread = unreadCounts.get(channel.id) ?? 0
+                                const activeCall = activeCallsMap.get(channel.id)
 
                                 return (
                                     <button
@@ -168,6 +175,13 @@ export function RiftSidebar({ currentUserId }: RiftSidebarProps) {
                                         <span className={cn('text-sm font-medium truncate flex-1', unread > 0 && !isActive && 'text-foreground font-bold')}>
                                             {getChannelDisplayName(channel, currentUserId)}
                                         </span>
+                                        
+                                        {activeCall && (
+                                            <div className="flex items-center justify-center w-5 h-5 rounded-md bg-emerald-500/20 text-emerald-400 animate-pulse">
+                                                {activeCall.type === 'VIDEO' ? <Video className="w-3 h-3" /> : <Phone className="w-3 h-3" />}
+                                            </div>
+                                        )}
+
                                         {unread > 0 && !isActive && (
                                             <span className="min-w-5 h-5 px-1.5 flex items-center justify-center rounded-full bg-primary text-[10px] font-bold text-foreground shadow-lg shadow-primary/30 flex-shrink-0">
                                                 {unread > 99 ? '99+' : unread}
@@ -212,6 +226,7 @@ export function RiftSidebar({ currentUserId }: RiftSidebarProps) {
                                 const otherMember = channel.members?.find(m => m.user_id !== currentUserId)
                                 const presence = otherMember ? getUserPresence(otherMember.user_id) : 'offline'
                                 const unread = unreadCounts.get(channel.id) ?? 0
+                                const activeCall = activeCallsMap.get(channel.id)
 
                                 return (
                                     <button
@@ -242,6 +257,13 @@ export function RiftSidebar({ currentUserId }: RiftSidebarProps) {
                                         <span className={cn('text-sm font-medium truncate flex-1', unread > 0 && !isActive && 'text-foreground font-bold')}>
                                             {getChannelDisplayName(channel, currentUserId)}
                                         </span>
+
+                                        {activeCall && (
+                                            <div className="flex items-center justify-center w-5 h-5 rounded-md bg-emerald-500/20 text-emerald-400 animate-pulse">
+                                                {activeCall.type === 'VIDEO' ? <Video className="w-3 h-3" /> : <Phone className="w-3 h-3" />}
+                                            </div>
+                                        )}
+
                                         {unread > 0 && !isActive && (
                                             <span className="min-w-5 h-5 px-1.5 flex items-center justify-center rounded-full bg-primary text-[10px] font-bold text-foreground shadow-lg shadow-primary/30 flex-shrink-0">
                                                 {unread > 99 ? '99+' : unread}
@@ -262,6 +284,54 @@ export function RiftSidebar({ currentUserId }: RiftSidebarProps) {
                         </div>
                     )}
                 </div>
+            </div>
+
+            {/* User Presence Selector Footer */}
+            <div className="p-3 border-t border-white/[0.06] bg-black/20">
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <button className="flex items-center gap-3 w-full p-2 rounded-xl hover:bg-white/5 transition-colors text-left group">
+                            <div className="relative">
+                                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-black text-primary border border-primary/30">
+                                    MOI
+                                </div>
+                                <div className={cn(
+                                    'absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[#0a0a1a]',
+                                    presenceColor(myPresence)
+                                )} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-xs font-bold text-foreground/80 truncate">Mon Statut</p>
+                                <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black opacity-40 group-hover:opacity-100 transition-opacity">{myPresence}</p>
+                            </div>
+                            <ChevronDown className="w-3 h-3 text-muted-foreground/30 group-hover:text-foreground transition-colors" />
+                        </button>
+                    </PopoverTrigger>
+                    <PopoverContent side="top" align="start" className="w-48 p-1 bg-zinc-900 border-white/10 shadow-2xl">
+                        <div className="space-y-0.5">
+                            {[
+                                { id: 'online', label: 'En ligne', color: 'text-emerald-500', icon: Circle },
+                                { id: 'away', label: 'Absent', color: 'text-amber-500', icon: Clock },
+                                { id: 'busy', label: 'Occupé', color: 'text-rose-500', icon: MinusCircle },
+                                { id: 'offline', label: 'Hors ligne', color: 'text-muted-foreground', icon: HelpCircle },
+                            ].map((status) => (
+                                <button
+                                    key={status.id}
+                                    onClick={() => setMyPresence(status.id as RiftPresenceStatus)}
+                                    className={cn(
+                                        'flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-xs font-medium transition-colors',
+                                        myPresence === status.id 
+                                            ? 'bg-white/10 text-foreground' 
+                                            : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                                    )}
+                                >
+                                    <status.icon className={cn('w-3.5 h-3.5', status.color)} />
+                                    {status.label}
+                                </button>
+                            ))}
+                        </div>
+                    </PopoverContent>
+                </Popover>
             </div>
 
             {/* Modale de création */}

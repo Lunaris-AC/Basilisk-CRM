@@ -85,7 +85,7 @@ export default function RiftPage() {
     }
 
     return (
-        <div className="flex h-[calc(100%+3rem)] md:h-[calc(100%+4rem)] -m-6 md:-m-8 overflow-hidden border border-white/[0.06] bg-black/20 backdrop-blur-xl">
+        <div className="flex h-full min-h-0 overflow-hidden border-t border-white/[0.06] bg-black/20 backdrop-blur-xl">
             <RiftSidebar currentUserId={currentUserId} />
             <RiftChatArea currentUserId={currentUserId} />
         </div>

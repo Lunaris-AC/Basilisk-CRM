@@ -4,6 +4,31 @@ import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 /**
+ * Helper to log admin actions into the audit trail.
+ */
+async function logAudit(
+    supabase: any,
+    adminId: string,
+    actionType: string,
+    entityType: string,
+    entityId: string | null = null,
+    oldData: any = null,
+    newData: any = null
+) {
+    const { error } = await supabase.from('admin_audit_logs').insert({
+        admin_id: adminId,
+        action_type: actionType,
+        entity_type: entityType,
+        entity_id: entityId,
+        old_data: oldData,
+        new_data: newData
+    });
+    if (error) {
+        console.error("Failed to insert audit log:", error);
+    }
+}
+
+/**
  * Force le changement de rôle d'un utilisateur (Usurpation)
  */
 export async function forceChangeUserRole(targetUserId: string, newRole: string) {
@@ -16,6 +41,8 @@ export async function forceChangeUserRole(targetUserId: string, newRole: string)
     const { data: callerProfile } = await supabase.from('profiles').select('role, support_level').eq('id', user.id).single()
     if ((callerProfile?.role !== 'TECHNICIEN' || callerProfile?.support_level !== 'N4') && callerProfile?.role !== 'ADMIN') return { error: 'Accès non autorisé : God Mode réservé aux administrateurs.' }
 
+    const { data: oldProfile } = await supabase.from('profiles').select('role').eq('id', targetUserId).single()
+
     const { error } = await supabase
         .from('profiles')
         .update({ role: newRole })
@@ -26,7 +53,9 @@ export async function forceChangeUserRole(targetUserId: string, newRole: string)
         return { error: 'Échec du changement de rôle.' }
     }
 
-    revalidatePath('/admin/debug')
+    await logAudit(supabase, user.id, 'FORCE_CHANGE_ROLE', 'PROFILE', targetUserId, { role: oldProfile?.role }, { role: newRole })
+
+    revalidatePath('/admin/control-center')
     return { success: true }
 }
 
@@ -54,7 +83,9 @@ export async function unassignAllUserTickets(targetUserId: string) {
         return { error: 'Échec de la purge des assignations.' }
     }
 
-    revalidatePath('/admin/debug')
+    await logAudit(supabase, user.id, 'UNASSIGN_ALL_TICKETS', 'PROFILE', targetUserId)
+
+    revalidatePath('/admin/control-center')
     revalidatePath('/incidents')
     revalidatePath('/dashboard')
     return { success: true, message: "Tous les tickets de l'utilisateur ont été remis dans la file." }
@@ -89,7 +120,9 @@ export async function softDeleteOldClosedTickets() {
         return { error: 'Échec du lancement du protocole Nuke.' }
     }
 
-    revalidatePath('/admin/debug')
+    await logAudit(supabase, user.id, 'NUKE_OLD_TICKETS', 'TICKET', 'multiple', null, { count: data?.length || 0 })
+
+    revalidatePath('/admin/control-center')
     return { success: true, count: data?.length || 0 }
 }
 
@@ -119,7 +152,9 @@ export async function adminUpdateProfile(
         return { error: 'Échec de la mise à jour du profil.' }
     }
 
-    revalidatePath('/admin/debug')
+    await logAudit(supabase, user.id, 'UPDATE_PROFILE', 'PROFILE', targetUserId, null, updates)
+
+    revalidatePath('/admin/control-center')
     return { success: true }
 }
 
@@ -147,9 +182,40 @@ export async function adminForceEditTicket(
         return { error: 'Échec de la modification du ticket.' }
     }
 
-    revalidatePath('/admin/debug')
+    await logAudit(supabase, user.id, 'FORCE_EDIT_TICKET', 'TICKET', ticketId, null, updates)
+
+    revalidatePath('/admin/control-center')
     revalidatePath('/incidents')
     revalidatePath('/dashboard')
+    return { success: true }
+}
+
+/**
+ * Met à jour une politique SLA.
+ */
+export async function updateSlaPolicy(priority: string, hours: number) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Non authentifié.' }
+
+    const { data: callerProfile } = await supabase.from('profiles').select('role, support_level').eq('id', user.id).single()
+    if ((callerProfile?.role !== 'TECHNICIEN' || callerProfile?.support_level !== 'N4') && callerProfile?.role !== 'ADMIN') return { error: 'Accès non autorisé.' }
+
+    const { data: oldData } = await supabase.from('sla_policies').select('hours').eq('priority', priority).single()
+
+    const { error } = await supabase
+        .from('sla_policies')
+        .update({ hours, updated_at: new Date().toISOString() })
+        .eq('priority', priority)
+
+    if (error) {
+        console.error("God Mode Error [updateSlaPolicy]:", error)
+        return { error: 'Échec de la mise à jour du SLA.' }
+    }
+
+    await logAudit(supabase, user.id, 'UPDATE_SLA_POLICY', 'SLA_POLICY', priority, { hours: oldData?.hours }, { hours })
+
+    revalidatePath('/admin/control-center')
     return { success: true }
 }
 
@@ -173,4 +239,3 @@ export async function getStoresForSelect() {
 
     return { success: true, data: data || [] }
 }
-

@@ -1,13 +1,17 @@
 'use client'
 
 // SPRINT 50.2 - Basilisk Rift : Zone de chat centrale avec Infinite Scroll
+// SPRINT 50.3 - Ajout des boutons d'appel Audio/Vidéo et du bandeau de participation
 
-import { useEffect, useRef, useCallback, useMemo } from 'react'
-import { Hash, Lock, Users, MessageSquare, Loader2, ChevronUp } from 'lucide-react'
+import { useEffect, useRef, useCallback, useMemo, useState } from 'react'
+import { Hash, Lock, Users, MessageSquare, Loader2, ChevronUp, Phone, Video } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useRiftStore } from '@/hooks/useRiftStore'
 import { RiftMessageComponent } from './RiftMessage'
 import { RiftMessageInput } from './RiftMessageInput'
+import { startRiftCall, endRiftCall } from '@/features/rift/actions'
+import { createClient } from '@/utils/supabase/client'
+import { toast } from 'sonner'
 
 interface RiftChatAreaProps {
     currentUserId: string
@@ -21,18 +25,56 @@ export function RiftChatArea({ currentUserId }: RiftChatAreaProps) {
         isLoadingMessages,
         loadMoreMessages,
         fetchReadReceipts,
+        setActiveCall,
+        activeCallsMap
     } = useRiftStore()
+
+    const [myRole, setMyRole] = useState<string>('STANDARD')
+
+    useEffect(() => {
+        const fetchRole = async () => {
+            const { data } = await createClient().from('profiles').select('role').eq('id', currentUserId).single()
+            if (data) setMyRole(data.role)
+        }
+        fetchRole()
+    }, [currentUserId])
 
     const chatContainerRef = useRef<HTMLDivElement>(null)
     const prevMessageCount = useRef(0)
+
+    const activeCallInChannel = activeChannel ? activeCallsMap.get(activeChannel.id) : null
+
+    const handleStartCall = async (type: 'AUDIO' | 'VIDEO') => {
+        if (!activeChannel) return
+        const res = await startRiftCall(activeChannel.id, type)
+        if (res.success && res.callId) {
+            setActiveCall({
+                id: res.callId,
+                channel_id: activeChannel.id,
+                created_by: currentUserId,
+                type,
+                status: 'ACTIVE',
+                started_at: new Date().toISOString()
+            })
+        } else if (res.error) {
+            toast.error(res.error)
+        }
+    }
+
+    const handleEndCall = async (e: React.MouseEvent, callId: string) => {
+        e.stopPropagation()
+        if (confirm("Voulez-vous vraiment forcer la fin de cet appel ?")) {
+            const res = await endRiftCall(callId)
+            if (res.error) toast.error(res.error)
+            else toast.success("Appel terminé")
+        }
+    }
 
     // ── Scroll to bottom quand de nouveaux messages arrivent ──
     useEffect(() => {
         if (messages.length > prevMessageCount.current) {
             const isNewMessage = messages.length - prevMessageCount.current <= 2
             if (isNewMessage && chatContainerRef.current) {
-                // Scroll smooth pour les nouveaux messages (envoi ou réception)
-                // On utilise scrollTop au lieu de scrollIntoView pour ne pas scroller le parent <main>
                 chatContainerRef.current.scrollTo({ top: chatContainerRef.current.scrollHeight, behavior: 'smooth' })
             }
         }
@@ -53,9 +95,12 @@ export function RiftChatArea({ currentUserId }: RiftChatAreaProps) {
     // ── Charger les accusés de lecture pour les messages visibles ──
     useEffect(() => {
         if (messages.length === 0) return
+        
+        // SPRINT 50.3 : Filtrer les messages temporaires pour éviter l'erreur 400
         const ownMessages = messages
-            .filter(m => m.user_id === currentUserId && !m.deleted_at)
+            .filter(m => m.user_id === currentUserId && !m.deleted_at && !m.id.startsWith('temp-'))
             .map(m => m.id)
+            
         if (ownMessages.length > 0) {
             fetchReadReceipts(ownMessages)
         }
@@ -69,7 +114,6 @@ export function RiftChatArea({ currentUserId }: RiftChatAreaProps) {
 
         await loadMoreMessages()
 
-        // Maintenir la position de scroll après le chargement
         requestAnimationFrame(() => {
             const newScrollHeight = container.scrollHeight
             container.scrollTop = newScrollHeight - prevScrollHeight
@@ -80,8 +124,6 @@ export function RiftChatArea({ currentUserId }: RiftChatAreaProps) {
     const messageGroups = useMemo(() => {
         return messages.map((msg, i) => {
             const prev = i > 0 ? messages[i - 1] : null
-            // Un message est "premier de groupe" si l'auteur précédent est différent
-            // ou si plus de 5 minutes se sont écoulées
             const isFirstInGroup = !prev
                 || prev.user_id !== msg.user_id
                 || (new Date(msg.created_at).getTime() - new Date(prev.created_at).getTime()) > 5 * 60 * 1000
@@ -91,7 +133,6 @@ export function RiftChatArea({ currentUserId }: RiftChatAreaProps) {
 
     const memberCount = activeChannel?.members?.length ?? 0
 
-    // ── État vide : aucun channel sélectionné ──
     if (!activeChannel) {
         return (
             <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
@@ -135,6 +176,22 @@ export function RiftChatArea({ currentUserId }: RiftChatAreaProps) {
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
+                    {/* BOUTONS APPEL (SPRINT 50.3) */}
+                    <button 
+                        onClick={() => handleStartCall('AUDIO')}
+                        className="p-2 rounded-lg hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-400 transition-colors" 
+                        title="Appel Audio"
+                    >
+                        <Phone className="w-4 h-4" />
+                    </button>
+                    <button 
+                        onClick={() => handleStartCall('VIDEO')}
+                        className="p-2 rounded-lg hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors" 
+                        title="Appel Vidéo"
+                    >
+                        <Video className="w-4 h-4" />
+                    </button>
+
                     <button className="p-2 rounded-lg hover:bg-white/5 text-muted-foreground hover:text-foreground transition-colors" title="Membres">
                         <Users className="w-4 h-4" />
                     </button>
@@ -144,8 +201,43 @@ export function RiftChatArea({ currentUserId }: RiftChatAreaProps) {
             {/* Zone des messages */}
             <div
                 ref={chatContainerRef}
-                className="flex-1 overflow-y-auto custom-scrollbar py-4 min-h-0"
+                className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar py-4 min-h-0 relative"
             >
+                {/* BANDEAU APPEL ACTIF (SPRINT 50.3) */}
+                {activeCallInChannel && (
+                    <div className="mx-6 mb-6 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 backdrop-blur-xl flex items-center justify-between animate-in slide-in-from-top-4 duration-500">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-center">
+                                <div className="relative">
+                                    {activeCallInChannel.type === 'VIDEO' ? <Video className="w-6 h-6" /> : <Phone className="w-6 h-6" />}
+                                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full animate-ping" />
+                                </div>
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-black text-foreground uppercase tracking-tight">Appel {activeCallInChannel.type === 'VIDEO' ? 'Vidéo' : 'Audio'} en cours</h4>
+                                <p className="text-xs text-muted-foreground">Rejoignez la discussion avec vos collaborateurs</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            {(myRole === 'ADMIN' || activeCallInChannel.created_by === currentUserId) && (
+                                <button 
+                                    onClick={(e) => handleEndCall(e, activeCallInChannel.id)}
+                                    className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 transition-colors"
+                                    title="Forcer la fin de l'appel"
+                                >
+                                    <Phone className="w-4 h-4 rotate-[135deg]" />
+                                </button>
+                            )}
+                            <button 
+                                onClick={() => setActiveCall(activeCallInChannel)}
+                                className="px-6 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs uppercase tracking-widest shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
+                            >
+                                Rejoindre
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 {/* Bouton charger plus */}
                 {hasMoreMessages && (
                     <div className="flex justify-center py-3">

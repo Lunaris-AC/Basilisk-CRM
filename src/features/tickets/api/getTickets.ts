@@ -8,10 +8,9 @@ export interface TicketFilters {
     status?: string | 'all'
     priority?: string | 'all'
     escalation_level?: string | 'all'
-    support_level_id?: string | 'all' // SPRINT 26.1
+    support_level_id?: string | 'all'
     assignee_id?: string | 'all'
     category?: string | 'all'
-    // SPRINT 40 : Filtres multi-sélection (facettes)
     statuses?: string[]
     priorities?: string[]
     support_level_ids?: string[]
@@ -30,8 +29,7 @@ export interface TicketWithRelations {
     resume_at: string | null
     created_at: string
     updated_at: string
-    category: 'HL' | 'COMMERCE' | 'SAV' | 'FORMATION' | 'DEV'
-    // SPRINT 32 : Champs SLA
+    category: 'HL' | 'COMMERCE' | 'SAV1' | 'SAV2' | 'FORMATION' | 'DEV'
     sla_start_at: string | null
     sla_deadline_at: string | null
     sla_paused_at: string | null
@@ -41,7 +39,6 @@ export interface TicketWithRelations {
     assignee: { id: string; first_name: string; last_name: string } | null
     creator: { id: string; first_name: string; last_name: string } | null
     contact: { id: string; first_name: string; last_name: string; email: string; phone: string; job_title: string } | null
-    commerce_details?: { quote_number: string | null; invoice_number: string | null; service_type: string | null } | null
     sav_details?: { serial_number: string | null; product_reference: string | null; hardware_status: string | null } | null
     formateur_details?: { travel_date: string | null; training_location: string | null; training_type: string | null } | null
     dev_details?: { type: 'BUG' | 'EVOLUTION'; reproduction_steps: string | null; impact: string | null; need_description: string | null; expected_process: string | null; complexity: string | null } | null
@@ -69,9 +66,8 @@ export const getMyTickets = async (userId: string, filters?: TicketFilters): Pro
       profiles!tickets_assignee_id_fkey (first_name, last_name),
       support_levels (id, name, color, rank)
     `)
-        .neq('category', 'DEV') // Exclure les SD du support classique
+        .neq('category', 'DEV')
 
-    // HOTFIX 29.5 : Récupère les tickets de SON magasin sans filtrer sur client_id
     const { data: profile } = await supabase
         .from('profiles')
         .select('role, store_id')
@@ -82,11 +78,9 @@ export const getMyTickets = async (userId: string, filters?: TicketFilters): Pro
         if (profile.store_id) {
             query = query.eq('store_id', profile.store_id)
         } else {
-            // Fallback en cas de profil sans magasin : on limite à ses propres créations
             query = query.eq('creator_id', userId)
         }
     } else {
-        // Logique classique d'assignation
         if (filters?.assignee_id && filters.assignee_id !== 'all') {
             query = query.eq('assignee_id', filters.assignee_id)
         } else if (filters?.assignee_id === 'all') {
@@ -96,7 +90,6 @@ export const getMyTickets = async (userId: string, filters?: TicketFilters): Pro
         }
     }
 
-    // SPRINT 40 : Filtres multi-sélection (facettes)
     if (filters?.statuses && filters.statuses.length > 0) {
         query = query.in('status', filters.statuses)
     } else if (filters?.status && filters.status !== 'all') {
@@ -141,18 +134,25 @@ export const getMyTickets = async (userId: string, filters?: TicketFilters): Pro
 
 export const getUnassignedTickets = async (filters?: TicketFilters, userRolesLevel?: { role: string; support_level_id?: string | null }): Promise<TicketWithRelations[]> => {
     const supabase = createClient()
+    
+    // SPRINT 50 : ADMIN et STANDARD voient TOUS les tickets (même assignés) dans la file
+    const seeAll = userRolesLevel?.role === 'ADMIN' || userRolesLevel?.role === 'STANDARD'
+
     let query = supabase
         .from('tickets')
         .select(`
       id, title, description, status, priority, escalation_level, created_at, updated_at, support_level_id,
       sla_start_at, sla_deadline_at, sla_paused_at, sla_elapsed_minutes,
       clients (company),
+      profiles!tickets_assignee_id_fkey (first_name, last_name),
       support_levels (id, name, color, rank)
     `)
-        .is('assignee_id', null)
-        .neq('category', 'DEV') // Exclure les SD de la file d'attente
+        .neq('category', 'DEV')
 
-    // Filtrer par niveau de support du technicien
+    if (!seeAll) {
+        query = query.is('assignee_id', null)
+    }
+
     if (userRolesLevel && userRolesLevel.role === 'TECHNICIEN') {
         if (userRolesLevel.support_level_id) {
             query = query.or(`support_level_id.eq.${userRolesLevel.support_level_id},support_level_id.is.null`)
@@ -161,7 +161,6 @@ export const getUnassignedTickets = async (filters?: TicketFilters, userRolesLev
         }
     }
 
-    // SPRINT 40 : Filtres multi-sélection (facettes)
     if (filters?.statuses && filters.statuses.length > 0) {
         query = query.in('status', filters.statuses)
     } else if (filters?.status && filters.status !== 'all') {
@@ -203,15 +202,12 @@ export const getUnassignedTickets = async (filters?: TicketFilters, userRolesLev
     if (error) throw new Error(error.message)
     const formatted = formatTickets(data)
 
-    // Placer les tickets "resolu" à la fin de la liste dans la file
     return formatted.sort((a, b) => {
         if (a.status === 'resolu' && b.status !== 'resolu') return 1
         if (a.status !== 'resolu' && b.status === 'resolu') return -1
         return 0
     })
 }
-
-// ============== SPRINT 17 : SD (BUGS & ÉVOLUTIONS DEV) ==============
 
 export interface SDFilters {
     search?: string
@@ -253,7 +249,6 @@ export const getSDs = async (filters?: SDFilters): Promise<TicketWithRelations[]
 
     let results = (data || []) as unknown as TicketWithRelations[]
 
-    // Filtrage côté client pour les champs de la table d'extension
     if (filters?.sd_type && filters.sd_type !== 'all') {
         results = results.filter(t => t.dev_details?.type === filters.sd_type)
     }
@@ -268,27 +263,40 @@ export interface GlobalStats {
     totalTickets: number
     totalUnassigned: number
     slaViolations: number
+    deltaTickets: number 
     byLevel: Record<string, number>
-    byCategory: { DEV: number; COMMERCE: number; SAV: number; FORMATION: number; HL: number }
+    byCategory: { DEV: number; SAV1: number; SAV2: number; FORMATION: number; HL: number; COMMERCE: number }
 }
 
 export const getGlobalStats = async (): Promise<GlobalStats> => {
     const supabase = createClient()
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const todayISO = today.toISOString()
 
-    // Total tickets ouverts (non fermés)
     const { count: totalTickets } = await supabase
         .from('tickets')
         .select('*', { count: 'exact', head: true })
         .neq('status', 'ferme')
 
-    // Total non affectés
+    const { count: createdToday } = await supabase
+        .from('tickets')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', todayISO)
+
+    const { count: closedToday } = await supabase
+        .from('tickets')
+        .select('*', { count: 'exact', head: true })
+        .gte('closed_at', todayISO)
+
+    const deltaTickets = (createdToday || 0) - (closedToday || 0)
+
     const { count: totalUnassigned } = await supabase
         .from('tickets')
         .select('*', { count: 'exact', head: true })
         .is('assignee_id', null)
         .neq('status', 'ferme')
 
-    // SLA non respectés
     const { count: slaViolations } = await supabase
         .from('tickets')
         .select('*', { count: 'exact', head: true })
@@ -297,7 +305,6 @@ export const getGlobalStats = async (): Promise<GlobalStats> => {
         .not('sla_deadline_at', 'is', null)
         .lt('sla_deadline_at', new Date().toISOString())
 
-    // Par niveau d'escalade (Dynamique SPRINT 26.1)
     const { data: levels } = await supabase
         .from('support_levels')
         .select('id, name')
@@ -316,9 +323,8 @@ export const getGlobalStats = async (): Promise<GlobalStats> => {
         }
     }
 
-    // Par catégorie/service
-    const categoryCounts = { DEV: 0, COMMERCE: 0, SAV: 0, FORMATION: 0, HL: 0 }
-    for (const cat of ['DEV', 'COMMERCE', 'SAV', 'FORMATION', 'HL'] as const) {
+    const categoryCounts: any = { DEV: 0, SAV1: 0, SAV2: 0, FORMATION: 0, HL: 0, COMMERCE: 0 }
+    for (const cat of ['DEV', 'SAV1', 'SAV2', 'FORMATION', 'HL', 'COMMERCE'] as const) {
         const { count } = await supabase
             .from('tickets')
             .select('*', { count: 'exact', head: true })
@@ -331,6 +337,7 @@ export const getGlobalStats = async (): Promise<GlobalStats> => {
         totalTickets: totalTickets || 0,
         totalUnassigned: totalUnassigned || 0,
         slaViolations: slaViolations || 0,
+        deltaTickets,
         byLevel: levelCounts,
         byCategory: categoryCounts,
     }
@@ -338,15 +345,12 @@ export const getGlobalStats = async (): Promise<GlobalStats> => {
 
 export const getMyStatsByDate = async (userId: string, dateISO?: string): Promise<{ createdCount: number; closedCount: number }> => {
     const supabase = createClient()
-
-    // Calculer début/fin de la journée demandée
     const targetDate = dateISO ? new Date(dateISO) : new Date()
     const dayStart = new Date(targetDate)
     dayStart.setHours(0, 0, 0, 0)
     const dayEnd = new Date(targetDate)
     dayEnd.setHours(23, 59, 59, 999)
 
-    // Requête 1 : Créés à cette date par l'utilisateur (creator_id)
     const { count: createdCount, error: err1 } = await supabase
         .from('tickets')
         .select('*', { count: 'exact', head: true })
@@ -356,7 +360,6 @@ export const getMyStatsByDate = async (userId: string, dateISO?: string): Promis
 
     if (err1) throw new Error(err1.message)
 
-    // Requête 2 : Fermés à cette date par l'utilisateur (assignee_id)
     const { count: closedCount, error: err2 } = await supabase
         .from('tickets')
         .select('*', { count: 'exact', head: true })
@@ -373,13 +376,10 @@ export const getMyStatsByDate = async (userId: string, dateISO?: string): Promis
     }
 }
 
-// Garder la compatibilité avec getMyDailyStats existant
 export const getMyDailyStats = async (userId: string) => {
     const result = await getMyStatsByDate(userId)
     return { createdToday: result.createdCount, closedToday: result.closedCount }
 }
-
-// ============== SPRINT 7 : DÉTAIL TICKET ET COMMENTAIRES ==============
 
 export interface TicketComment {
     id: string
@@ -392,13 +392,10 @@ export interface TicketComment {
         first_name: string
         last_name: string
         role: string;
-  support_level?: string
+        support_level?: string
     }
 }
 
-/**
- * Récupère un ticket précis avec toutes ses relations.
- */
 export async function getTicketById(id: string): Promise<TicketWithRelations | null> {
     const supabase = createClient()
 
@@ -440,11 +437,6 @@ export async function getTicketById(id: string): Promise<TicketWithRelations | n
                 phone,
                 job_title
             ),
-            commerce_details:ticket_commerce_details (
-                quote_number,
-                invoice_number,
-                service_type
-            ),
             sav_details:ticket_sav_details (
                 serial_number,
                 product_reference,
@@ -475,9 +467,6 @@ export async function getTicketById(id: string): Promise<TicketWithRelations | n
     return ticket as unknown as TicketWithRelations
 }
 
-/**
- * Récupère le fil de discussion (commentaires et notes) d'un ticket.
- */
 export async function getCommentsByTicket(ticketId: string): Promise<TicketComment[]> {
     const supabase = createClient()
 
@@ -507,9 +496,6 @@ export async function getCommentsByTicket(ticketId: string): Promise<TicketComme
     return comments as unknown as TicketComment[]
 }
 
-/**
- * Récupère la liste des profils pouvant être assignés à un ticket (actifs, et potentiellement certains rôles)
- */
 export async function getActiveAssignees() {
     const supabase = createClient()
     const { data, error } = await supabase
@@ -522,8 +508,6 @@ export async function getActiveAssignees() {
     return data
 }
 
-// ============== SPRINT 22 : AUDIT LOGS ==============
-
 export interface AuditLogEntry {
     id: string
     ticket_id: string
@@ -535,17 +519,13 @@ export interface AuditLogEntry {
         first_name: string
         last_name: string
         role: string;
-  support_level?: string
+        support_level?: string
     } | null
 }
 
-/**
- * Récupère l'historique des actions (audit logs) d'un ticket.
- */
 export async function getTicketAuditLogs(ticketId: string): Promise<AuditLogEntry[]> {
     const supabase = createClient()
 
-    // 1. Fetch audit logs with select('*') for schema flexibility
     const { data: logs, error } = await supabase
         .from('ticket_audit_logs')
         .select('*')
@@ -559,16 +539,13 @@ export async function getTicketAuditLogs(ticketId: string): Promise<AuditLogEntr
 
     if (!logs || logs.length === 0) return []
 
-    // 2. Detect the user ID column (could be user_id or author_id etc.)
     const sampleRow = logs[0] as Record<string, any>
     const userIdKey = 'user_id' in sampleRow ? 'user_id'
         : 'author_id' in sampleRow ? 'author_id'
             : 'performed_by' in sampleRow ? 'performed_by'
                 : null
 
-    // 3. Batch-fetch profiles for all unique user ids
-    let profileMap: Record<string, { first_name: string; last_name: string; role: string;
-  support_level?: string }> = {}
+    let profileMap: Record<string, { first_name: string; last_name: string; role: string; support_level?: string }> = {}
 
     if (userIdKey) {
         const userIds = [...new Set(logs.map(l => (l as any)[userIdKey]).filter(Boolean))] as string[]
@@ -585,7 +562,6 @@ export async function getTicketAuditLogs(ticketId: string): Promise<AuditLogEntr
         }
     }
 
-    // 4. Merge into AuditLogEntry shape
     return logs.map((log: any) => ({
         id: log.id,
         ticket_id: log.ticket_id,

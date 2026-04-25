@@ -1,19 +1,18 @@
 'use client'
 
-import { useTicket, useTicketComments, useTicketAuditLogs, useSupportLevels } from '@/features/tickets/api/useTickets'
+import { useTicket, useTicketComments, useTicketAuditLogs, useSupportLevels, useActiveAssignees } from '@/features/tickets/api/useTickets'
 import { useTicketAttachments } from '@/features/tickets/api/useTicketAttachments'
 import { useQueryClient, useQuery } from '@tanstack/react-query'
-import { addComment, updateTicketStatus, escalateTicket, uploadAttachments, linkContactToTicket, linkTicketToSD, resolveSD, assignTicketManually } from '@/features/tickets/actions'
+import { addComment, updateTicketStatus, escalateTicket, uploadAttachments, linkContactToTicket, linkTicketToSD, resolveSD, assignTicketManually, migrateTicketCategory } from '@/features/tickets/actions'
 import { useState, useTransition, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Send, CheckCircle2, AlertTriangle, ArrowUpRight, ArrowDownRight, Loader2, Lock, Paperclip, X, File, UploadCloud, UserCircle, Phone, Pencil, Link2, Code2, ExternalLink, Unlink, History, MessageSquare, Zap, UserCheck, ArrowRightLeft, Shield, GitMerge } from 'lucide-react'
+import { ArrowLeft, Send, CheckCircle2, AlertTriangle, ArrowUpRight, ArrowDownRight, Loader2, Lock, Paperclip, X, File, UploadCloud, UserCircle, Phone, Pencil, Link2, Code2, ExternalLink, Unlink, History, MessageSquare, Zap, UserCheck, ArrowRightLeft, Shield, GitMerge, Search } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { AttachmentViewer } from '@/components/AttachmentViewer'
 import { SlaBadge } from '@/components/SlaBadge'
 import { SmartContactSelector } from '@/components/SmartContactSelector'
 import { DateTimePicker } from '@/components/DateTimePicker'
-import { CommerceDetailsCard, CommerceDetails } from '@/features/tickets/components/details/CommerceDetailsCard'
 import { SAVDetailsCard, SAVDetails } from '@/features/tickets/components/details/SAVDetailsCard'
 import { FormateurDetailsCard, FormateurDetails } from '@/features/tickets/components/details/FormateurDetailsCard'
 import { DevDetailsCard, DevDetails } from '@/features/tickets/components/details/DevDetailsCard'
@@ -43,10 +42,15 @@ function getPresenceColor(userId: string): string {
     return PRESENCE_COLORS[Math.abs(hash) % PRESENCE_COLORS.length]
 }
 
+import { useRiftStore } from '@/hooks/useRiftStore'
+import { shareEntityInRift } from '@/features/rift/actions'
+import { RiftShareModal } from '@/features/rift/components/RiftShareModal'
+
 export function TicketDetailContent({ ticketId }: { ticketId: string }) {
     const router = useRouter()
     const queryClient = useQueryClient()
     const { data: ticket, isLoading: isLoadingTicket } = useTicket(ticketId)
+    const [riftShareModalOpen, setRiftShareModalOpen] = useState(false)
     const { data: comments, isLoading: isLoadingComments } = useTicketComments(ticketId)
     const { data: attachments, isLoading: isLoadingAttachments } = useTicketAttachments(ticketId)
     const { data: myProfile } = useQuery({
@@ -83,12 +87,11 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
         })
 
         // 2. Écouter la synchro — le callback sync se déclenche à chaque changement
+        // MUST be defined BEFORE subscribe()
         room.on('presence', { event: 'sync' }, () => {
             if (cancelled) return
             const state = room.presenceState()
-            // Aplatir (flatten) : presenceState() retourne Record<string, Presence[]>
             const allPresences = Object.values(state).flat()
-            // Extraire les utilisateurs, EXCLURE l'utilisateur courant
             const others = allPresences
                 .filter((p: any) => p.user_id && p.user_id !== myProfile.id)
                 .map((p: any): PresenceUser => ({
@@ -97,36 +100,26 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                     avatar_url: p.avatar_url ? String(p.avatar_url) : null,
                     role: String(p.role || ''),
                 }))
-            // Dédoublonner par user_id (un utilisateur peut avoir 2+ onglets ouverts)
             const unique = others.filter((u, i, arr) => arr.findIndex(x => x.user_id === u.user_id) === i)
             setActiveUsers(unique)
         })
 
-        // 3. Souscrire ET tracker uniquement si connecté
-        room.subscribe(async (status, err) => {
+        // 3. Souscrire ET tracker
+        room.subscribe(async (status) => {
             if (cancelled) return
-            if (err) {
-                console.error('[Presence] Subscription error:', err)
-                return
-            }
             if (status === 'SUBSCRIBED') {
-                try {
-                    await room.track({
-                        user_id: myProfile.id,
-                        name: `${myProfile.first_name} ${myProfile.last_name}`,
-                        avatar_url: myProfile.avatar_url ?? null,
-                        role: myProfile.role,
-                    })
-                } catch (e) {
-                    console.error('[Presence] Track error:', e)
-                }
+                await room.track({
+                    user_id: myProfile.id,
+                    name: `${myProfile.first_name} ${myProfile.last_name}`,
+                    avatar_url: myProfile.avatar_url ?? null,
+                    role: myProfile.role,
+                })
             }
         })
 
-        // Cleanup : marquer annulé, untrack puis supprimer le canal
         return () => {
             cancelled = true
-            room.untrack().then(() => supabase.removeChannel(room))
+            supabase.removeChannel(room)
         }
     }, [ticketId, myProfile?.id, myProfile?.first_name, myProfile?.last_name, myProfile?.avatar_url, myProfile?.role])
 
@@ -164,6 +157,9 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
 
     // Merge / Deduplication modal (Sprint 49)
     const [mergeModalOpen, setMergeModalOpen] = useState(false)
+
+    // Migration Modal (Sprint 50)
+    const [migrateModalOpen, setMigrateModalOpen] = useState(false)
 
     // Ref pour le champ commentaire (raccourci "C")
     const commentRef = useRef<HTMLTextAreaElement>(null)
@@ -237,9 +233,10 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
             if (suspendModalOpen || closeModalOpen || escalateUpModalOpen || escalateDownModalOpen || reopenModalOpen || changeContactModalOpen || sdLinkModalOpen || resolveSDModalOpen) return
 
             if (e.key === 'a' || e.key === 'A') {
-                // A : Assigner à moi-même
+                // A : Assigner à moi-même (ADMIN, STANDARD, N4 peuvent réassigner)
                 e.preventDefault()
-                if (ticket && !ticket.assignee) {
+                const canAssign = myProfile && (myProfile.role === 'ADMIN' || myProfile.role === 'STANDARD' || (myProfile.role === 'TECHNICIEN' && myProfile.support_level === 'N4'))
+                if (ticket && canAssign) {
                     startTransition(async () => {
                         const res = await assignTicketManually(ticketId)
                         if (res.error) {
@@ -271,11 +268,19 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
         return () => document.removeEventListener('keydown', handler)
     }, [ticket, ticketId, suspendModalOpen, closeModalOpen, escalateUpModalOpen, escalateDownModalOpen, reopenModalOpen, changeContactModalOpen, sdLinkModalOpen, resolveSDModalOpen, queryClient, startTransition])
 
+    // Reassign Modal (Sprint 50)
+    const [reassignModalOpen, setReassignModalOpen] = useState(false)
+    const { data: activeAssignees, isLoading: isLoadingAssignees } = useActiveAssignees()
+    const [selectedAssigneeId, setSelectedAssigneeId] = useState<string | null>(null)
+    const [assigneeSearchTerm, setAssigneeSearchTerm] = useState('')
+
     // Helpers pour reset les champs quand on ferme/ouvre une modale
     const resetModalForms = () => {
         setActionJustification('')
         setResumeAtDate('')
         setSelectedNewContactId(null)
+        setSelectedAssigneeId(null)
+        setAssigneeSearchTerm('')
     }
 
     const handleUploadFiles = async () => {
@@ -589,10 +594,7 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                     </div>
 
                     {/* VUES DÉTAILLÉES MULTI-SERVICES DYNAMIQUES */}
-                    {ticket.category === 'COMMERCE' && (
-                        <CommerceDetailsCard ticketId={ticket.id} details={ticket.commerce_details as CommerceDetails} isClosed={ticket.status === 'ferme'} />
-                    )}
-                    {ticket.category === 'SAV' && (
+                    {(ticket.category === 'SAV1' || ticket.category === 'SAV2') && (
                         <SAVDetailsCard ticketId={ticket.id} details={ticket.sav_details as SAVDetails} isClosed={ticket.status === 'ferme'} />
                     )}
                     {ticket.category === 'FORMATION' && (
@@ -981,7 +983,20 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
 
                     {/* Carte Infos */}
                     <div className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl space-y-4">
-                        <h3 className="text-sm font-bold tracking-wider text-muted-foreground uppercase">Informations</h3>
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-sm font-bold tracking-wider text-muted-foreground uppercase">Informations</h3>
+                            {/* BOUTON ASSIGNATION MANUELLE (SPRINT 50) */}
+                            {myProfile && (myProfile.role === 'ADMIN' || myProfile.role === 'STANDARD' || (myProfile.role === 'TECHNICIEN' && myProfile.support_level === 'N4')) && (
+                                <button
+                                    onClick={() => setReassignModalOpen(true)}
+                                    disabled={isPending || ticket.status === 'ferme'}
+                                    className="p-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all group/assign"
+                                    title="Assigner ou réassigner ce ticket"
+                                >
+                                    <UserCheck className="w-4 h-4 group-hover/assign:scale-110 transition-transform" />
+                                </button>
+                            )}
+                        </div>
 
                         <div className="space-y-3">
                             <div>
@@ -1192,6 +1207,16 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                         <option value="suspendu" disabled>Suspendu (Bouton⬇️)</option>
                                         <option value="resolu">Résolu</option>
                                     </select>
+
+                                    {/* PARTAGER SUR RIFT */}
+                                    <button
+                                        onClick={() => setRiftShareModalOpen(true)}
+                                        disabled={isPending}
+                                        className="w-full rounded-xl p-3 border border-primary/30 bg-primary/10 hover:bg-primary/20 text-primary text-sm font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        <Zap className="w-4 h-4" />
+                                        Partager sur Rift
+                                    </button>
 
                                     {/* BOUTON RÉSOUDRE SD DÉDIÉ pour tickets DEV */}
                                     {ticket.category === 'DEV' && ticket.status !== 'resolu' && (
@@ -1490,6 +1515,61 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                                             </Dialog>
                                         </>
                                     )}
+
+                                    <div className="h-px bg-white/10 w-full my-4" />
+
+                                    {/* MIGRER VERS UN AUTRE SERVICE (SPRINT 50) */}
+                                    <Dialog open={migrateModalOpen} onOpenChange={setMigrateModalOpen}>
+                                        <DialogTrigger asChild>
+                                            <button
+                                                disabled={isPending || ticket.status === 'ferme'}
+                                                className="w-full rounded-xl p-3 border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-sm font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                <ArrowRightLeft className="w-4 h-4" />
+                                                Migrer vers un autre service
+                                            </button>
+                                        </DialogTrigger>
+                                        <DialogContent className="bg-background border-white/10 text-foreground sm:max-w-md">
+                                            <DialogHeader>
+                                                <DialogTitle className="text-xl font-bold flex items-center gap-2">
+                                                    <ArrowRightLeft className="w-5 h-5 text-indigo-400" />
+                                                    Migration de service
+                                                </DialogTitle>
+                                                <DialogDescription className="text-muted-foreground">
+                                                    Transférez ce ticket vers un autre département métier.
+                                                </DialogDescription>
+                                            </DialogHeader>
+                                            <div className="grid grid-cols-1 gap-3 py-4">
+                                                {[
+                                                    { id: 'COMMERCE', label: 'Commerce (COM)', icon: <Zap className="w-4 h-4 text-amber-400" /> },
+                                                    { id: 'SAV1', label: 'SAV 1 (Matériel)', icon: <CheckCircle2 className="w-4 h-4 text-emerald-400" /> },
+                                                    { id: 'SAV2', label: 'SAV 2 (Logiciel)', icon: <CheckCircle2 className="w-4 h-4 text-emerald-500" /> },
+                                                    { id: 'FORMATION', label: 'Formation (Formateur)', icon: <Pencil className="w-4 h-4 text-blue-400" /> },
+                                                    { id: 'HL', label: 'Assistance (Helpdesk)', icon: <MessageSquare className="w-4 h-4 text-indigo-400" /> }
+                                                ].filter(cat => cat.id !== ticket.category).map((cat) => (
+                                                    <button
+                                                        key={cat.id}
+                                                        onClick={() => startTransition(async () => {
+                                                            const res = await migrateTicketCategory(ticketId, cat.id as any)
+                                                            if (res.error) {
+                                                                toast.error(res.error)
+                                                            } else {
+                                                                toast.success(`Ticket migré vers ${cat.label}`)
+                                                                setMigrateModalOpen(false)
+                                                                queryClient.invalidateQueries({ queryKey: ['ticket', ticketId] })
+                                                            }
+                                                        })}
+                                                        className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-indigo-500/30 transition-all text-left group"
+                                                    >
+                                                        <div className="p-2 rounded-lg bg-white/5 group-hover:bg-indigo-500/20 transition-colors">
+                                                            {cat.icon}
+                                                        </div>
+                                                        <span className="font-bold text-sm">{cat.label}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </DialogContent>
+                                    </Dialog>
                                 </>
                             )}
 
@@ -1506,6 +1586,113 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
                 currentTicketId={ticketId}
                 currentTicketTitle={ticket.title}
             />
+
+            <RiftShareModal 
+                open={riftShareModalOpen}
+                onOpenChange={setRiftShareModalOpen}
+                entityId={ticketId}
+                entityType={ticket.category === 'DEV' ? 'SD' : 'TICKET'}
+                currentUserId={myProfile?.id ?? ''}
+            />
+
+            {/* MODALE RÉASSIGNATION (SPRINT 50) */}
+            <Dialog open={reassignModalOpen} onOpenChange={setReassignModalOpen}>
+                <DialogContent className="bg-[#0a0a1a] border border-white/10 text-foreground sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl font-bold flex items-center gap-2">
+                            <UserCheck className="w-5 h-5 text-primary" />
+                            Assigner le ticket
+                        </DialogTitle>
+                        <DialogDescription className="text-muted-foreground">
+                            Sélectionnez la personne à qui confier ce ticket.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="py-4 space-y-4">
+                        {/* Search Bar */}
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
+                            <Input
+                                placeholder="Rechercher un technicien..."
+                                value={assigneeSearchTerm}
+                                onChange={(e) => setAssigneeSearchTerm(e.target.value)}
+                                className="pl-10 bg-white/5 border-white/10 text-foreground"
+                            />
+                        </div>
+
+                        <div className="max-h-60 overflow-y-auto space-y-1 pr-2">
+                            {isLoadingAssignees ? (
+                                <div className="flex justify-center py-4">
+                                    <Loader2 className="w-6 h-6 animate-spin text-primary/50" />
+                                </div>
+                            ) : (() => {
+                                const filtered = activeAssignees?.filter((u: any) => {
+                                    const term = assigneeSearchTerm.toLowerCase()
+                                    return u.first_name.toLowerCase().includes(term) || 
+                                           u.last_name.toLowerCase().includes(term) ||
+                                           u.role.toLowerCase().includes(term)
+                                })
+
+                                if (filtered?.length === 0) {
+                                    return <p className="text-center text-muted-foreground text-sm py-4">Aucun technicien trouvé.</p>
+                                }
+
+                                return filtered?.map((u: any) => (
+                                    <button
+                                        key={u.id}
+                                        onClick={() => setSelectedAssigneeId(u.id)}
+                                        className={`w-full text-left flex items-center gap-3 p-3 rounded-xl transition-all border ${
+                                            selectedAssigneeId === u.id
+                                                ? 'bg-primary/20 border-primary/50 ring-1 ring-primary/50'
+                                                : 'bg-white/5 border-transparent hover:bg-white/10'
+                                        }`}
+                                    >
+                                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
+                                            {u.first_name[0]}{u.last_name[0]}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-semibold truncate">{u.first_name} {u.last_name}</p>
+                                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">{u.role}</p>
+                                        </div>
+                                        {selectedAssigneeId === u.id && (
+                                            <CheckCircle2 className="w-4 h-4 text-primary" />
+                                        )}
+                                    </button>
+                                ))
+                            })()}
+                        </div>
+                    </div>
+
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <button
+                            onClick={() => setReassignModalOpen(false)}
+                            className="px-4 py-2 rounded-xl text-foreground/70 hover:bg-white/5 transition-colors text-sm font-medium"
+                        >
+                            Annuler
+                        </button>
+                        <button
+                            onClick={() => {
+                                if (!selectedAssigneeId) return
+                                startTransition(async () => {
+                                    const res = await assignTicketManually(ticketId, selectedAssigneeId)
+                                    if (res.error) {
+                                        toast.error(res.error)
+                                    } else {
+                                        toast.success('Ticket assigné avec succès !')
+                                        setReassignModalOpen(false)
+                                        queryClient.invalidateQueries({ queryKey: ['ticket', ticketId] })
+                                    }
+                                })
+                            }}
+                            disabled={!selectedAssigneeId || isPending}
+                            className="px-6 py-2 rounded-xl bg-primary hover:bg-primary/20 text-primary-foreground font-bold disabled:opacity-50 transition-all flex items-center gap-2 shadow-lg shadow-primary/20"
+                        >
+                            {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserCheck className="w-4 h-4" />}
+                            Confirmer l'assignation
+                        </button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

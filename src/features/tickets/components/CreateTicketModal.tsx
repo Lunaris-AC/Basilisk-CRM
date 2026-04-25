@@ -28,12 +28,7 @@ const ticketSchema = z.object({
     contact_id: z.string().optional(),
     problem_location: z.string().optional(),
     priority: z.enum(['basse', 'normale', 'haute', 'critique']),
-    category: z.enum(['HL', 'COMMERCE', 'SAV', 'FORMATION', 'DEV']),
-
-    // Commerce
-    quote_number: z.string().optional(),
-    invoice_number: z.string().optional(),
-    service_type: z.string().optional(),
+    category: z.enum(['HL', 'SAV1', 'SAV2', 'FORMATION', 'DEV']),
 
     // SAV
     serial_number: z.string().optional(),
@@ -98,9 +93,6 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
             problem_location: '',
             priority: 'normale',
             category: 'HL',
-            quote_number: '',
-            invoice_number: '',
-            service_type: '',
             serial_number: '',
             product_reference: '',
             hardware_status: '',
@@ -158,11 +150,7 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
         formData.append('category', values.category)
         if (values.contact_id) formData.append('contact_id', values.contact_id)
 
-        if (values.category === 'COMMERCE') {
-            if (values.quote_number) formData.append('quote_number', values.quote_number)
-            if (values.invoice_number) formData.append('invoice_number', values.invoice_number)
-            if (values.service_type) formData.append('service_type', values.service_type)
-        } else if (values.category === 'SAV') {
+        if (values.category === 'SAV1' || values.category === 'SAV2') {
             if (values.serial_number) formData.append('serial_number', values.serial_number)
             if (values.product_reference) formData.append('product_reference', values.product_reference)
             if (values.hardware_status) formData.append('hardware_status', values.hardware_status)
@@ -267,8 +255,8 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
                                             className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-foreground focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all appearance-none"
                                         >
                                             <option value="HL">Support HotLine (HL)</option>
-                                            <option value="COMMERCE">Service Commerce</option>
-                                            <option value="SAV">Service Après-Vente (SAV)</option>
+                                            <option value="SAV1">SAV 1 (Matériel)</option>
+                                            <option value="SAV2">SAV 2 (Logiciel)</option>
                                             <option value="FORMATION">Service Formation</option>
                                             <option value="DEV">SD / Développement</option>
                                         </select>
@@ -381,29 +369,8 @@ export function CreateTicketModal({ open, onOpenChange }: CreateTicketModalProps
                                     />
                                 </div>
 
-                                {/* DÉTAILS COMMERCE */}
-                                {selectedCategory === 'COMMERCE' && (
-                                    <div className="space-y-4 md:col-span-2 p-4 bg-primary/10 border border-primary/20 rounded-xl">
-                                        <h3 className="text-sm font-bold text-primary/80">Détails Commerce</h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                            <div className="space-y-2">
-                                                <label className="text-xs text-foreground/70">Numéro de devis</label>
-                                                <input {...form.register('quote_number')} className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-foreground text-sm focus:ring-2 focus:ring-primary/50" placeholder="Ex: DEV-2026-001" />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-xs text-foreground/70">Numéro de facture</label>
-                                                <input {...form.register('invoice_number')} className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-foreground text-sm focus:ring-2 focus:ring-primary/50" placeholder="Ex: FAC-2026-001" />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-xs text-foreground/70">Type de prestation</label>
-                                                <input {...form.register('service_type')} className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-foreground text-sm focus:ring-2 focus:ring-primary/50" placeholder="Ex: Renouvellement, Vente..." />
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
                                 {/* DÉTAILS SAV */}
-                                {selectedCategory === 'SAV' && (
+                                {(selectedCategory === 'SAV1' || selectedCategory === 'SAV2') && (
                                     <div className="space-y-4 md:col-span-2 p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl">
                                         <h3 className="text-sm font-bold text-rose-400">Détails SAV</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -9,6 +9,7 @@ import Link from 'next/link'
 import {
     Code2, Bug, Sparkles, Search, Loader2, ArrowRight, Filter, UserPlus, Zap
 } from 'lucide-react'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
     nouveau: { label: 'Nouveau', color: 'bg-sky-500/20 text-sky-300 border-sky-500/30' },
@@ -70,29 +71,20 @@ export function SDContent() {
 
     return (
         <div className="space-y-8">
-            {/* Header */}
-            <div className="relative">
-                <div className="absolute -top-6 -left-6 w-48 h-48 bg-cyan-500/10 rounded-full blur-[80px] pointer-events-none" />
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-[60px] pointer-events-none" />
-
-                <div className="relative flex items-center justify-between gap-4 flex-wrap">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-gradient-to-br from-cyan-500/20 to-primary/20 border border-cyan-500/30 rounded-2xl shadow-lg shadow-cyan-500/10">
-                            <Code2 className="w-7 h-7 text-cyan-400" />
-                        </div>
-                        <div>
-                            <h1 className="text-3xl font-black tracking-tight bg-gradient-to-r from-cyan-400 to-primary bg-clip-text text-transparent">
-                                Portail SD
-                            </h1>
-                            <p className="text-sm text-muted-foreground mt-0.5">Bugs & Évolutions — Département Développement</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <PageHeader
+                title="Portail SD"
+                subtitle="Bugs & Évolutions — Département Développement"
+                icon={Code2}
+                iconColor="text-cyan-400"
+                gradientFrom="from-cyan-500/20"
+                gradientTo="to-primary/20"
+                rightElement={
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground bg-white/5 px-4 py-2 rounded-xl border border-white/10 backdrop-blur-sm">
                         <Zap className="w-4 h-4 text-cyan-400" />
                         <span>{sds?.length ?? 0} SD{(sds?.length ?? 0) > 1 ? 's' : ''} actif{(sds?.length ?? 0) > 1 ? 's' : ''}</span>
                     </div>
-                </div>
-            </div>
+                }
+            />
 
             {/* Filters */}
             <div className="p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl">

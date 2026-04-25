@@ -41,7 +41,8 @@ const PRIORITY_OPTIONS = [
 const CATEGORY_OPTIONS = [
     { value: 'HL', label: 'Support HL' },
     { value: 'COMMERCE', label: 'Commerce' },
-    { value: 'SAV', label: 'SAV' },
+    { value: 'SAV1', label: 'SAV 1 (Matériel)' },
+    { value: 'SAV2', label: 'SAV 2 (Logiciel)' },
     { value: 'FORMATION', label: 'Formation' },
 ]
 
@@ -121,8 +122,17 @@ export function TicketFilters({ filters, setFilters }: TicketFiltersProps) {
     ;(filters.store_ids || []).forEach(v => {
         let storeName = "Magasin inconnu"
         clients?.forEach(c => {
-            const s = c.stores?.find(st => st.id === v)
-            if (s) storeName = `${s.name} (${c.company})`
+            // Chercher dans les magasins directs des centrales
+            c.centrales?.forEach(centrale => {
+                const s = centrale.magasins_directs?.find(st => st.id === v)
+                if (s) storeName = `${s.name} (${c.company})`
+                
+                // Chercher dans les mini-centrales
+                centrale.mini_centrales?.forEach(mini => {
+                    const ms = mini.stores?.find(st => st.id === v)
+                    if (ms) storeName = `${ms.name} (${c.company})`
+                })
+            })
         })
         activeBadges.push({ key: `store-${v}`, filterKey: 'store_ids', value: v, label: storeName })
     })
@@ -175,9 +185,9 @@ export function TicketFilters({ filters, setFilters }: TicketFiltersProps) {
     const hasActiveFilters = activeBadges.length > 0
 
     return (
-        <div className="space-y-3">
+        <div className="space-y-3" suppressHydrationWarning>
             {/* ═══ Barre principale ═══ */}
-            <div className="flex flex-col md:flex-row flex-wrap items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl w-full">
+            <div className="flex flex-col md:flex-row flex-wrap items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl w-full" suppressHydrationWarning>
 
                 {/* Recherche Textuelle */}
                 <div className="relative flex-1 w-full">
@@ -224,12 +234,21 @@ export function TicketFilters({ filters, setFilters }: TicketFiltersProps) {
                         <SelectContent className="max-h-[300px]">
                             <SelectItem value="all">Tous les magasins</SelectItem>
                             {clients?.map((client) => {
-                                // On vérifie que le client a des stores
-                                if (!client.stores || client.stores.length === 0) return null;
+                                // Aplatir les magasins pour l'affichage dans le select
+                                const allStores: any[] = []
+                                client.centrales?.forEach(c => {
+                                    c.magasins_directs?.forEach(s => allStores.push(s))
+                                    c.mini_centrales?.forEach(m => {
+                                        m.stores?.forEach(s => allStores.push(s))
+                                    })
+                                })
+
+                                if (allStores.length === 0) return null;
+                                
                                 return (
                                     <SelectGroup key={client.id}>
                                         <SelectLabel className="text-xs text-muted-foreground">{client.company}</SelectLabel>
-                                        {client.stores.map(store => (
+                                        {allStores.map(store => (
                                             <SelectItem key={store.id} value={store.id} className="pl-6">
                                                 {store.name} - {store.city}
                                             </SelectItem>
